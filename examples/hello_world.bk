@@ -1,0 +1,13 @@
+// This is a basic example of what the language is supposed to look like
+// it might change in the future
+
+feature main() creating void {
+  store hello as string = "Hello, world!"
+  store age as int = 19
+  println(sentence)
+  println(order my_age(age))
+}
+
+feature my_age(age as int) creating string {
+  return f"J'ai $age ans"
+}

@@ -1,0 +1,65 @@
+###
+This file describes the grammar of the language
+
+Note:
+- NL = newline
+- NL* = 0 or more empty lines
+- NL+ = at least 1 empty line
+- NL? = 0 or 1 empty line
+- (A|B) = expression A or expression B
+###
+
+statements    : NL* statement (NL+ statement)* NL*
+
+statement     : KEYWORD:return expr?
+              : expr
+
+expr          : KEYWORD:store IDENTIFIER KEYWORD:as Types (EQUALS expr)?
+              : cond-expr
+
+cond-expr     : comp-expr ((KEYWORD:AND|KEYWORD:OR) comp-expr)*
+
+comp-expr     : NOT comp-expr
+              : bin-op ((DOUBLE_EQUALS|NOT_EQUAL|LT|GT|LTE|GTE) bin-op)*
+
+bin-op        : arith-expr ((BINARY_LEFT|BINARY_RIGHT|BINARY_UNSIGNED_RIGHT|LOGICAL_AND|LOGICAL_XOR|LOGICAL_OR) ((EQUALS expr)?|bin-op))*
+
+# `term + something_else` is an arithmetic expression
+# we also have `term++` or `term--`
+# note that `term+++++` is possible, as long as the number of tokens (PLUS|MINUS) is even
+# We can also do `term += term`
+arith-expr    : term ((PLUS|MINUS) ((EQUALS expr)?|term))*
+              : term (INC|DEC)*
+
+term          : factor (((MUL|DIV|POWER|MODULO) factor)*)|((MUL|DIV|POWER|MODULO)EQUALS expr)?
+
+factor        : (PLUS|MINUS) factor
+              : (BIN_NOT)* factor
+              : (INC|DEC)* term
+              : prop
+
+prop          : call (QMARK (DOT|DOUBLE_COLON (IDENTIFIER)?)|(DOT|DOUBLE_COLON IDENTIFIER) call)*
+
+call          : (atom (call_func|call_list)*)
+
+call_func     : (LPAREN (expr (COMMA expr)*)? RPAREN)*
+
+call_list     : (QMARK DOT LSQUARE (expr)|(expr COLON expr) RSQUARE)*
+              : (LSQUARE (expr)|(expr COLON expr) RSQUARE)* (EQUALS expr)? # almost the same for dictionnaries
+
+atom          : NUMBER|(f)?STRING|IDENTIFIER
+              : LPAREN expr RPAREN
+              : list-expr
+              : func-def
+              : null
+              : true|false
+
+list-expr     : LSQUARE (expr (COMMA expr)*)? RSQUARE
+
+### This will change:
+func-def      : KEYWORD:FEATURE IDENTIFIER?
+                LPAREN (IDENTIFIER (QMARK (COLON Types)? (EQUALS expr)?)? (COMMA IDENTIFIER)*|TRIPLE_DOTS IDENTIFIER)? RPAREN
+                (ARROW expr|KEYWORD:pass)
+                | (COLON statements|KEYWORD:pass KEYWORD:END)
+
+
