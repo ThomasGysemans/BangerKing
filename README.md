@@ -66,7 +66,7 @@ will produce this result:
 ]
 ```
 
-This step is done by the [Lexer](./include/lexer.h). These tokens simplify the task of the [Parser](./include/parser.h). The parser takes a argument a list of tokens and creates a list of nodes. It's the parser's role to make sure that the order of a mathematical expression is preserved:
+This step is done by the [Lexer](./include/lexer.h). These tokens simplify the task of the [Parser](./include/parser.h). The parser takes as argument a list of tokens and creates a list of nodes. It's the parser's role to make sure that the order of a mathematical expression is preserved:
 
 ```
 1+2-10/2
