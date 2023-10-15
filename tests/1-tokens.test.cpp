@@ -1,7 +1,7 @@
 #include <iostream>
-#include "helper.h"
-#include "../include/token.h"
-#include "../include/position.h"
+#include "helper.hpp"
+#include "../include/token.hpp"
+#include "../include/position.hpp"
 using namespace std;
 
 static const Position pos_start = Position::getDefaultPos();
@@ -64,7 +64,7 @@ void test_implicit_pos_end() {
 void test_explicit_pos_end() {
   Position pos_end = Position::getDefaultPos();
   pos_end.advance('h');
-  Token token(TokenType::KEYWORD, KEYWORDS[0], pos_start, pos_end);
+  Token token(TokenType::KEYWORD, KEYWORDS[0], pos_start, &pos_end);
   Position token_start = token.getStartingPosition();
   Position token_end = token.getEndingPosition();
   assert(&token_start == &pos_end == false); // it's not meant to be the same

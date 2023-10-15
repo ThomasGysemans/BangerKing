@@ -1,16 +1,25 @@
 #include <iostream>
 #include <list>
-#include "../include/run.h"
-#include "../include/exceptions/custom_error.h"
-#include "../include/lexer.h"
-#include "../include/parser.h"
-#include "../include/token.h"
-#include "../include/utils/deallocate_list_of_pointers.h"
-#include "../include/debug/print_tokens.h"
+#include <map>
+#include "../include/miscellaneous.hpp"
+#include "../include/utils/deallocate_list_of_pointers.hpp"
+#include "../include/exceptions/custom_error.hpp"
+#include "../include/exceptions/exception.hpp"
+#include "../include/debug/print_tokens.hpp"
+#include "../include/lexer.hpp"
+#include "../include/parser.hpp"
+#include "../include/token.hpp"
+#include "../include/files.hpp"
+#include "../include/runtime.hpp"
+#include "../include/context.hpp"
+#include "../include/interpreter.hpp"
 using namespace std;
 
-void run(string input, string filename) {
+void run(const string& input, const string& filename) {
   try {
+
+    READ_FILES[filename] = &input;
+
     Lexer lexer(input, filename);
     list<Token*> tokens = lexer.generate_tokens();
     cout << display_tokens_list(tokens) << endl;
@@ -20,17 +29,32 @@ void run(string input, string filename) {
     }
 
     Parser parser(tokens);
-    const ListNode * parsing_result = parser.parse();
+    const ListNode* tree = parser.parse();
 
-    cout << parsing_result->to_string() << endl;
+    cout << tree->to_string() << endl;
 
     // The tokens are not necessary anymore so the memory can be released:
     deallocate_list_of_pointers<Token>(tokens);
 
+    const Interpreter* interpreter = new Interpreter();
+    const Context* ctx = new Context("<program>");
+    const RuntimeResult* result = interpreter->visit(tree, *ctx);
+
+    // By default, we'll always have an instance of ListNode.
+    // As of now, the interpreter will return an UndefinedBehavior exception
+    // because there is no visit method for this kind of node yet.
+    cout << result->to_string() << endl;
+
     // the nodes are not necessary anymore so the memory can be released:
-    delete parsing_result;
+    delete result;
+    delete ctx;
+    delete interpreter;
+    delete tree;
   } catch (CustomError e) {
     cout << "The program crashed !!" << endl;
+    cout << e.to_string() << endl;
+  } catch (Exception e) {
+    cout << "The language itself crashed due to this Exception:" << endl;
     cout << e.to_string() << endl;
   }
 }

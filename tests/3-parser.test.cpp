@@ -1,14 +1,14 @@
 #include <iostream>
 #include <list>
-#include "helper.h"
-#include "../include/token.h"
-#include "../include/lexer.h"
-#include "../include/parser.h"
-#include "../include/nodes.h"
-#include "../include/miscellaneous.h"
+#include "helper.hpp"
+#include "../include/token.hpp"
+#include "../include/lexer.hpp"
+#include "../include/parser.hpp"
+#include "../include/nodes/compositer.hpp"
+#include "../include/miscellaneous.hpp"
 using namespace std;
 
-static list<const CustomNode*> get_element_nodes_from(const string& code, bool debug_print = false) {
+list<const CustomNode*> get_element_nodes_from(const string& code, bool debug_print = false) {
   Lexer lexer(code);
   list<Token*> tokens = lexer.generate_tokens();
   Parser parser(tokens);
@@ -18,18 +18,6 @@ static list<const CustomNode*> get_element_nodes_from(const string& code, bool d
     cout << parsing_result->to_string() << endl;
   }
   return parsing_result->get_element_nodes();
-}
-
-/// @brief Casts an instance of CustomNode into a derived class of CustomNode. Note that it will throw an error if the cast isn't impossible.
-/// @tparam T The expected type of the derived class.
-/// @param b The instance of CustomNode.
-/// @return The instance of the derived class `T` from `b`
-template <typename T>
-static const T* cast_node(const CustomNode* b) {
-  if (!instanceof<T>(b)) {
-    throw string("incorrect cast of CustomNode");
-  }
-  return dynamic_cast<const T*>(b);
 }
 
 void test_simple_number() {

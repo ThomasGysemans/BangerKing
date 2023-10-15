@@ -1,9 +1,9 @@
 #include <iostream>
-#include "perf.h"
-#include "../../include/token.h"
-#include "../../include/lexer.h"
-#include "../../include/utils/deallocate_list_of_pointers.h"
-#include "../../include/debug/print_tokens.h"
+#include "perf.hpp"
+#include "../../include/token.hpp"
+#include "../../include/lexer.hpp"
+#include "../../include/utils/deallocate_list_of_pointers.hpp"
+#include "../../include/debug/print_tokens.hpp"
 using namespace std;
 
 class LexerPerformance: public Performance {

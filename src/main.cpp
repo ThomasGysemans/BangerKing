@@ -1,10 +1,9 @@
 #include <iostream>
-#include "../include/run.h"
-#include "../include/runtime_result.h"
+#include "../include/run.hpp"
 using namespace std;
 
 int main() {
-  cout << "Welcome in Banger King !" << endl;
+  cout << "Welcome to Banger King !" << endl;
   cout << "Write your first program below." << endl;
   cout << "Type \\q to quit at any time." << endl;
   cout << endl;

@@ -1,9 +1,20 @@
-mkdir -p build_perfs
+OUTPUT_DIR="build_perfs"
 
-F="./tests/perf/*.perf.cpp"
-for f in $F ; do
-  echo "Measuring performance of $f... "
-  g++ "$f" -o build_perfs/compiled_test -std=c++20 && ./build_perfs/compiled_test
+# Very much like "tests.sh"
+
+./compile_objects.sh "$OUTPUT_DIR"
+
+PERFS="./tests/perf/*.perf.cpp"
+
+for perf in $PERFS ; do
+  echo "Measuring performance of $perf..."
+  base=$(basename "$perf")
+  g++ -c "$perf" -o "$OUTPUT_DIR/${base%.cpp}.o" -std=c++20
+  all_objects_files=$(find "$OUTPUT_DIR" -name "*.o")
+  g++ $all_objects_files -o ./compiled_perf -std=c++20
+  ./compiled_perf
+  rm -f "$OUTPUT_DIR/${base%.cpp}.o"
 done
 
-rm -fr build_perfs
+rm -f ./compiled_perf
+rm -fr "$OUTPUT_DIR"

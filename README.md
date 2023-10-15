@@ -17,16 +17,22 @@ Look at [the example](./examples/hello_world.bk) to see what the language is sup
 
 Execute one of these scripts to...
 
-#### Compile and run
+#### Compile
 
 ```bash
-./run.sh
+./compile.sh
 ```
 
-#### Run
+#### Execute
 
 ```bash
 ./exec.sh
+```
+
+### Compile & Execute
+
+```bash
+./run.sh
 ```
 
 #### Measure performance
@@ -38,14 +44,17 @@ Execute one of these scripts to...
 #### Test
 
 ```bash
-./test.sh
+./tests.sh
 ```
 
 Test a specific program:
 
 ```bash
 ./test.sh 3-parser
-# this test is just for the Parser
+# this test is just for the Parser.
+# Look inside the "tests" folder to know the name of the tests.
+# They have a specific order because an error with Tokens, for example,
+# will crash all the other tests.
 ```
 
 ## How does it work?

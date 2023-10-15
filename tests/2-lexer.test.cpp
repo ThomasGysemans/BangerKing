@@ -1,11 +1,11 @@
 #include <iostream>
 #include <list>
-#include "helper.h"
-#include "../include/lexer.h"
-#include "../include/token.h"
-#include "../include/miscellaneous.h"
-#include "../include/debug/print_tokens.h"
-#include "../include/debug/compare_tokens.h"
+#include "helper.hpp"
+#include "../include/lexer.hpp"
+#include "../include/token.hpp"
+#include "../include/miscellaneous.hpp"
+#include "../include/debug/print_tokens.hpp"
+#include "../include/debug/compare_tokens.hpp"
 using namespace std;
 
 void test_simple_digit() {
