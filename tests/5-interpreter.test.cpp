@@ -79,6 +79,39 @@ void test_substraction_of_two_small_positive_integers_with_whitespace() {
   print_success_msg("works with substraction between two small integers with whitespace", 1);
 }
 
+void test_multiplication_with_integers() {
+  auto values = get_values("5 * 3");
+  auto first_value = dynamic_cast<const IntegerValue*>(values.front());
+  assert(first_value->get_actual_value() == 15);
+  assert(first_value->to_string() == "15");
+
+  print_success_msg("works with multiplication of integers", 1);
+}
+
+void test_power_with_integers() {
+  auto values = get_values("5 ** 3");
+  auto first_value = dynamic_cast<const IntegerValue*>(values.front());
+  assert(first_value->get_actual_value() == 125);
+
+  print_success_msg("works with power of integers", 1);
+}
+
+void test_divide_with_integers() {
+  auto values = get_values("10 / 2");
+  auto first_value = dynamic_cast<const IntegerValue*>(values.front());
+  assert(first_value->get_actual_value() == 5);
+
+  print_success_msg("works with division of integers", 1);
+}
+
+void test_modulo_with_integers() {
+  auto values = get_values("12 % 10");
+  auto first_value = dynamic_cast<const IntegerValue*>(values.front());
+  assert(first_value->get_actual_value() == 2);
+
+  print_success_msg("works with modulo of integers", 1);
+}
+
 int main() {
   print_title("Interpreter tests...");
 
@@ -88,6 +121,10 @@ int main() {
     test_addition_of_two_max_integers();
     test_substraction_of_two_small_positive_integers();
     test_substraction_of_two_small_positive_integers_with_whitespace();
+    test_multiplication_with_integers();
+    test_power_with_integers();
+    test_divide_with_integers();
+    test_modulo_with_integers();
   } catch (string cast_error) {
     cout << "ABORT. The tests crashed due to this error :" << endl;
     cout << cast_error << endl;

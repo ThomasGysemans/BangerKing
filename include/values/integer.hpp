@@ -15,4 +15,7 @@ class IntegerValue: public Value {
 
     IntegerValue* operator+(const IntegerValue& other) const;
     IntegerValue* operator-(const IntegerValue& other) const;
+    IntegerValue* operator*(const IntegerValue& other) const;
+    IntegerValue* operator/(const IntegerValue& other) const;
+    IntegerValue* operator%(const IntegerValue& other) const;
 };

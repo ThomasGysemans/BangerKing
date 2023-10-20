@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include "runtime.hpp"
 #include "context.hpp"
 #include "nodes/compositer.hpp"
@@ -15,9 +16,13 @@ class Interpreter {
     RuntimeResult* visit_ListNode(const ListNode* node, const Context& ctx) const;
     RuntimeResult* visit_AddNode(const AddNode* node, const Context& ctx) const;
     RuntimeResult* visit_SubstractNode(const SubstractNode* node, const Context& ctx) const;
+    RuntimeResult* visit_MultiplyNode(const MultiplyNode* node, const Context& ctx) const;
+    RuntimeResult* visit_PowerNode(const PowerNode* node, const Context& ctx) const;
+    RuntimeResult* visit_DivideNode(const DivideNode* node, const Context& ctx) const;
+    RuntimeResult* visit_ModuloNode(const ModuloNode* node, const Context& ctx) const;
 
     // helper methods:
-
+    
     /// @brief Populates a value with its starting and ending position, and its context.
     /// @param value The value to populate.
     /// @param pos_start The starting position to give to the given value.
