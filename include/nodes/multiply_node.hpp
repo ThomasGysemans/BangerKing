@@ -13,6 +13,8 @@ class MultiplyNode: public CustomNode {
       const CustomNode* b
     );
 
+    ~MultiplyNode();
+
     const CustomNode* get_a() const;
     const CustomNode* get_b() const;
     string to_string() const override;

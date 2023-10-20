@@ -17,14 +17,14 @@ void test_tokens() {
   assert(token.ofType(TokenType::STR) == false);
   assert(token.notOfType(TokenType::STR) == true);
   assert(token.notOfType(TokenType::NUMBER) == false);
-  cout << get_success_msg("The methods of the Token class are good.", 1) << endl;
+  print_success_msg("The methods of the Token class are good.", 1);
 }
 
 void test_keyword() {
   Token token(TokenType::KEYWORD, KEYWORDS[0], pos_start);
   assert(token.matches(TokenType::KEYWORD, KEYWORDS[0]) == true);
   assert(token.matches(TokenType::KEYWORD, KEYWORDS[1]) == false);
-  cout << get_success_msg("using keywords and comparing them work too", 1) << endl;
+  print_success_msg("using keywords and comparing them work too", 1);
 }
 
 void test_copy() {
@@ -37,14 +37,14 @@ void test_copy() {
   Position starting_position = token.getStartingPosition();
   Position copy_position = token.getStartingPosition();
   assert(&starting_position == &copy_position == false);
-  cout << get_success_msg("copying tokens works!", 1) << endl;
+  print_success_msg("copying tokens works!", 1);
 }
 
 void test_pos_start() {
   Token token(TokenType::KEYWORD, KEYWORDS[0], pos_start);
   Position token_pos_start = token.getStartingPosition();
   assert(&token_pos_start == &pos_start == false); // Token is supposed to do a copy of the given pos_start
-  cout << get_success_msg("copying pos_start works", 1) << endl;
+  print_success_msg("copying pos_start works", 1);
 }
 
 // if pos_end is not given in the constructor,
@@ -58,7 +58,7 @@ void test_implicit_pos_end() {
   assert(start.get_col() == end.get_col());
   assert(start.get_idx() == end.get_idx());
   assert(start.get_filename() == end.get_filename());
-  cout << get_success_msg("implicit pos_end works", 1) << endl;
+  print_success_msg("implicit pos_end works", 1);
 }
 
 void test_explicit_pos_end() {
@@ -70,10 +70,12 @@ void test_explicit_pos_end() {
   assert(&token_start == &pos_end == false); // it's not meant to be the same
   assert(&pos_end == &token_end == false); // a copy is supposed to be made
   assert(token_end.get_idx() == token_start.get_idx() + 1);
-  cout << get_success_msg("explicit pos_end works", 1) << endl;
+  print_success_msg("explicit pos_end works", 1);
 }
 
 int main() {
+  print_title("Tokens tests...");
+
   test_tokens();
   test_keyword();
   test_copy();
@@ -81,6 +83,6 @@ int main() {
   test_implicit_pos_end();
   test_explicit_pos_end();
 
-  cout << get_success_msg("All \"Tokens\" tests successfully passed") << endl;
+  print_success_msg("All \"Tokens\" tests successfully passed");
   return 0;
 }

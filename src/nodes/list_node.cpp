@@ -1,17 +1,15 @@
 #include "../../include/nodes/list_node.hpp"
 
-// ListNode::ListNode() {
-//   list<const CustomNode*> nodes,
-//   const Position& start,
-//   const Position& end
-// }: CustomNode(start, end), element_nodes(nodes) {}
-
 // Implement the constructor
 ListNode::ListNode(
   std::list<const CustomNode*> nodes,
   const Position& start,
   const Position& end
 ): CustomNode(start, end), element_nodes(nodes) { }
+
+ListNode::ListNode(
+  list<const CustomNode*> nodes
+): CustomNode(nodes.front()->getStartingPosition(), nodes.back()->getEndingPosition()), element_nodes(nodes) {}
 
 ListNode::~ListNode() {
   for (auto it = element_nodes.begin(); it != element_nodes.end(); ++it) {
@@ -20,6 +18,7 @@ ListNode::~ListNode() {
 }
 
 list<const CustomNode*> ListNode::get_element_nodes() const { return element_nodes; }
+int ListNode::get_number_of_nodes() const { return element_nodes.size(); }
 
 string ListNode::to_string() const {
   list<const CustomNode*>::const_iterator iter = element_nodes.begin();

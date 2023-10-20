@@ -27,16 +27,15 @@ bool SymbolTable::has_parent() const {
   return parent != nullptr;
 }
 
-template <typename T>
-Value<T>* SymbolTable::get(const string& name) {
-  Value<T>* value = exists(name) ? symbols[name] : nullptr;
+Value* SymbolTable::get(const string& name) {
+  Value* value = exists(name) ? symbols[name] : nullptr;
   if (value == nullptr && has_parent()) {
     return parent->get(name);
   }
   return value;
 }
 
-void SymbolTable::modify(const string& name, Value<>* new_value) {
+void SymbolTable::modify(const string& name, Value* new_value) {
   if (exists(name)) {
     symbols[name] = new_value;
   } else {
@@ -45,7 +44,7 @@ void SymbolTable::modify(const string& name, Value<>* new_value) {
   }
 }
 
-void SymbolTable::set(const string& name, Value<>* value) {
+void SymbolTable::set(const string& name, Value* value) {
   symbols[name] = value;
 }
 

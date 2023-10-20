@@ -7,12 +7,9 @@
 #include "../context.hpp"
 using namespace std;
 
-// ? NOTE: templated classes MUST be defined in their header file, or a "undefined symbol" error will be triggered at compile time
-
 // Reference of "std::any"
 // https://en.cppreference.com/w/cpp/utility/any
 
-template <typename T = any>
 class Value {
   protected:
     const Type type;
@@ -21,40 +18,44 @@ class Value {
     Position pos_end;
     any actual_value = nullptr;
 
+    /// @brief Gets the actual value in C++.
+    /// @return The reference to this value of type "any".
+    const any* get_model() const;
+
   public:
     /// @brief Creates an instance of a computed value from the program.
     /// @param t The type of this value, from the `Type` enum.
-    Value(Type t): type(t), pos_start(Position::getDefaultPos()), pos_end(Position::getDefaultPos()) {}
+    Value(Type t);
 
-    virtual ~Value() {}
+    virtual ~Value();
 
     /// @brief Sets the position of this value in the program.
     /// @param pos_start The starting position of this value.
     /// @param pos_end The ending position of this value.
-    void set_pos(const Position& start, const Position& end) {
-      pos_start = start;
-      pos_end = end;
-    }
+    void set_pos(const Position& start, const Position& end);
 
     /// @brief Sets the context in which this value was created
     /// @param ctx The context that created this value.
-    void set_ctx(const Context* ctx) {
-      context = ctx;
-    }
+    void set_ctx(const Context* ctx);
 
-    string get_type() const { return get_type_name(type); }
+    /// @brief Gets the name of the type associated with this value.
+    /// @return The name of the type.
+    string get_type() const;
 
-    /// @brief Gets the actual value in C++.
-    /// @return The actual value, or it throws an error of type `UndefinedBehaviorException` if the value didn't override this method.
-    virtual T get_actual_value() const {
-      throw UndefinedBehaviorException("Undefined type of value.");
-    }
+    /// @brief Gets the starting position of this value.
+    /// @return The pointer to the starting position of this value.
+    const Position* get_pos_start() const;
+
+    /// @brief Gets the ending position of this value.
+    /// @return The pointer to the ending position of this value.
+    const Position* get_pos_end() const;
 
     /// @brief Indicates how this particular value can evaluate to true if used in a condition.
     /// @return a boolean
     virtual bool is_true() const { return false; }
 
     /// @brief Transforms the value into a string.
+    /// @throw UndefinedBehaviorException if "to_string()" is called on an instance of "Value"
     /// @return The string representation of this value.
     virtual string to_string() const {
       if (!actual_value.has_value()) {
@@ -71,7 +72,5 @@ class Value {
 
     /// @brief Creates a deep copy of this instance.
     /// @return A deep copy of this instance.
-    Value<T> copy() const {
-      return Value(*this);
-    }
+    Value copy() const;
 };

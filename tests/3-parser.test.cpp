@@ -28,7 +28,7 @@ void test_simple_number() {
   assert(element_nodes.size() == 1);
   assert(number_node->getValue() == 5);
 
-  cout << get_success_msg("parser with simple number", 1) << endl;
+  print_success_msg("parser with simple number", 1);
 }
 
 void test_simple_negative_number() {
@@ -39,7 +39,7 @@ void test_simple_negative_number() {
   assert(nodes.size() == 1);
   assert(number_node->getValue() == 5);
 
-  cout << get_success_msg("parser with simple negative number", 1) << endl;
+  print_success_msg("parser with simple negative number", 1);
 }
 
 void test_simple_positive_number() {
@@ -50,7 +50,7 @@ void test_simple_positive_number() {
   assert(nodes.size() == 1);
   assert(number_node->getValue() == 670);
 
-  cout << get_success_msg("parser with simple positive number", 1) << endl;
+  print_success_msg("parser with simple positive number", 1);
 }
 
 void test_simple_addition() {
@@ -63,7 +63,7 @@ void test_simple_addition() {
   assert(a->getValue() == 5);
   assert(b->getValue() == 6);
 
-  cout << get_success_msg("parser with simple addition", 1) << endl;
+  print_success_msg("parser with simple addition", 1);
 }
 
 void test_simple_substraction() {
@@ -76,7 +76,7 @@ void test_simple_substraction() {
   assert(a->getValue() == 0);
   assert(b->getValue() == 6);
 
-  cout << get_success_msg("parser with simple substraction", 1) << endl;
+  print_success_msg("parser with simple substraction", 1);
 }
 
 void test_simple_multiplication() {
@@ -89,7 +89,7 @@ void test_simple_multiplication() {
   assert(a->getValue() == 0);
   assert(b->getValue() == 6);
 
-  cout << get_success_msg("parser with simple multiplication", 1) << endl;
+  print_success_msg("parser with simple multiplication", 1);
 }
 
 void test_simple_divison() {
@@ -102,7 +102,7 @@ void test_simple_divison() {
   assert(a->getValue() == 10);
   assert(b->getValue() == 2);
 
-  cout << get_success_msg("parser with simple divison", 1) << endl;
+  print_success_msg("parser with simple divison", 1);
 }
 
 void test_simple_modulo() {
@@ -115,7 +115,7 @@ void test_simple_modulo() {
   assert(a->getValue() == 13);
   assert(b->getValue() == 12);
 
-  cout << get_success_msg("parser with simple modulo", 1) << endl;
+  print_success_msg("parser with simple modulo", 1);
 }
 
 void test_simple_power() {
@@ -128,7 +128,7 @@ void test_simple_power() {
   assert(a->getValue() == 10);
   assert(b->getValue() == 2);
 
-  cout << get_success_msg("parser with simple power", 1) << endl;
+  print_success_msg("parser with simple power", 1);
 }
 
 void test_complex_maths_expression_with_parenthesis() {
@@ -150,7 +150,7 @@ void test_complex_maths_expression_with_parenthesis() {
   auto dem = cast_node<NumberNode>(add_b->get_b());
   assert(dem->getValue() == 6);
 
-  cout << get_success_msg("parser with complex maths expression with parenthesis", 1) << endl;
+  print_success_msg("parser with complex maths expression with parenthesis", 1);
 }
 
 void test_complex_maths_expression_without_parenthesis() {
@@ -172,7 +172,7 @@ void test_complex_maths_expression_without_parenthesis() {
   assert(div_a->getValue() == 2);
   assert(div_b->getValue() == 6);
 
-  cout << get_success_msg("parser with complex maths expression without parenthesis", 1) << endl;
+  print_success_msg("parser with complex maths expression without parenthesis", 1);
 }
 
 void test_mutiple_lines() {
@@ -190,10 +190,31 @@ void test_mutiple_lines() {
   assert(cast_node<NumberNode>(second_node->get_a())->getValue() == 3);
   assert(cast_node<NumberNode>(second_node->get_b())->getValue() == 4);
 
-  cout << get_success_msg("parser with multiple lines", 1) << endl;
+  print_success_msg("parser with multiple lines", 1);
+}
+
+void test_positions() {
+  auto nodes = get_element_nodes_from("5");
+  assert(nodes.size() == 1);
+
+  auto node = cast_node<NumberNode>(nodes.front());
+  auto pos_start = node->getStartingPosition();
+  auto pos_end = node->getEndingPosition();
+
+  assert(pos_start.get_idx() == 0);
+  assert(pos_start.get_col() == 0);
+  assert(pos_start.get_ln() == 0);
+
+  assert(pos_end.get_idx() == 1);
+  assert(pos_end.get_col() == 1);
+  assert(pos_end.get_ln() == 0);
+
+  print_success_msg("node's positions are valid", 1);
 }
 
 int main() {
+  print_title("Parser tests...");
+
   try {
     test_simple_number();
     test_simple_negative_number();
@@ -207,12 +228,13 @@ int main() {
     test_complex_maths_expression_with_parenthesis();
     test_complex_maths_expression_without_parenthesis();
     test_mutiple_lines();
+    test_positions();
   } catch (string cast_exception) {
     cout << "ABORT. Terminating tests due to this error:" << endl;
     cout << cast_exception << endl;
     return 1;
   }
 
-  cout << get_success_msg("All \"Parser\" tests successfully passed") << endl;
+  print_success_msg("All \"Parser\" tests successfully passed");
   return 0;
 }

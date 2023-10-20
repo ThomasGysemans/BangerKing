@@ -6,14 +6,14 @@ void RuntimeResult::reset() {
 }
 
 CustomError* RuntimeResult::get_error() const { return error; }
-Value<>* RuntimeResult::get_value() const { return value; }
+Value* RuntimeResult::get_value() const { return value; }
 
-Value<>* RuntimeResult::read(RuntimeResult* res) {
+Value* RuntimeResult::read(RuntimeResult* res) {
   error = res->get_error();
   return res->get_value();
 }
 
-RuntimeResult* RuntimeResult::success(Value<> *v) {
+RuntimeResult* RuntimeResult::success(Value* v) {
   reset();
   value = v;
   return this;

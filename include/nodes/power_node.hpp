@@ -13,6 +13,8 @@ class PowerNode: public CustomNode {
       const CustomNode* b
     );
 
+    ~PowerNode();
+
     const CustomNode* get_a() const;
     const CustomNode* get_b() const;
     string to_string() const override;

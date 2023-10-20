@@ -16,7 +16,7 @@ void test_simple_digit() {
   assert(tokens.front()->ofType(TokenType::NUMBER));
   assert(tokens.front()->getStringValue() == "5");
 
-  cout << get_success_msg("lexer with simple digits", 1) << endl;
+  print_success_msg("lexer with simple digits", 1);
 }
 
 void test_simple_identifier() {
@@ -27,7 +27,7 @@ void test_simple_identifier() {
   assert(tokens.front()->ofType(TokenType::IDENTIFIER));
   assert(tokens.front()->getStringValue() == "hello");
 
-  cout << get_success_msg("lexer with simple identifier", 1) << endl;
+  print_success_msg("lexer with simple identifier", 1);
 }
 
 void test_simple_keyword() {
@@ -38,7 +38,7 @@ void test_simple_keyword() {
   assert(tokens.front()->ofType(TokenType::KEYWORD));
   assert(tokens.front()->getStringValue() == KEYWORDS[0]);
 
-  cout << get_success_msg("lexer with simple keyword", 1) << endl;
+  print_success_msg("lexer with simple keyword", 1);
 }
 
 void test_simple_maths() {
@@ -65,7 +65,7 @@ void test_simple_maths() {
 
   assert(compare_tokens(expected_tokens_list, tokens));
 
-  cout << get_success_msg("lexer with simple maths", 1) << endl;
+  print_success_msg("lexer with simple maths", 1);
 }
 
 void test_increment() {
@@ -79,15 +79,34 @@ void test_increment() {
   };
 
   assert(compare_tokens(expected_tokens_list, tokens));
+
+  print_success_msg("lexer with simple increment", 1);
+}
+
+void test_positions() {
+  const string code = "5";
+  Lexer lexer(code);
+  list<Token*> tokens = lexer.generate_tokens();
+  Token* tok = tokens.front();
+  Position pos_start = tok->getStartingPosition();
+  Position pos_end = tok->getEndingPosition();
+
+  assert(pos_start.get_idx() == 0);
+  assert(pos_end.get_idx() == 1);
+
+  print_success_msg("lexer with correct positions", 1);
 }
 
 int main() {
+  print_title("Lexer tests...");
+
   test_simple_digit();
   test_simple_identifier();
   test_simple_keyword();
   test_simple_maths();
   test_increment();
+  test_positions();
 
-  cout << get_success_msg("All \"Lexer\" tests successfully passed") << endl;
+  print_success_msg("All \"Lexer\" tests successfully passed");
   return 0;
 }

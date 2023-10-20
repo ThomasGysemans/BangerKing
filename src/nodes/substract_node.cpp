@@ -5,6 +5,11 @@ SubstractNode::SubstractNode(
   const CustomNode* b
 ): CustomNode(a->getStartingPosition(), b->getEndingPosition()), node_a(a), node_b(b) {}
 
+SubstractNode::~SubstractNode() {
+  delete node_a;
+  delete node_b;
+}
+
 const CustomNode* SubstractNode::get_a() const { return node_a; }
 const CustomNode* SubstractNode::get_b() const { return node_b; }
 

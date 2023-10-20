@@ -7,7 +7,7 @@ using namespace std;
 
 /// @brief Keeps track of a runtime error, or if we should return/break/continue in a node.
 class RuntimeResult {
-  Value<>* value = nullptr;
+  Value* value = nullptr;
   CustomError* error = nullptr;
 
   /// @brief Sets `value` and `error` to `nullptr`.
@@ -15,17 +15,17 @@ class RuntimeResult {
 
   public:
     CustomError* get_error() const;
-    Value<>* get_value() const;
+    Value* get_value() const;
 
     /// @brief Registers an action during runtime and checks if an error has been thrown.
     /// @param res The previous action.
     /// @return The value passed to the original instance of RuntimeResult.
-    Value<>* read(RuntimeResult* res);
+    Value* read(RuntimeResult* res);
 
     /// @brief Registers a successful action during runtime.
     /// @param v The value that has been successfully generated during runtime.
     /// @return The reference to `this`
-    RuntimeResult* success(Value<> *v);
+    RuntimeResult* success(Value* v);
 
     /// @brief Registers an unsuccessful action during runtime.
     /// @param err The error that's just happened.

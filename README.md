@@ -29,7 +29,7 @@ Execute one of these scripts to...
 ./exec.sh
 ```
 
-### Compile & Execute
+#### Compile & Execute
 
 ```bash
 ./run.sh
@@ -98,7 +98,7 @@ SubstractNode(
 
 This way, the addition is done first, the division is done afterwards, and finally the code returns the result of the substraction.
 
-The last step will be to add the `Interpreter` to actually execute these expressions.
+The last step is the `Interpreter` that's responsible of actually executing these expressions. It will first take as input the ListNode instance that was produced by the Parser and recursively "visit" each node. When it visits an instance of "AddNode" for example, it will visit member "a" and make sure there was no error during this visit, and then it will visit member "b", and once again make sure there was no error, and finally it'll apply a certain behavior depending on the types of the addition members: between two integers, it will add them together, between an integer and a string, it will produce a new string, etc. Each visit produces a new value. Old values are deallocated as soon as possible.
 
 ## Disclaimer
 

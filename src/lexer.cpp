@@ -1,6 +1,8 @@
 #include "../include/lexer.hpp"
 #include "../include/miscellaneous.hpp"
 
+#include <iostream>
+
 using namespace std;
 
 const string NORMAL_DIGITS = "0123456789";
@@ -18,7 +20,7 @@ bool is_keyword(const string& keyword) {
 Lexer::Lexer(
   const string& t,
   const string filename
-): text(&t), filename(filename), pos(Position(-1, 0, -1, filename)) {
+): text(&t), filename(filename), pos(Position(0, 0, 0, filename)) {
   iter = t.begin();
 }
 

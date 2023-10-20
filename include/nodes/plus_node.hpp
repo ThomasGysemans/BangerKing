@@ -11,6 +11,8 @@ class PlusNode: public CustomNode {
   public:
     PlusNode(const CustomNode* n);
 
+    ~PlusNode();
+
     const CustomNode* get_node() const;
     string to_string() const override;
 };

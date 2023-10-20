@@ -5,6 +5,11 @@ PowerNode::PowerNode(
   const CustomNode* b
 ): CustomNode(a->getStartingPosition(), b->getEndingPosition()), node_a(a), node_b(b) {}
 
+PowerNode::~PowerNode() {
+  delete node_a;
+  delete node_b;
+}
+
 const CustomNode* PowerNode::get_a() const { return node_a; }
 const CustomNode* PowerNode::get_b() const { return node_b; }
 

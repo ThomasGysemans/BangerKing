@@ -5,6 +5,10 @@ PlusNode::PlusNode(
   const CustomNode* n
 ):  CustomNode((*n).getStartingPosition(), (*n).getEndingPosition()), node(n) {}
 
+PlusNode::~PlusNode() {
+  delete node;
+}
+
 const CustomNode* PlusNode::get_node() const { return node; }
 
 string PlusNode::to_string() const {

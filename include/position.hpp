@@ -31,6 +31,8 @@ class Position {
       const string& filename
     );
 
+    bool equals(const Position& other) const;
+
     void advance(const char& current_char);
     Position copy() const;
     string to_string() const;

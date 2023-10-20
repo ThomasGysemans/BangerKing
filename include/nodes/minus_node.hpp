@@ -11,6 +11,8 @@ class MinusNode: public CustomNode {
   public:
     MinusNode(const CustomNode* n);
 
+    ~MinusNode();
+
     const CustomNode* get_node() const;
     string to_string() const override;
 };

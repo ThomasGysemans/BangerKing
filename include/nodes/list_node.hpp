@@ -24,5 +24,6 @@ class ListNode: public CustomNode {
     ~ListNode();
 
     list<const CustomNode*> get_element_nodes() const;
+    int get_number_of_nodes() const;
     string to_string() const override;
 };

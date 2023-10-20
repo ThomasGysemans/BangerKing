@@ -4,11 +4,11 @@
 #include "value.hpp"
 using namespace std;
 
-class ListValue: public Value<> {
-  list<const Value<>*> elements;
+class ListValue: public Value {
+  list<const Value*> elements;
 
   public:
-    ListValue(const list<const Value<>*>& elts);
+    ListValue(const list<const Value*>& elts);
 
     ~ListValue();
 

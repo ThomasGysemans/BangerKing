@@ -27,8 +27,15 @@ void Position::advance(const char& current_char) {
 
   if (current_char == '\n') {
     ++ln;
-    col = -1;
+    col = 0;
   }
+}
+
+bool Position::equals(const Position& other) const {
+  return other.get_filename() == fn &&
+    other.get_idx() == idx &&
+    other.get_col() == col &&
+    other.get_ln() == ln;
 }
 
 string Position::to_string() const {

@@ -9,12 +9,12 @@ class CustomNode {
   // I don't think that making a copy of the positions
   // is necessary as it should not be changed at this point in the execution
 
-  const Position* pos_start;
-  const Position* pos_end;
+  const Position pos_start;
+  const Position pos_end;
 
   public:
-    const Position& getStartingPosition() const;
-    const Position& getEndingPosition() const;
+    const Position getStartingPosition() const;
+    const Position getEndingPosition() const;
 
     CustomNode(
       const Position& start,

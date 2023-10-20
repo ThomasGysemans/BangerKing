@@ -14,6 +14,6 @@ mkdir -p build_tests
 
 target="./tests/$1.test.cpp"
 echo "Testing $target"
-g++ $SOURCE_FILES "$target" -o build_tests/compiled_test -std=c++20 && ./build_tests/compiled_test
+g++ $SOURCE_FILES "$target" -o build_tests/compiled_test -std=c++20 -fsanitize=address && ./build_tests/compiled_test
 
 rm -fr build_tests

@@ -5,6 +5,11 @@ DivideNode::DivideNode(
   const CustomNode* b
 ): CustomNode(a->getStartingPosition(), b->getEndingPosition()), node_a(a), node_b(b) {}
 
+DivideNode::~DivideNode() {
+  delete node_a;
+  delete node_b;
+}
+
 const CustomNode* DivideNode::get_a() const { return node_a; }
 const CustomNode* DivideNode::get_b() const { return node_b; }
 

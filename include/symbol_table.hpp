@@ -8,7 +8,7 @@ using namespace std;
 
 class SymbolTable {
   SymbolTable* parent;
-  map<string, Value<>*> symbols;
+  map<string, Value*> symbols;
 
   public:
     SymbolTable(SymbolTable* p = nullptr);
@@ -33,18 +33,17 @@ class SymbolTable {
     /// @tparam T The type of the expected value, or `any` by default.
     /// @param name The name of the variable to look for.
     /// @return The value of the given variable, or `nullptr` if it doesn't exist.
-    template <typename T = any>
-    Value<T>* get(const string& name);
+    Value* get(const string& name);
 
     /// @brief Creates or modifies a variable from the current context, or the parent contexts.
     /// @param name The name of the variable to create/modify.
     /// @param new_value The value to give to this variable.
-    void modify(const string& name, Value<>* new_value);
+    void modify(const string& name, Value* new_value);
 
     /// @brief Sets the variable `name` to `value`. It doesn't check if the variable already exists, and only creates the variable in this context.
     /// @param name The name of the variable to create/modify in this current context.
     /// @param value The value to give to this variable.
-    void set(const string& name, Value<>* value);
+    void set(const string& name, Value* value);
 
     /// @brief Removes a variable from this context or a parent context and deallocates the memory.
     /// @param name The name of the variable to remove.
