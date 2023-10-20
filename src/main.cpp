@@ -11,7 +11,7 @@ int main() {
   string input = "";
   while (input != "\\q") {
     cout << ">> ";
-    cin >> input;
+    getline(cin, input);
     if (!input.starts_with("\\")) {
       run(input, "<stdin>");
     }

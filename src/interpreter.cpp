@@ -10,6 +10,8 @@ RuntimeResult* Interpreter::visit(const CustomNode* node, const Context& ctx) co
     return visit_NumberNode(cast_node<NumberNode>(node), ctx);
   } else if (instanceof<AddNode>(node)) {
     return visit_AddNode(cast_node<AddNode>(node), ctx);
+  } else if (instanceof<SubstractNode>(node)) {
+    return visit_SubstractNode(cast_node<SubstractNode>(node), ctx);
   }
   throw UndefinedBehaviorException("Unimplemented visit method for input node");
 }
@@ -80,6 +82,30 @@ RuntimeResult* Interpreter::visit_AddNode(const AddNode* node, const Context& ct
     const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
     const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
     IntegerValue* r = (*a) + (*b);
+    populate(r, node, ctx);
+    delete a;
+    delete b;
+    return res->success(to_value(r));
+  }
+
+  delete left;
+  delete right;
+  delete res;
+  illegal_operation(node, ctx);
+  return nullptr;
+}
+
+RuntimeResult* Interpreter::visit_SubstractNode(const SubstractNode* node, const Context& ctx) const {
+  RuntimeResult* res = new RuntimeResult();
+  const Value* left = res->read(visit(node->get_a(), ctx));
+  if (res->should_return()) return res;
+  const Value* right = res->read(visit(node->get_b(), ctx));
+  if (res->should_return()) return res;
+
+  if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
+    const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
+    const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
+    IntegerValue* r = (*a) - (*b);
     populate(r, node, ctx);
     delete a;
     delete b;

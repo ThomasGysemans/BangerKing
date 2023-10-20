@@ -14,4 +14,5 @@ class IntegerValue: public Value {
     string to_string() const override;
 
     IntegerValue* operator+(const IntegerValue& other) const;
+    IntegerValue* operator-(const IntegerValue& other) const;
 };

@@ -66,6 +66,19 @@ void test_simple_addition() {
   print_success_msg("parser with simple addition", 1);
 }
 
+void test_simple_addition_with_whitespace() {
+  auto nodes = get_element_nodes_from("5 + 6");
+  auto first_element = nodes.front();
+  auto add_node = cast_node<AddNode>(first_element);
+  auto a = cast_node<NumberNode>(add_node->get_a());
+  auto b = cast_node<NumberNode>(add_node->get_b());
+  assert(nodes.size() == 1);
+  assert(a->getValue() == 5);
+  assert(b->getValue() == 6);
+
+  print_success_msg("parser with simple addition and whitespace", 1);
+}
+
 void test_simple_substraction() {
   auto nodes = get_element_nodes_from("0-6");
   auto first_element = nodes.front();
@@ -77,6 +90,19 @@ void test_simple_substraction() {
   assert(b->getValue() == 6);
 
   print_success_msg("parser with simple substraction", 1);
+}
+
+void test_simple_substraction_with_whitespace() {
+  auto nodes = get_element_nodes_from("0 - 6");
+  auto first_element = nodes.front();
+  auto sub_node = cast_node<SubstractNode>(first_element);
+  auto a = cast_node<NumberNode>(sub_node->get_a());
+  auto b = cast_node<NumberNode>(sub_node->get_b());
+  assert(nodes.size() == 1);
+  assert(a->getValue() == 0);
+  assert(b->getValue() == 6);
+
+  print_success_msg("parser with simple substraction and whitespace", 1);
 }
 
 void test_simple_multiplication() {
@@ -220,7 +246,9 @@ int main() {
     test_simple_negative_number();
     test_simple_positive_number();
     test_simple_addition();
+    test_simple_addition_with_whitespace();
     test_simple_substraction();
+    test_simple_substraction_with_whitespace();
     test_simple_multiplication();
     test_simple_divison();
     test_simple_modulo();

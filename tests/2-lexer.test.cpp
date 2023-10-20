@@ -8,6 +8,21 @@
 #include "../include/debug/compare_tokens.hpp"
 using namespace std;
 
+list<Token*> get_tokens_from(const string& code) {
+  Lexer lexer(code);
+  return lexer.generate_tokens();
+}
+
+std::vector<Token*> list_to_vector(list<Token*> l) {
+  // std::vector<Token*> vec;
+  // vec.resize(l.size());
+  // int i = 0;
+  // for (auto iter = l.begin(); iter != l.end(); ++iter, ++i) {
+  //   vec[] = iter;
+  // }
+  return std::vector<Token*> { std::make_move_iterator(l.begin()), std::make_move_iterator(l.end()) };
+}
+
 void test_simple_digit() {
   const string code = "5";
   Lexer lexer(code);
@@ -97,6 +112,46 @@ void test_positions() {
   print_success_msg("lexer with correct positions", 1);
 }
 
+void test_addition_with_whitespace() {
+  auto tokens = list_to_vector(get_tokens_from("5 + 5"));
+  assert(tokens.size() == 3);
+  assert(tokens[0]->getType() == TokenType::NUMBER);
+  assert(tokens[1]->getType() == TokenType::PLUS);
+  assert(tokens[2]->getType() == TokenType::NUMBER);
+
+  print_success_msg("addition with whitespace", 1);
+}
+
+void test_addition_without_whitespace() {
+  auto tokens = list_to_vector(get_tokens_from("5+5"));
+  assert(tokens.size() == 3);
+  assert(tokens[0]->getType() == TokenType::NUMBER);
+  assert(tokens[1]->getType() == TokenType::PLUS);
+  assert(tokens[2]->getType() == TokenType::NUMBER);
+
+  print_success_msg("addition without whitespace", 1);
+}
+
+void test_substraction_with_whitespace() {
+  auto tokens = list_to_vector(get_tokens_from("5 - 5"));
+  assert(tokens.size() == 3);
+  assert(tokens[0]->getType() == TokenType::NUMBER);
+  assert(tokens[1]->getType() == TokenType::MINUS);
+  assert(tokens[2]->getType() == TokenType::NUMBER);
+
+  print_success_msg("substraction with whitespace", 1);
+}
+
+void test_substraction_without_whitespace() {
+  auto tokens = list_to_vector(get_tokens_from("5-5"));
+  assert(tokens.size() == 3);
+  assert(tokens[0]->getType() == TokenType::NUMBER);
+  assert(tokens[1]->getType() == TokenType::MINUS);
+  assert(tokens[2]->getType() == TokenType::NUMBER);
+
+  print_success_msg("substraction without whitespace", 1);
+}
+
 int main() {
   print_title("Lexer tests...");
 
@@ -106,6 +161,10 @@ int main() {
   test_simple_maths();
   test_increment();
   test_positions();
+  test_addition_with_whitespace();
+  test_addition_without_whitespace();
+  test_substraction_with_whitespace();
+  test_substraction_without_whitespace();
 
   print_success_msg("All \"Lexer\" tests successfully passed");
   return 0;

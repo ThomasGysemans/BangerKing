@@ -14,6 +14,7 @@ class Interpreter {
     RuntimeResult* visit_NumberNode(const NumberNode* node, const Context& ctx) const;
     RuntimeResult* visit_ListNode(const ListNode* node, const Context& ctx) const;
     RuntimeResult* visit_AddNode(const AddNode* node, const Context& ctx) const;
+    RuntimeResult* visit_SubstractNode(const SubstractNode* node, const Context& ctx) const;
 
     // helper methods:
 

@@ -62,6 +62,23 @@ void test_addition_of_two_max_integers() {
   print_success_msg("works with addition between two max integers", 1);
 }
 
+void test_substraction_of_two_small_positive_integers() {
+  auto values = get_values("5-3");
+  auto first_value = dynamic_cast<const IntegerValue*>(values.front());
+  assert(first_value->get_actual_value() == 2);
+
+  print_success_msg("works with substraction between two small integers", 1);
+}
+
+void test_substraction_of_two_small_positive_integers_with_whitespace() {
+  auto values = get_values("5 - 3");
+  auto first_value = dynamic_cast<const IntegerValue*>(values.front());
+  assert(first_value->get_actual_value() == 2);
+  assert(first_value->to_string() == "2");
+
+  print_success_msg("works with substraction between two small integers with whitespace", 1);
+}
+
 int main() {
   print_title("Interpreter tests...");
 
@@ -69,6 +86,8 @@ int main() {
     test_integer();
     test_addition_of_two_small_positive_integers();
     test_addition_of_two_max_integers();
+    test_substraction_of_two_small_positive_integers();
+    test_substraction_of_two_small_positive_integers_with_whitespace();
   } catch (string cast_error) {
     cout << "ABORT. The tests crashed due to this error :" << endl;
     cout << cast_error << endl;
