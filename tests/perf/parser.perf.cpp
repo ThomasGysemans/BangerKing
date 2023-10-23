@@ -31,8 +31,7 @@ class ParserPerformance: public Performance {
 
 int main() {
   ParserPerformance perf(100);
-  double average_time = perf.run();
-  cout << "Parser performance test did: " << std::to_string(average_time) << " ms." << endl;
-  
+  perf.run_and_display("Parser performance test did: ");
+
   return 0;
 }

@@ -27,8 +27,7 @@ class LexerPerformance: public Performance {
 
 int main() {
   LexerPerformance perf(100);
-  double average_time = perf.run();
-  cout << "Lexer performance test did: " << std::to_string(average_time) << " ms." << endl;
-  
+  perf.run_and_display("Lexer performance test did: ");
+
   return 0;
 }

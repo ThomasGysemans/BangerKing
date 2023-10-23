@@ -1,5 +1,8 @@
 #pragma once
 
+#include <iostream>
+#include <string>
+
 using namespace std;
 using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;
@@ -11,11 +14,16 @@ using std::chrono::milliseconds;
 class Performance {
   unsigned int iterations;
 
+  inline static const unsigned int threshold = 1;
+  inline static const string ANSI_RED = "\e[0;31m";
+  inline static const string ANSI_GREEN = "\e[0;32m";
+  inline static const string ANSI_RESET = "\e[0m";
+
   public:
     Performance(unsigned int i): iterations(i) {}
-  
+
   protected:
-    virtual void test() const {}
+    virtual void test() const = 0;
 
   private:
     const double measure_time() const {
@@ -37,5 +45,24 @@ class Performance {
         sum += t;
       }
       return sum / iterations;
+    }
+
+    void run_and_display(const string& title) const {
+      double average = run();
+      cout << title;
+      if (average < threshold) {
+        cout << get_success(std::to_string(average)) << " ms.";
+      } else {
+        cout << get_failure(std::to_string(average)) << " ms.";
+      }
+      cout << endl;
+    }
+
+    static string get_success(const string& message) {
+      return ANSI_GREEN + message + ANSI_RESET;
+    }
+
+    static string get_failure(const string& message) {
+      return ANSI_RED + message + ANSI_RESET;
     }
 };

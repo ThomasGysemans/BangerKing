@@ -112,6 +112,38 @@ void test_modulo_with_integers() {
   print_success_msg("works with modulo of integers", 1);
 }
 
+void test_mathematical_operation_without_parenthesis() {
+  auto values = get_values("5 * 2 -2 / 2");
+  auto first_value = dynamic_cast<const IntegerValue*>(values.front());
+  assert(first_value->get_actual_value() == 9);
+
+  print_success_msg("works with a mathematical operation without parenthesis", 1);
+}
+
+void test_mathematical_operation_with_parenthesis() {
+  auto values = get_values("5 * (2 - 2) / 2");
+  auto first_value = dynamic_cast<const IntegerValue*>(values.front());
+  assert(first_value->get_actual_value() == 0);
+
+  print_success_msg("works with a mathematical operation with parenthesis", 1);
+}
+
+void test_negative_integer() {
+  auto values = get_values("-5");
+  auto first_value = dynamic_cast<const IntegerValue*>(values.front());
+  assert(first_value->get_actual_value() == -5);
+
+  print_success_msg("works with a negative value", 1);
+}
+
+void test_positive_integer() {
+  auto values = get_values("+5");
+  auto first_value = dynamic_cast<const IntegerValue*>(values.front());
+  assert(first_value->get_actual_value() == 5);
+
+  print_success_msg("works with a positive value", 1);
+}
+
 int main() {
   print_title("Interpreter tests...");
 
@@ -125,6 +157,10 @@ int main() {
     test_power_with_integers();
     test_divide_with_integers();
     test_modulo_with_integers();
+    test_mathematical_operation_without_parenthesis();
+    test_mathematical_operation_with_parenthesis();
+    test_negative_integer();
+    test_positive_integer();
   } catch (string cast_error) {
     cout << "ABORT. The tests crashed due to this error :" << endl;
     cout << cast_error << endl;

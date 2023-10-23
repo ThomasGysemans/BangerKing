@@ -21,6 +21,10 @@ RuntimeResult* Interpreter::visit(const CustomNode* node, const Context& ctx) co
     return visit_DivideNode(cast_node<DivideNode>(node), ctx);
   } else if (instanceof<ModuloNode>(node)) {
     return visit_ModuloNode(cast_node<ModuloNode>(node), ctx);
+  } else if (instanceof<MinusNode>(node)) {
+    return visit_MinusNode(cast_node<MinusNode>(node), ctx);
+  } else if (instanceof<PlusNode>(node)) {
+    return visit_PlusNode(cast_node<PlusNode>(node), ctx);
   }
   throw UndefinedBehaviorException("Unimplemented visit method for input node");
 }
@@ -219,6 +223,44 @@ RuntimeResult* Interpreter::visit_ModuloNode(const ModuloNode* node, const Conte
 
   delete left;
   delete right;
+  delete res;
+  illegal_operation(node, ctx);
+  return nullptr;
+}
+
+RuntimeResult* Interpreter::visit_MinusNode(const MinusNode* node, const Context& ctx) const {
+  RuntimeResult* res = new RuntimeResult();
+  const Value* value = res->read(visit(node->get_node(), ctx));
+  if (res->should_return()) return res;
+
+  if (instanceof<IntegerValue>(value)) {
+    const IntegerValue* integer = dynamic_cast<const IntegerValue*>(value);
+    IntegerValue* negative_integer = new IntegerValue(-1 * integer->get_actual_value());
+    populate(negative_integer, node, ctx);
+    delete value;
+    return res->success(to_value(negative_integer));
+  }
+
+  delete value;
+  delete res;
+  illegal_operation(node, ctx);
+  return nullptr;
+}
+
+RuntimeResult* Interpreter::visit_PlusNode(const PlusNode* node, const Context& ctx) const {
+  RuntimeResult* res = new RuntimeResult();
+  const Value* value = res->read(visit(node->get_node(), ctx));
+  if (res->should_return()) return res;
+
+  if (instanceof<IntegerValue>(value)) {
+    const IntegerValue* integer = dynamic_cast<const IntegerValue*>(value);
+    IntegerValue* positive_integer = new IntegerValue(abs(integer->get_actual_value()));
+    populate(positive_integer, node, ctx);
+    delete value;
+    return res->success(to_value(positive_integer));
+  }
+
+  delete value;
   delete res;
   illegal_operation(node, ctx);
   return nullptr;

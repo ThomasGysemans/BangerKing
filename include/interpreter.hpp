@@ -20,6 +20,8 @@ class Interpreter {
     RuntimeResult* visit_PowerNode(const PowerNode* node, const Context& ctx) const;
     RuntimeResult* visit_DivideNode(const DivideNode* node, const Context& ctx) const;
     RuntimeResult* visit_ModuloNode(const ModuloNode* node, const Context& ctx) const;
+    RuntimeResult* visit_MinusNode(const MinusNode* node, const Context& ctx) const;
+    RuntimeResult* visit_PlusNode(const PlusNode* node, const Context& ctx) const;
 
     // helper methods:
     
