@@ -48,8 +48,10 @@ function restore_cursor_position {
 # Since each test has its own "main" function,
 # we remove from the project the actual "main" function that starts the CLI
 SOURCE_FILES=$(find src -name '*.cpp')
-MAIN_FILE="src/main.cpp"
+MAIN_FILE="src/main.cpp" # the program that runs a file
+CLI_FILE="src/cli.cpp" # the program that starts the CLI
 SOURCE_FILES=${SOURCE_FILES//$MAIN_FILE/}
+SOURCE_FILES=${SOURCE_FILES//$CLI_FILE/}
 
 # The project must be compiled first,
 # but without the "main" function.

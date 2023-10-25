@@ -12,9 +12,7 @@ const vector<string> KEYWORDS = {
   "feature",
   "return",
   "creating",
-  "int",
-  "double",
-  "void" // might be a type, not sure yet
+  "void"
 };
 
 Token::Token(
@@ -32,6 +30,10 @@ Token::Token(
 
 bool Token::matches(const TokenType& type, const string& value) const {
   return this->type == type && this->value == value;
+}
+
+bool Token::is_keyword(const string& expected_value) const {
+  return matches(TokenType::KEYWORD, expected_value);
 }
 
 TokenType Token::getType() const { return type; }

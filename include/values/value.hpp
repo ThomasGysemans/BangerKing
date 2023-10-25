@@ -72,5 +72,5 @@ class Value {
 
     /// @brief Creates a deep copy of this instance.
     /// @return A deep copy of this instance.
-    Value copy() const;
+    Value* copy() const;
 };

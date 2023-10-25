@@ -18,6 +18,6 @@ string Value::get_type() const { return get_type_name(type); }
 const Position* Value::get_pos_start() const { return &pos_start; }
 const Position* Value::get_pos_end() const { return &pos_end; }
 
-Value Value::copy() const {
-  return Value(*this);
+Value* Value::copy() const {
+  return new Value(*this);
 }

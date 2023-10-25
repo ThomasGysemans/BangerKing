@@ -1,6 +1,7 @@
 #include <cmath>
 #include "../include/miscellaneous.hpp"
 #include "../include/interpreter.hpp"
+#include "../include/symbol_table.hpp"
 #include "../include/exceptions/undefined_behavior.hpp"
 #include "../include/exceptions/runtime_error.hpp"
 
@@ -25,6 +26,8 @@ RuntimeResult* Interpreter::visit(const CustomNode* node, const Context& ctx) co
     return visit_MinusNode(cast_node<MinusNode>(node), ctx);
   } else if (instanceof<PlusNode>(node)) {
     return visit_PlusNode(cast_node<PlusNode>(node), ctx);
+  } else if (instanceof<VarAssignmentNode>(node)) {
+    return visit_VarAssignmentNode(cast_node<VarAssignmentNode>(node), ctx);
   }
   throw UndefinedBehaviorException("Unimplemented visit method for input node");
 }
@@ -264,4 +267,39 @@ RuntimeResult* Interpreter::visit_PlusNode(const PlusNode* node, const Context& 
   delete res;
   illegal_operation(node, ctx);
   return nullptr;
+}
+
+RuntimeResult* Interpreter::visit_VarAssignmentNode(const VarAssignmentNode* node, const Context& ctx) const {
+  RuntimeResult* res = new RuntimeResult();
+  Value* initial_value = node->has_value() ? res->read(visit(node->get_value_node(), ctx)) : nullptr;
+  if (res->should_return()) return res;
+
+  if (ctx.get_symbol_table()->exists(node->get_var_name())) {
+    throw RuntimeError(
+      node->getStartingPosition(), node->getEndingPosition(),
+      "The variable named '" + node->get_var_name() + "' already defined in the current context.",
+      &ctx
+    );
+  }
+
+  // A default value must be assigned
+  // if the developer didn't set an initial value.
+  // This default value will depend on the given type.
+  if (!node->has_value()) {
+    // TODO: if the type is a custom object, then call, if possible, the empty constructor
+    switch (node->get_type()) {
+      case Type::INT: initial_value = new IntegerValue(); break;
+      default:
+        throw RuntimeError(
+          node->getStartingPosition(), node->getEndingPosition(),
+          "The variable named '" + node->get_var_name() + "' cannot receive a default value for this type.",
+          &ctx
+        );
+    }
+  }
+
+  populate(initial_value, node, ctx);
+  ctx.get_symbol_table()->set(node->get_var_name(), initial_value->copy()); // copy's important because the garbage collector deallocates the returning value
+
+  return res->success(initial_value);
 }

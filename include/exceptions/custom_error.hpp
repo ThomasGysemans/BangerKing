@@ -19,5 +19,7 @@ class CustomError {
       const string& d
     );
 
+    string get_error_name() const;
+    string get_details() const;
     string to_string() const;
 };

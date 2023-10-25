@@ -6,12 +6,17 @@
 #include "../include/token.hpp"
 #include "../include/parser.hpp"
 #include "../include/interpreter.hpp"
+#include "../include/symbol_table.hpp"
 using namespace std;
+
+Context* common_ctx = new Context("<tests>");
 
 /// @brief Gets the values that the interpreter returns from the given code. Use this for the tests.
 /// @param code The code to interpret.
 /// @return The values that the interpreter calculated.
 const list<const Value*> get_values(const string& code) {
+  common_ctx->get_symbol_table()->clear();
+
   try {
     Lexer lexer(code);
     list<Token*> tokens = lexer.generate_tokens();
@@ -20,8 +25,7 @@ const list<const Value*> get_values(const string& code) {
     deallocate_list_of_pointers<Token>(tokens);
 
     const Interpreter* interpreter = new Interpreter();
-    const Context* ctx = new Context("<program>");
-    const RuntimeResult* result = interpreter->visit(tree, *ctx);
+    const RuntimeResult* result = interpreter->visit(tree, *common_ctx);
     auto v = result->get_value();
     if (v == nullptr) {
       throw "Segmentation fault happened during interpretation of this code : " + code + " because the result is a `nullptr`.";
@@ -32,7 +36,7 @@ const list<const Value*> get_values(const string& code) {
     }
     return *(values->get_elements());
   } catch (Exception e) {
-    cout << "The program crashed due to this error: " << e.to_string() << endl;
+    cerr << "The program crashed due to this error: " << e.to_string() << endl;
     exit(1);
   }
 }
@@ -144,6 +148,24 @@ void test_positive_integer() {
   print_success_msg("works with a positive value", 1);
 }
 
+void test_variable_assignment_of_an_integer() {
+  auto values = get_values("store a as int = 5");
+  auto first_value = dynamic_cast<const IntegerValue*>(values.front());
+  assert(first_value->get_actual_value() == 5);
+  assert(common_ctx->get_symbol_table()->exists("a"));
+
+  print_success_msg("works with the variable assignment of an integer", 1);
+}
+
+void test_variable_assignment_of_an_integer_without_initial_value() {
+  auto values = get_values("store a as int");
+  auto first_value = dynamic_cast<const IntegerValue*>(values.front());
+  assert(first_value->get_actual_value() == 0);
+  assert(common_ctx->get_symbol_table()->exists("a"));
+
+  print_success_msg("works with the variable assignment of an integer without an initial value", 1);
+}
+
 int main() {
   print_title("Interpreter tests...");
 
@@ -161,9 +183,11 @@ int main() {
     test_mathematical_operation_with_parenthesis();
     test_negative_integer();
     test_positive_integer();
+    test_variable_assignment_of_an_integer();
+    test_variable_assignment_of_an_integer_without_initial_value();
   } catch (string cast_error) {
-    cout << "ABORT. The tests crashed due to this error :" << endl;
-    cout << cast_error << endl;
+    cerr << "ABORT. The tests crashed due to this error :" << endl;
+    cerr << cast_error << endl;
   }
 
   print_success_msg("All \"Interpreter\" tests successfully passed");

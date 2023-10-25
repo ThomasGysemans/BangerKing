@@ -1,1 +1,1 @@
-./build/bangerking
+./build/bangerking $@

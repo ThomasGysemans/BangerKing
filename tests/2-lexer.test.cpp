@@ -14,12 +14,6 @@ list<Token*> get_tokens_from(const string& code) {
 }
 
 std::vector<Token*> list_to_vector(list<Token*> l) {
-  // std::vector<Token*> vec;
-  // vec.resize(l.size());
-  // int i = 0;
-  // for (auto iter = l.begin(); iter != l.end(); ++iter, ++i) {
-  //   vec[] = iter;
-  // }
   return std::vector<Token*> { std::make_move_iterator(l.begin()), std::make_move_iterator(l.end()) };
 }
 
@@ -152,6 +146,19 @@ void test_substraction_without_whitespace() {
   print_success_msg("substraction without whitespace", 1);
 }
 
+void test_variable_assignment() {
+  auto tokens = list_to_vector(get_tokens_from("store a as int = 5"));
+  assert(tokens.size() == 6);
+  assert(tokens[0]->is_keyword("store"));
+  assert(tokens[1]->matches(TokenType::IDENTIFIER, "a"));
+  assert(tokens[2]->is_keyword("as"));
+  assert(tokens[3]->matches(TokenType::IDENTIFIER, "int"));
+  assert(tokens[4]->ofType(TokenType::EQUALS));
+  assert(tokens[5]->ofType(TokenType::NUMBER));
+
+  print_success_msg("substraction without whitespace", 1);
+}
+
 int main() {
   print_title("Lexer tests...");
 
@@ -165,6 +172,7 @@ int main() {
   test_addition_without_whitespace();
   test_substraction_with_whitespace();
   test_substraction_without_whitespace();
+  test_variable_assignment();
 
   print_success_msg("All \"Lexer\" tests successfully passed");
   return 0;

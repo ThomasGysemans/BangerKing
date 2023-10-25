@@ -14,3 +14,6 @@ string CustomError::to_string() const {
   result += string_with_arrows(*(READ_FILES[pos_start.get_filename()]), pos_start, pos_end);
   return result;
 }
+
+string CustomError::get_error_name() const { return error_name; }
+string CustomError::get_details() const { return details; }

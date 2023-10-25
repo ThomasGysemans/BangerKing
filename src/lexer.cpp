@@ -69,6 +69,10 @@ list<Token*> Lexer::generate_tokens() {
       const Position pos_start = pos.copy();
       advance();
       tokens.push_back(new Token(TokenType::RPAREN, ")", pos));
+    } else if (*iter == '=') {
+      const Position pos_start = pos.copy();
+      advance();
+      tokens.push_back(new Token(TokenType::EQUALS, "=", pos_start));
     } else {
       advance();
     }

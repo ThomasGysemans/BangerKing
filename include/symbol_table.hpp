@@ -13,6 +13,7 @@ class SymbolTable {
   public:
     SymbolTable(SymbolTable* p = nullptr);
 
+    /// @brief Deallocates all the values that this table holds, including all the parent symbol tables.
     virtual ~SymbolTable();
     
     /// @brief Checks if the symbol table contains a variable named "var_name"
@@ -28,6 +29,11 @@ class SymbolTable {
     /// @brief Checks if this symbol table has a parent context.
     /// @return `true` if there is a parent context.
     bool has_parent() const;
+
+    /// @brief Checks if this symbol table, or any parent symbol table, contains a particular value.
+    /// @param value The value we are looking for in this symbol table.
+    /// @return `true` if the given value is accessible in this symbol table.
+    bool has_value_globally(const Value* value) const;
 
     /// @brief Returns the value of a variable contained in this symbol table, or in the table of a parent context.
     /// @tparam T The type of the expected value, or `any` by default.

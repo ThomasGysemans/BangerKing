@@ -4,7 +4,10 @@ SymbolTable::SymbolTable(SymbolTable* p): parent(p) {}
 
 SymbolTable::~SymbolTable() {
   for (const auto& [key, value] : symbols) {
-    delete value;
+    // "value != nullptr" is a precaution in case we set a value to nullptr due to a premature deallocation.
+    // of course, "delete x" doesn't set "x" to "nullptr", so we'd have to make sure that when deallocating values prematurely
+    // we set it to "nullptr" as well.
+    if (value != nullptr) delete value;
   }
   symbols.clear();
   delete parent;
@@ -25,6 +28,16 @@ bool SymbolTable::exists_globally(const string& var_name) const {
 
 bool SymbolTable::has_parent() const {
   return parent != nullptr;
+}
+
+bool SymbolTable::has_value_globally(const Value* value) const {
+  for (const auto& [_, v] : symbols) {
+    if (value == v) {
+      return true;
+    }
+  }
+  if (!has_parent()) return false;
+  return parent->has_value_globally(value);
 }
 
 Value* SymbolTable::get(const string& name) {

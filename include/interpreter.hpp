@@ -22,6 +22,7 @@ class Interpreter {
     RuntimeResult* visit_ModuloNode(const ModuloNode* node, const Context& ctx) const;
     RuntimeResult* visit_MinusNode(const MinusNode* node, const Context& ctx) const;
     RuntimeResult* visit_PlusNode(const PlusNode* node, const Context& ctx) const;
+    RuntimeResult* visit_VarAssignmentNode(const VarAssignmentNode* node, const Context& ctx) const;
 
     // helper methods:
     

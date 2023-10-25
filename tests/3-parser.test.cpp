@@ -6,11 +6,16 @@
 #include "../include/parser.hpp"
 #include "../include/nodes/compositer.hpp"
 #include "../include/miscellaneous.hpp"
+#include "../include/debug/print_tokens.hpp"
 using namespace std;
 
 list<const CustomNode*> get_element_nodes_from(const string& code, bool debug_print = false) {
   Lexer lexer(code);
   list<Token*> tokens = lexer.generate_tokens();
+  if (debug_print) {
+    cout << "Resulft of lexer :" << endl;
+    cout << display_tokens_list(tokens) << endl;
+  }
   Parser parser(tokens);
   const ListNode* parsing_result = parser.parse();
   if (debug_print) {
@@ -238,6 +243,32 @@ void test_positions() {
   print_success_msg("node's positions are valid", 1);
 }
 
+void test_variable_assignment_with_initial_value() {
+  auto nodes = get_element_nodes_from("store a as int = 5");
+  assert(nodes.size() == 1);
+
+  auto node = cast_node<VarAssignmentNode>(nodes.front());
+  assert(node->get_type() == Type::INT);
+  assert(node->get_type_name() == "int");
+  assert(node->get_var_name() == "a");
+  assert(node->has_value());
+
+  print_success_msg("variable assignment of an integer with initial value", 1);
+}
+
+void test_variable_assignment_without_initial_value() {
+  auto nodes = get_element_nodes_from("store a as int");
+  assert(nodes.size() == 1);
+
+  auto node = cast_node<VarAssignmentNode>(nodes.front());
+  assert(node->get_type() == Type::INT);
+  assert(node->get_type_name() == "int");
+  assert(node->get_var_name() == "a");
+  assert(!node->has_value());
+
+  print_success_msg("variable assignment of an integer without initial value", 1);
+}
+
 int main() {
   print_title("Parser tests...");
 
@@ -257,9 +288,15 @@ int main() {
     test_complex_maths_expression_without_parenthesis();
     test_mutiple_lines();
     test_positions();
+    test_variable_assignment_with_initial_value();
+    test_variable_assignment_without_initial_value();
+  } catch (CustomError custom_error) {
+    cerr << "Oops, the program unexpectedly thrown an error :" << endl;
+    cerr << custom_error.get_details() << endl;
+    return 1;
   } catch (string cast_exception) {
-    cout << "ABORT. Terminating tests due to this error:" << endl;
-    cout << cast_exception << endl;
+    cerr << "ABORT. Terminating tests due to this error:" << endl;
+    cerr << cast_exception << endl;
     return 1;
   }
 

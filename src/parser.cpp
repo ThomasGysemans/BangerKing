@@ -77,7 +77,60 @@ const ListNode* Parser::statements() {
 
 const CustomNode* Parser::statement() { return expr(); }
 
-const CustomNode* Parser::expr() { return cond_expr(); }
+const CustomNode* Parser::expr() {
+  if (getTok()->is_keyword("store")) {
+    const Position pos_start = getTok()->getStartingPosition();
+    advance();
+    if (!has_more_tokens()) {
+      throw InvalidSyntaxError(
+        pos_start, pos_start,
+        "Expected identifier for variable assignment"
+      );
+    }
+    string var_name = getTok()->getStringValue();
+    advance();
+    if (!has_more_tokens()) {
+      throw InvalidSyntaxError(
+        pos_start, pos_start,
+        "Expected type of variable"
+      );
+    }
+    if (!getTok()->is_keyword("as")) {
+      throw InvalidSyntaxError(
+        pos_start, getTok()->getEndingPosition(),
+        "Expected 'as' keyword to declare the type in variable assignment"
+      );
+    }
+    advance();
+    Token type_name = getTok()->copy();
+    advance();
+    if (has_more_tokens() && getTok()->ofType(TokenType::EQUALS)) {
+      advance();
+      if (!has_more_tokens()) {
+        throw InvalidSyntaxError(
+          pos_start, type_name.getEndingPosition(),
+          "Expected an expression after '=' for variable assignment"
+        );
+      }
+      const CustomNode* value_node = cond_expr();
+      return new VarAssignmentNode(
+        var_name,
+        value_node,
+        type_name,
+        pos_start
+      );
+    } else {
+      return new VarAssignmentNode(
+        var_name,
+        nullptr,
+        type_name,
+        pos_start
+      );
+    }
+  }
+
+  return cond_expr();
+}
 
 const CustomNode* Parser::cond_expr() { return comp_expr(); }
 

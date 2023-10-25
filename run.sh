@@ -1,1 +1,1 @@
-./compile.sh $@ && ./build/bangerking
+./compile.sh $@ && ./build/bangerking $@

@@ -58,14 +58,17 @@ class Token {
       const Position* end = nullptr,
       const bool concatenation = false
     );
-    
-    /**
-     * Checks if a the type and the value of a token correspond.
-     * @param type The type of token (`TokenType.KEYWORD` for example).
-     * @param value The value that has to correspond.
-     * @returns `true` if the type & value of a token correspond with `type` and `value`.
-     */
+
+    /// @brief Checks if a the type and the value of a token correspond.
+    /// @param type The type of token (`TokenType.KEYWORD` for example).
+    /// @param value The value that has to correspond.
+    /// @return `true` if the type & value of a token correspond with `type` and `value`.
     bool matches(const TokenType& type, const string& value) const;
+
+    /// @brief Tests if this token is a keyword and if it corresponds to the expected value.
+    /// @param expected_value The value that the token should have, if it's indeed a keyword.
+    /// @return `true` if this token is a keyword and matches the expected value.
+    bool is_keyword(const string& expected_value) const;
 
     /// @brief Gets the type of the token.
     /// @return An instance of the `TokenType` enum
