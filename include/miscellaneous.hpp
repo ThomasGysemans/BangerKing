@@ -15,6 +15,7 @@ template <typename Base, typename T>
 bool instanceof(const T *ptr) {
   return dynamic_cast<const Base*>(ptr) != nullptr;
 }
+
 /// @brief Replaces all occurrences of a substring from a string. Note that `str` gets modified.
 /// @param str The string
 /// @param sub_str The substring to remove
@@ -36,14 +37,6 @@ void remove_character(string& str, const char& character);
 /// @param substr The sub string to look for.
 /// @return `true` if `substr` is contained within `str`
 bool string_contains(const string& str, const char substr);
-
-/// @brief Checks if two lists contain the same values. It uses the "==" operator on each value.
-/// @tparam T The type of both lists, obviously the lists should be of the same type.
-/// @param l1 The first list.
-/// @param l2 The second list.
-/// @return `true` if both lists contain the same values.
-// template<typename T>
-// bool list_equals(const list<T>& l1, const list<T>& l2);
 
 /// @brief Casts an instance of CustomNode into a derived class of CustomNode. Note that it will throw an error if the cast isn't impossible.
 /// @tparam T The expected type of the derived class.

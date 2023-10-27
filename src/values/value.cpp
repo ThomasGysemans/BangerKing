@@ -6,7 +6,7 @@ Value::Value(
   Type t
 ): type(t), pos_start(Position::getDefaultPos()), pos_end(Position::getDefaultPos()) {}
 
-Value::~Value() {}
+Value::~Value() { } // TODO: not sure that implementing it is necessary
 
 void Value::set_pos(const Position& start, const Position& end) {
   pos_start = start;

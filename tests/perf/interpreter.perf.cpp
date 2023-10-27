@@ -29,11 +29,10 @@ class InterpreterPerformance: public Performance {
 
       const Interpreter* interpreter = new Interpreter();
       const Context* ctx = new Context("<program>");
-      const RuntimeResult* result = interpreter->visit(tree, *ctx);
+      const RuntimeResult* result = interpreter->visit(tree, ctx);
       ListValue* main_value = dynamic_cast<ListValue*>(result->get_value());
       const list<const Value*>* values = main_value->get_elements();
 
-      delete main_value;
       delete interpreter;
       delete ctx;
       delete result;

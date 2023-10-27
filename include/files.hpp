@@ -4,4 +4,4 @@
 #include <string>
 using namespace std;
 
-static map<string, const string*> READ_FILES;
+extern map<string, const string*> READ_FILES;

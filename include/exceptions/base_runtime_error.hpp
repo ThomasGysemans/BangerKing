@@ -15,7 +15,7 @@ class BaseRuntime: public CustomError {
       const Position& end,
       const string& name,
       const string& d,
-      const Context* ctx = nullptr
+      const Context* ctx
     );
     
     string to_string() const;

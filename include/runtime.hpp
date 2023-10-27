@@ -17,6 +17,8 @@ class RuntimeResult {
     CustomError* get_error() const;
     Value* get_value() const;
 
+    ~RuntimeResult();
+
     /// @brief Registers an action during runtime and checks if an error has been thrown.
     /// @param res The previous action.
     /// @return The value passed to the original instance of RuntimeResult.

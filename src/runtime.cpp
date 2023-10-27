@@ -1,5 +1,10 @@
 #include "../include/runtime.hpp"
 
+RuntimeResult::~RuntimeResult() {
+  delete value;
+  delete error;
+}
+
 void RuntimeResult::reset() {
   value = nullptr;
   error = nullptr;

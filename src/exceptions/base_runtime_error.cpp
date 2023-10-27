@@ -1,6 +1,6 @@
+#include "../../include/files.hpp"
 #include "../../include/exceptions/base_runtime_error.hpp"
 #include "../../include/utils/string_with_arrows.hpp"
-#include "../../include/files.hpp"
 
 BaseRuntime::BaseRuntime(
   const Position& start,
@@ -12,8 +12,9 @@ BaseRuntime::BaseRuntime(
 
 string BaseRuntime::to_string() const {
   string result = generate_traceback();
-  result += error_name + ": " + details + "\n\n";
-  result += string_with_arrows(*(READ_FILES[pos_start.get_filename()]), pos_start, pos_end);
+  result += error_name + ": " + details;
+  if (!READ_FILES.contains(pos_start.get_filename())) return result;
+  result += "\n\n" + string_with_arrows(*(READ_FILES[pos_start.get_filename()]), pos_start, pos_end);
   return result;
 }
 

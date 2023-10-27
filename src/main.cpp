@@ -30,7 +30,6 @@ int main(int argc, char *argv[]) {
     file.close();
     return 1;
   } else {
-    cout << "file_size : " << file_size << endl;
     if (file_size > pow(2, 20)) {
       cerr << "The input file is too big (1MB maximum)" << endl;
       file.close();
@@ -48,6 +47,8 @@ int main(int argc, char *argv[]) {
   run(content, filename, global_ctx);
 
   file.close();
+
+  delete global_ctx;
 
   return 0;
 }

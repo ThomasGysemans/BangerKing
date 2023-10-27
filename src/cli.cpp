@@ -20,5 +20,7 @@ int main() {
     }
   }
 
+  delete ctx;
+
   return 0;
 }

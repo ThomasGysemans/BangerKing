@@ -7,6 +7,7 @@
 #include "../include/parser.hpp"
 #include "../include/interpreter.hpp"
 #include "../include/symbol_table.hpp"
+#include "../include/exceptions/runtime_error.hpp"
 using namespace std;
 
 Context* common_ctx = new Context("<tests>");
@@ -25,7 +26,7 @@ const list<const Value*> get_values(const string& code) {
     deallocate_list_of_pointers<Token>(tokens);
 
     const Interpreter* interpreter = new Interpreter();
-    const RuntimeResult* result = interpreter->visit(tree, *common_ctx);
+    const RuntimeResult* result = interpreter->visit(tree, common_ctx);
     auto v = result->get_value();
     if (v == nullptr) {
       throw "Segmentation fault happened during interpretation of this code : " + code + " because the result is a `nullptr`.";
@@ -39,6 +40,19 @@ const list<const Value*> get_values(const string& code) {
     cerr << "The program crashed due to this error: " << e.to_string() << endl;
     exit(1);
   }
+}
+
+void execute(const string& code) {
+  Lexer lexer(code);
+  list<Token*> tokens = lexer.generate_tokens();
+  Parser parser(tokens);
+  const ListNode* tree = parser.parse();
+  deallocate_list_of_pointers<Token>(tokens);
+  
+  const Interpreter* interpreter = new Interpreter();
+  interpreter->visit(tree, common_ctx);
+
+  delete interpreter;
 }
 
 void test_integer() {
@@ -166,6 +180,20 @@ void test_variable_assignment_of_an_integer_without_initial_value() {
   print_success_msg("works with the variable assignment of an integer without an initial value", 1);
 }
 
+void test_redefinition_of_existing_variable() {
+  common_ctx->get_symbol_table()->clear();
+  try {
+    execute("store a as int = 4");
+    execute("store a as int = 1");
+    assert(false);
+  } catch (RuntimeError error) {
+    assert(true);
+    print_success_msg("throws an error when declaring multiple times the same variable", 1);
+  } catch (...) {
+    assert(false);
+  }
+}
+
 int main() {
   print_title("Interpreter tests...");
 
@@ -185,6 +213,7 @@ int main() {
     test_positive_integer();
     test_variable_assignment_of_an_integer();
     test_variable_assignment_of_an_integer_without_initial_value();
+    test_redefinition_of_existing_variable();
   } catch (string cast_error) {
     cerr << "ABORT. The tests crashed due to this error :" << endl;
     cerr << cast_error << endl;
