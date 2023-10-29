@@ -56,6 +56,13 @@ void execute(const string& code) {
   delete interpreter;
 }
 
+void test_empty_input() {
+  auto values = get_values("\n\n");
+  assert(values.empty());
+
+  print_success_msg("works with empty input", 1);
+}
+
 void test_integer() {
   auto values = get_values("5");
   auto first_value = dynamic_cast<const IntegerValue*>(values.front());
@@ -230,17 +237,45 @@ void test_access_to_variable_in_maths_expression() {
     // because it gets deallocated by the garbage collector of 'run()'
     assert(&value_from_table != &first_value); 
 
-    print_success_msg("works the access to a variable in maths expression", 1);
+    print_success_msg("works with the access to a variable in maths expression", 1);
   } catch (RuntimeError e) {
     cout << e.to_string() << endl;
     assert(false);
   }
 }
 
+void test_multiline_input() {
+  auto values = get_values("5+5\n6+7\n");
+  assert(values.size() == 2);
+  assert(instanceof<IntegerValue>(values.front()));
+  assert(instanceof<IntegerValue>(values.back()));
+  auto first = dynamic_cast<const IntegerValue*>(values.front());
+  auto second = dynamic_cast<const IntegerValue*>(values.back());
+  assert(first->get_actual_value() == 10);
+  assert(second->get_actual_value() == 13);
+
+  print_success_msg("works with multiple lines", 1);
+}
+
+void test_multiline_input_and_variables() {
+  // test using variables
+  auto values = get_values("store a as int = 5\na\n");
+  assert(values.size() == 2);
+  assert(instanceof<IntegerValue>(values.front()));
+  assert(instanceof<IntegerValue>(values.back()));
+  auto first = dynamic_cast<const IntegerValue*>(values.front());
+  auto second = dynamic_cast<const IntegerValue*>(values.back());
+  assert(first->get_actual_value() == 5);
+  assert(second->get_actual_value() == 5);
+  
+  print_success_msg("works with variables on multiple lines", 1);
+}
+
 int main() {
   print_title("Interpreter tests...");
 
   try {
+    test_empty_input();
     test_integer();
     test_addition_of_two_small_positive_integers();
     test_addition_of_two_max_integers();
@@ -259,6 +294,8 @@ int main() {
     test_redefinition_of_existing_variable();
     test_access_to_variable();
     test_access_to_variable_in_maths_expression();
+    test_multiline_input();
+    test_multiline_input_and_variables();
   } catch (string cast_error) {
     cerr << "ABORT. The tests crashed due to this error :" << endl;
     cerr << cast_error << endl;

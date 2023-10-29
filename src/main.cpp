@@ -2,6 +2,7 @@
 #include <fstream>
 #include <cmath>
 #include "../include/context.hpp"
+#include "../include/runtime.hpp"
 #include "../include/run.hpp"
 using namespace std;
 
@@ -13,12 +14,18 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  if (argc == 1) {
+    cerr << "Missing input file." << endl;
+    return 1;
+  }
+
   string source_code = "";
   string filename = argv[1];
   ifstream file(filename);
 
   if (!file.is_open()) {
-    cerr << "The file doesn't exist." << endl;
+    cerr << "The file " << filename << " doesn't exist." << endl;
+    cout << "Current directory: " << std::filesystem::current_path() << endl;
     return 1;
   }
 
@@ -43,12 +50,16 @@ int main(int argc, char *argv[]) {
   // This is fine for small files, but extremely large files will create problems.
   string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
+  cout << "Executing this code:" << endl;
+  cout << content << endl;
+
   Context* global_ctx = new Context(filename);
-  run(content, filename, global_ctx);
+  const RuntimeResult* res = run(content, filename, global_ctx);
 
   file.close();
 
   delete global_ctx;
+  delete res;
 
   return 0;
 }

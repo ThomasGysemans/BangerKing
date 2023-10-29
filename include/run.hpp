@@ -3,7 +3,9 @@
 #include <string>
 
 // forward declaration to avoid circular dependency.
-// it's possible because we're only using a pointer to an instance of "Context"
+// it's possible because we're only using pointers and not complete types
 class Context;
 
-void run(const std::string&, const std::string&, const Context* ctx);
+class RuntimeResult;
+
+const RuntimeResult* run(const std::string&, const std::string&, const Context* ctx);
