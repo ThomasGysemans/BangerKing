@@ -13,26 +13,43 @@ Look at [the example](./examples/hello_world.bk) to see what the language is sup
 
 - Clone the repo
 - Make sure you've installed "g++"
-- Make sure you can execute Bash scripts
+- Make sure you can execute Bash scripts (`chmod +x ./*.sh` on Linux)
 
 Execute one of these scripts to...
 
 #### Compile
 
+To use the CLI:
+
 ```bash
 ./compile.sh
 ```
 
+To execute a file:
+
+```bash
+./compile.sh -file
+```
+
 #### Execute
+
+The CLI:
 
 ```bash
 ./exec.sh
+```
+
+A file:
+
+```bash
+./exec.sh examples/main.bk
 ```
 
 #### Compile & Execute
 
 ```bash
 ./run.sh
+# './run.sh examples/main.bk' to run a file
 ```
 
 #### Measure performance
