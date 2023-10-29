@@ -34,8 +34,7 @@ const RuntimeResult* run(const string& input, const string& filename, const Cont
     // The tokens are not necessary anymore so the memory can be released:
     deallocate_list_of_pointers<Token>(tokens);
 
-    const Interpreter interpreter;
-    const RuntimeResult* result = interpreter.visit(tree, ctx);
+    const RuntimeResult* result = Interpreter::visit(tree, ctx);
 
     delete tree;
     return result;

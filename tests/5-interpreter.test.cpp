@@ -26,8 +26,7 @@ const list<const Value*> get_values(const string& code, bool clear_ctx = true) {
     const ListNode* tree = parser.parse();
     deallocate_list_of_pointers<Token>(tokens);
 
-    const Interpreter interpreter;
-    const RuntimeResult* result = interpreter.visit(tree, common_ctx);
+    const RuntimeResult* result = Interpreter::visit(tree, common_ctx);
     auto v = result->get_value();
     if (v == nullptr) {
       throw "Segmentation fault happened during interpretation of this code : " + code + " because the result is a `nullptr`.";
@@ -50,10 +49,7 @@ void execute(const string& code) {
   const ListNode* tree = parser.parse();
   deallocate_list_of_pointers<Token>(tokens);
   
-  const Interpreter* interpreter = new Interpreter();
-  interpreter->visit(tree, common_ctx);
-
-  delete interpreter;
+  Interpreter::visit(tree, common_ctx);
 }
 
 void test_empty_input() {
