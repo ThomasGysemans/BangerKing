@@ -17,6 +17,7 @@ class IntegerValue: public Value {
     
     bool is_true() const override;
     string to_string() const override;
+    IntegerValue* copy() const override;
 
     IntegerValue* operator+(const IntegerValue& other) const;
     IntegerValue* operator-(const IntegerValue& other) const;

@@ -14,6 +14,7 @@ ListValue::~ListValue() {
 
 const list<const Value*>* ListValue::get_elements() const { return &elements; }
 bool ListValue::is_true() const { return !elements.empty(); }
+ListValue* ListValue::copy() const { return new ListValue(*this); }
 
 string ListValue::to_string() const {
   list<const Value*>::const_iterator iter = elements.begin();

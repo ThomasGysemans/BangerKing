@@ -14,5 +14,6 @@ class ListValue: public Value {
 
     string to_string() const override;
     bool is_true() const override;
+    ListValue* copy() const override;
     const list<const Value*>* get_elements() const;
 };

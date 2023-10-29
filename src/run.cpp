@@ -21,7 +21,7 @@ void run(const string& input, const string& filename, const Context* ctx) {
 
     READ_FILES[filename] = &input;
 
-    Lexer lexer(input, filename);
+    Lexer lexer(&input, filename);
     list<Token*> tokens = lexer.generate_tokens();
 
     if (tokens.empty()) {

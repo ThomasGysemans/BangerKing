@@ -28,6 +28,8 @@ RuntimeResult* Interpreter::visit(const CustomNode* node, const Context* ctx) co
     return visit_PlusNode(cast_node<PlusNode>(node), ctx);
   } else if (instanceof<VarAssignmentNode>(node)) {
     return visit_VarAssignmentNode(cast_node<VarAssignmentNode>(node), ctx);
+  } else if (instanceof<VarAccessNode>(node)) {
+    return visit_VarAccessNode(cast_node<VarAccessNode>(node), ctx);
   }
   throw UndefinedBehaviorException("Unimplemented visit method for input node");
 }
@@ -270,10 +272,6 @@ RuntimeResult* Interpreter::visit_PlusNode(const PlusNode* node, const Context* 
 }
 
 RuntimeResult* Interpreter::visit_VarAssignmentNode(const VarAssignmentNode* node, const Context* ctx) const {
-  RuntimeResult* res = new RuntimeResult();
-  Value* initial_value = node->has_value() ? res->read(visit(node->get_value_node(), ctx)) : nullptr;
-  if (res->should_return()) return res;
-
   if (ctx->get_symbol_table()->exists(node->get_var_name())) {
     throw RuntimeError(
       node->getStartingPosition(), node->getEndingPosition(),
@@ -282,11 +280,14 @@ RuntimeResult* Interpreter::visit_VarAssignmentNode(const VarAssignmentNode* nod
     );
   }
 
+  RuntimeResult* res = new RuntimeResult();
+  Value* initial_value = node->has_value() ? res->read(visit(node->get_value_node(), ctx)) : nullptr;
+  if (res->should_return()) return res;
+
   // A default value must be assigned
   // if the developer didn't set an initial value.
   // This default value will depend on the given type.
   if (!node->has_value()) {
-    // TODO: if the type is a custom object, then call, if possible, the empty constructor
     switch (node->get_type()) {
       case Type::INT: initial_value = new IntegerValue(); break;
       default:
@@ -302,4 +303,20 @@ RuntimeResult* Interpreter::visit_VarAssignmentNode(const VarAssignmentNode* nod
   ctx->get_symbol_table()->set(node->get_var_name(), initial_value->copy()); // copy's important because the garbage collector deallocates the returning value
 
   return res->success(initial_value);
+}
+
+RuntimeResult* Interpreter::visit_VarAccessNode(const VarAccessNode* node, const Context* ctx) const {
+  if (!ctx->get_symbol_table()->exists_globally(node->get_var_name())) {
+    throw RuntimeError(
+      node->getStartingPosition(), node->getEndingPosition(),
+      "Undefined variable '" + node->get_var_name() + "'.",
+      ctx
+    );
+  }
+  
+  RuntimeResult* res = new RuntimeResult();
+  Value* value = ctx->get_symbol_table()->get(node->get_var_name());
+  populate(value, node, ctx);
+
+  return res->success(value);
 }

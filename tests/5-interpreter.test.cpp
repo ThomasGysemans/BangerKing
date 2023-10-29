@@ -7,6 +7,7 @@
 #include "../include/parser.hpp"
 #include "../include/interpreter.hpp"
 #include "../include/symbol_table.hpp"
+#include "../include/values/compositer.hpp"
 #include "../include/exceptions/runtime_error.hpp"
 using namespace std;
 
@@ -15,18 +16,18 @@ Context* common_ctx = new Context("<tests>");
 /// @brief Gets the values that the interpreter returns from the given code. Use this for the tests.
 /// @param code The code to interpret.
 /// @return The values that the interpreter calculated.
-const list<const Value*> get_values(const string& code) {
-  common_ctx->get_symbol_table()->clear();
+const list<const Value*> get_values(const string& code, bool clear_ctx = true) {
+  if (clear_ctx) common_ctx->get_symbol_table()->clear();
 
   try {
-    Lexer lexer(code);
+    Lexer lexer(&code);
     list<Token*> tokens = lexer.generate_tokens();
     Parser parser(tokens);
     const ListNode* tree = parser.parse();
     deallocate_list_of_pointers<Token>(tokens);
 
-    const Interpreter* interpreter = new Interpreter();
-    const RuntimeResult* result = interpreter->visit(tree, common_ctx);
+    const Interpreter interpreter;
+    const RuntimeResult* result = interpreter.visit(tree, common_ctx);
     auto v = result->get_value();
     if (v == nullptr) {
       throw "Segmentation fault happened during interpretation of this code : " + code + " because the result is a `nullptr`.";
@@ -43,7 +44,7 @@ const list<const Value*> get_values(const string& code) {
 }
 
 void execute(const string& code) {
-  Lexer lexer(code);
+  Lexer lexer(&code);
   list<Token*> tokens = lexer.generate_tokens();
   Parser parser(tokens);
   const ListNode* tree = parser.parse();
@@ -168,6 +169,10 @@ void test_variable_assignment_of_an_integer() {
   assert(first_value->get_actual_value() == 5);
   assert(common_ctx->get_symbol_table()->exists("a"));
 
+  auto v = common_ctx->get_symbol_table()->get("a");
+  auto i = dynamic_cast<IntegerValue*>(v);
+  assert(instanceof<IntegerValue>(v));
+
   print_success_msg("works with the variable assignment of an integer", 1);
 }
 
@@ -194,6 +199,22 @@ void test_redefinition_of_existing_variable() {
   }
 }
 
+void test_access_to_variable() {
+  try {
+    common_ctx->get_symbol_table()->clear();
+    execute("store a as int = 5");
+    auto values = get_values("a", false);
+    auto first_value = dynamic_cast<const IntegerValue*>(values.front());
+    assert(first_value->get_actual_value() == 5);
+    assert(common_ctx->get_symbol_table()->exists("a"));
+    
+    print_success_msg("works the access to a variable", 1);
+  } catch (RuntimeError e) {
+    cout << e.to_string() << endl;
+    assert(false);
+  }
+}
+
 int main() {
   print_title("Interpreter tests...");
 
@@ -214,6 +235,7 @@ int main() {
     test_variable_assignment_of_an_integer();
     test_variable_assignment_of_an_integer_without_initial_value();
     test_redefinition_of_existing_variable();
+    test_access_to_variable();
   } catch (string cast_error) {
     cerr << "ABORT. The tests crashed due to this error :" << endl;
     cerr << cast_error << endl;

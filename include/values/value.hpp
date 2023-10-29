@@ -29,6 +29,13 @@ class Value {
 
     virtual ~Value();
 
+    // Making it a pure virtual method is important,
+    // because we want the derived classes to call their own implementation
+    // when calling it on a variable typed with 'Value*'.
+    // It also makes the class "abstract",
+    // meaning that creating an instance of "Value" isn't possible
+    virtual Value* copy() const = 0;
+
     /// @brief Sets the position of this value in the program.
     /// @param pos_start The starting position of this value.
     /// @param pos_end The ending position of this value.
@@ -69,8 +76,4 @@ class Value {
     virtual string repr() const {
       return this->to_string();
     }
-
-    /// @brief Creates a deep copy of this instance.
-    /// @return A deep copy of this instance.
-    Value* copy() const;
 };

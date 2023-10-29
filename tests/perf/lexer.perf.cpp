@@ -19,7 +19,7 @@ class LexerPerformance: public Performance {
         "(5/5)%8**6000000 "
         "\n ";
       code += KEYWORDS[0];
-      Lexer lexer(code);
+      Lexer lexer(&code);
       list<Token*> tokens = lexer.generate_tokens();
       deallocate_list_of_pointers<Token>(tokens);
     }

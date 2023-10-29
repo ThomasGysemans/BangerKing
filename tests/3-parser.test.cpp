@@ -10,7 +10,7 @@
 using namespace std;
 
 list<const CustomNode*> get_element_nodes_from(const string& code, bool debug_print = false) {
-  Lexer lexer(code);
+  Lexer lexer(&code);
   list<Token*> tokens = lexer.generate_tokens();
   if (debug_print) {
     cout << "Resulft of lexer :" << endl;
@@ -269,6 +269,17 @@ void test_variable_assignment_without_initial_value() {
   print_success_msg("variable assignment of an integer without initial value", 1);
 }
 
+void test_access_node() {
+  auto nodes = get_element_nodes_from("variable");
+  assert(nodes.size() == 1);
+
+  auto node = cast_node<VarAccessNode>(nodes.front());
+  assert(node->get_var_name() == "variable");
+  assert(node->to_string() == "(variable)");
+
+  print_success_msg("variable access", 1);
+}
+
 int main() {
   print_title("Parser tests...");
 
@@ -290,6 +301,7 @@ int main() {
     test_positions();
     test_variable_assignment_with_initial_value();
     test_variable_assignment_without_initial_value();
+    test_access_node();
   } catch (CustomError custom_error) {
     cerr << "Oops, the program unexpectedly thrown an error :" << endl;
     cerr << custom_error.get_details() << endl;

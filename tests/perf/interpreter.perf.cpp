@@ -21,7 +21,7 @@ class InterpreterPerformance: public Performance {
         "10+2-10/2\n"
         "(5/5)%5**600000\n"
         "-1+2-(3*4)/5%6**7\n";
-      Lexer lexer(code);
+      Lexer lexer(&code);
       list<Token*> tokens = lexer.generate_tokens();
       Parser parser(tokens);
       const ListNode* tree = parser.parse();

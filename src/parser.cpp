@@ -220,6 +220,9 @@ const CustomNode* Parser::atom() {
   } else if (first_token.ofType(TokenType::NUMBER)) {
     advance();
     return new NumberNode(first_token);
+  } else if (first_token.ofType(TokenType::IDENTIFIER)) {
+    advance();
+    return new VarAccessNode(first_token);
   } else {
     throw InvalidSyntaxError(
       first_token.getStartingPosition(), first_token.getEndingPosition(),

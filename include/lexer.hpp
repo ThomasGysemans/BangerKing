@@ -32,7 +32,7 @@ class Lexer {
     /// @param t The source code
     /// @param filename The filename
     Lexer(
-      const string& t,
+      const string* t,
       const string filename = "<stdin>"
     );
 

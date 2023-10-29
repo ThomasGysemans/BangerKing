@@ -5,10 +5,12 @@
 #include "../include/parser.hpp"
 #include "../include/miscellaneous.hpp"
 #include "../include/values/integer.hpp"
+#include "../include/utils/deallocate_list_of_pointers.hpp"
 using namespace std;
 
 void test_integer() {
-  Lexer lexer("5");
+  string code = "5";
+  Lexer lexer(&code);
   list<Token*> tokens = lexer.generate_tokens();
   Parser parser(tokens);
   const ListNode* tree = parser.parse();
@@ -25,13 +27,28 @@ void test_integer() {
   assert(integer->get_pos_start() != &node_pos_start);
 
   delete integer;
-  print_success_msg("Integer value", 1);
+  delete tree;
+  deallocate_list_of_pointers<Token>(tokens);
+  print_success_msg("integer value", 1);
+}
+
+void test_copy() {
+  IntegerValue* integer = new IntegerValue(5);
+  IntegerValue* copy = integer->copy();
+
+  assert(integer->get_actual_value() == copy->get_actual_value());
+  assert(&integer != &copy);
+
+  delete integer;
+  delete copy;
+  print_success_msg("copy of an integer", 1);
 }
 
 int main() {
   print_title("Values tests...");
 
   test_integer();
+  test_copy();
 
   print_success_msg("All \"Values\" tests successfully passed");
 

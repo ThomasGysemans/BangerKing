@@ -32,10 +32,10 @@ void remove_substring(string& str, const string& pattern);
 /// @param character The character to remove
 void remove_character(string& str, const char& character);
 
-/// @brief Checks if a string contains a substring.
+/// @brief Checks if a string contains a particular character.
 /// @param str The main string.
-/// @param substr The sub string to look for.
-/// @return `true` if `substr` is contained within `str`
+/// @param substr The character to look for.
+/// @return `true` if character is contained within `str`
 bool string_contains(const string& str, const char substr);
 
 /// @brief Casts an instance of CustomNode into a derived class of CustomNode. Note that it will throw an error if the cast isn't impossible.

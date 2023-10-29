@@ -9,7 +9,7 @@
 using namespace std;
 
 list<Token*> get_tokens_from(const string& code) {
-  Lexer lexer(code);
+  Lexer lexer(&code);
   return lexer.generate_tokens();
 }
 
@@ -19,7 +19,7 @@ std::vector<Token*> list_to_vector(list<Token*> l) {
 
 void test_simple_digit() {
   const string code = "5";
-  Lexer lexer(code);
+  Lexer lexer(&code);
   list<Token*> tokens = lexer.generate_tokens();
   assert(tokens.size() == 1);
   assert(tokens.front()->ofType(TokenType::NUMBER));
@@ -30,7 +30,7 @@ void test_simple_digit() {
 
 void test_simple_identifier() {
   const string code = "hello";
-  Lexer lexer(code);
+  Lexer lexer(&code);
   list<Token*> tokens = lexer.generate_tokens();
   assert(tokens.size() == 1);
   assert(tokens.front()->ofType(TokenType::IDENTIFIER));
@@ -41,7 +41,7 @@ void test_simple_identifier() {
 
 void test_simple_keyword() {
   const string code = KEYWORDS[0];
-  Lexer lexer(code);
+  Lexer lexer(&code);
   list<Token*> tokens = lexer.generate_tokens();
   assert(tokens.size() == 1);
   assert(tokens.front()->ofType(TokenType::KEYWORD));
@@ -52,7 +52,7 @@ void test_simple_keyword() {
 
 void test_simple_maths() {
   const string code = "5+6*(6-4/2)%12**42";
-  Lexer lexer(code);
+  Lexer lexer(&code);
   list<Token*> tokens = lexer.generate_tokens();
   list<TokenType> expected_tokens_list = {
     TokenType::NUMBER,
@@ -79,7 +79,7 @@ void test_simple_maths() {
 
 void test_increment() {
   const string code = "--5++";
-  Lexer lexer(code);
+  Lexer lexer(&code);
   list<Token*> tokens = lexer.generate_tokens();
   list<TokenType> expected_tokens_list = {
     TokenType::DEC,
@@ -94,7 +94,7 @@ void test_increment() {
 
 void test_positions() {
   const string code = "5";
-  Lexer lexer(code);
+  Lexer lexer(&code);
   list<Token*> tokens = lexer.generate_tokens();
   Token* tok = tokens.front();
   Position pos_start = tok->getStartingPosition();

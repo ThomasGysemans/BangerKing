@@ -13,8 +13,29 @@ void test_set() {
   assert(table->exists("a"));
   assert(table->get("a") == value);
 
+  Value* value_from_table = table->get("a");
+  IntegerValue* integer_from_table = dynamic_cast<IntegerValue*>(value_from_table);
+  assert(integer_from_table != nullptr);
+  assert(integer_from_table->get_actual_value() == 5);
+
   delete table; // will also delete "value"
   print_success_msg("defines variables", 1);
+}
+
+void test_casts() {
+  SymbolTable* table = new SymbolTable();
+  IntegerValue* value = new IntegerValue(5);
+  table->set("a", value->copy());
+
+  assert(table->exists("a"));
+
+  Value* value_from_table = table->get("a");
+  IntegerValue* integer_from_table = dynamic_cast<IntegerValue*>(value_from_table);
+  assert(integer_from_table != nullptr);
+  assert(integer_from_table->get_actual_value() == 5);
+
+  delete table; // will also delete "value"
+  print_success_msg("defines variables and casts them", 1);
 }
 
 void test_remove() {
@@ -112,6 +133,7 @@ int main() {
   print_title("SymbolTable tests...");
 
   test_set();
+  test_casts();
   test_remove();
   test_modify();
   test_clear();
