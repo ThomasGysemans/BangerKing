@@ -318,5 +318,7 @@ RuntimeResult* Interpreter::visit_VarAccessNode(const VarAccessNode* node, const
   Value* value = ctx->get_symbol_table()->get(node->get_var_name());
   populate(value, node, ctx);
 
-  return res->success(value);
+  // We have to keep in mind that the garbage collector will deallocate the returned value of a statement.
+  // To make sure it doesn't delete a variable, we have to return a copy.
+  return res->success(value->copy());
 }

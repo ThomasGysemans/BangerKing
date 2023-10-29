@@ -215,6 +215,28 @@ void test_access_to_variable() {
   }
 }
 
+void test_access_to_variable_in_maths_expression() {
+  try {
+    common_ctx->get_symbol_table()->clear();
+    execute("store a as int = 5");
+    execute("a"); // use it at least once and then test it
+    auto values = get_values("a+5", false);
+    auto first_value = dynamic_cast<const IntegerValue*>(values.front());
+    assert(first_value->get_actual_value() == 10);
+    assert(common_ctx->get_symbol_table()->exists("a"));
+
+    IntegerValue* value_from_table = dynamic_cast<IntegerValue*>(common_ctx->get_symbol_table()->get("a"));
+    // the program returns a copy of the value set in the table
+    // because it gets deallocated by the garbage collector of 'run()'
+    assert(&value_from_table != &first_value); 
+
+    print_success_msg("works the access to a variable in maths expression", 1);
+  } catch (RuntimeError e) {
+    cout << e.to_string() << endl;
+    assert(false);
+  }
+}
+
 int main() {
   print_title("Interpreter tests...");
 
@@ -236,6 +258,7 @@ int main() {
     test_variable_assignment_of_an_integer_without_initial_value();
     test_redefinition_of_existing_variable();
     test_access_to_variable();
+    test_access_to_variable_in_maths_expression();
   } catch (string cast_error) {
     cerr << "ABORT. The tests crashed due to this error :" << endl;
     cerr << cast_error << endl;

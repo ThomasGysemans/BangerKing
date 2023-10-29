@@ -280,6 +280,18 @@ void test_access_node() {
   print_success_msg("variable access", 1);
 }
 
+void test_access_node_in_expression() {
+  auto nodes = get_element_nodes_from("a+5");
+  assert(nodes.size() == 1);
+  assert(instanceof<AddNode>(nodes.front()));
+
+  auto node = cast_node<AddNode>(nodes.front());
+  assert(instanceof<VarAccessNode>(node->get_a()));
+  assert(instanceof<NumberNode>(node->get_b()));
+
+  print_success_msg("variable access in maths expression", 1);
+}
+
 int main() {
   print_title("Parser tests...");
 
@@ -302,6 +314,7 @@ int main() {
     test_variable_assignment_with_initial_value();
     test_variable_assignment_without_initial_value();
     test_access_node();
+    test_access_node_in_expression();
   } catch (CustomError custom_error) {
     cerr << "Oops, the program unexpectedly thrown an error :" << endl;
     cerr << custom_error.get_details() << endl;

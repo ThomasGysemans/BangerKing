@@ -156,7 +156,17 @@ void test_variable_assignment() {
   assert(tokens[4]->ofType(TokenType::EQUALS));
   assert(tokens[5]->ofType(TokenType::NUMBER));
 
-  print_success_msg("substraction without whitespace", 1);
+  print_success_msg("variable assignment", 1);
+}
+
+void test_expression_with_identifier() {
+  auto tokens = list_to_vector(get_tokens_from("a+5"));
+  assert(tokens.size() == 3);
+  assert(tokens[0]->matches(TokenType::IDENTIFIER, "a"));
+  assert(tokens[1]->ofType(TokenType::PLUS));
+  assert(tokens[2]->ofType(TokenType::NUMBER));
+
+  print_success_msg("maths expression with identifier", 1);
 }
 
 int main() {
@@ -173,6 +183,7 @@ int main() {
   test_substraction_with_whitespace();
   test_substraction_without_whitespace();
   test_variable_assignment();
+  test_expression_with_identifier();
 
   print_success_msg("All \"Lexer\" tests successfully passed");
   return 0;
