@@ -15,7 +15,7 @@ void test_integer() {
   Parser parser(tokens);
   const ListNode* tree = parser.parse();
   list<const CustomNode*> nodes = tree->get_element_nodes();
-  const NumberNode* n = cast_node<NumberNode>(nodes.front());
+  const IntegerNode* n = cast_node<IntegerNode>(nodes.front());
   assert(n->getValue() == 5);
 
   IntegerValue* integer = new IntegerValue(n->getValue());

@@ -15,3 +15,4 @@
 #include "substract_node.hpp"
 #include "var_assignment_node.hpp"
 #include "var_access_node.hpp"
+#include "var_modify_node.hpp"

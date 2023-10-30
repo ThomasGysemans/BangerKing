@@ -12,7 +12,7 @@ class Interpreter {
     static RuntimeResult* visit(const CustomNode* node, const Context* ctx);
     
   private:
-    static RuntimeResult* visit_NumberNode(const NumberNode* node, const Context* ctx);
+    static RuntimeResult* visit_IntegerNode(const IntegerNode* node, const Context* ctx);
     static RuntimeResult* visit_ListNode(const ListNode* node, const Context* ctx);
     static RuntimeResult* visit_AddNode(const AddNode* node, const Context* ctx);
     static RuntimeResult* visit_SubstractNode(const SubstractNode* node, const Context* ctx);
@@ -24,6 +24,7 @@ class Interpreter {
     static RuntimeResult* visit_PlusNode(const PlusNode* node, const Context* ctx);
     static RuntimeResult* visit_VarAssignmentNode(const VarAssignmentNode* node, const Context* ctx);
     static RuntimeResult* visit_VarAccessNode(const VarAccessNode* node, const Context* ctx);
+    static RuntimeResult* visit_VarModifyNode(const VarModifyNode* node, const Context* ctx);
 
     // helper methods:
     
@@ -45,8 +46,26 @@ class Interpreter {
     /// @return The same value, but dynamically casted to an instance of "Value".
     static Value* to_value(Value* value);
 
-    /// @brief Throws a `RuntimeException` for an illegal operation (like "5 + a_function" for example).
+    /// @brief Throws a `RuntimeError` for an illegal operation (like "5 + a_function" for example).
     /// @param node The node that created this issue.
     /// @param ctx The context in which this issue happened.
     static void illegal_operation(const CustomNode* node, const Context* ctx);
+
+    /// @brief Throws a `TypeError` for trying to assign an incompatible type to a variable.
+    /// @param value The value whose type differs from the `expected_type`.
+    /// @param expected_type The type of the variable.
+    /// @param ctx The context in which the error occured.
+    static void type_error(const Value* value, const Type expected_type, const Context* ctx);
+
+    /// @brief Makes sure that the type of the given value is compatible with the type of the variable whose name is `variable_name` by throwing a `TypeError` if they're not.
+    /// @param new_value The value that we want to assign to a variable.
+    /// @param expected_type The type that `new_value` should have, or least be compatible with.
+    /// @param ctx The context in which to find the variable.
+    static void ensure_type_compatibility(const Value* new_value, const Type expected_type, const Context* ctx);
+
+    /// @brief Makes sure that the type of the given value is compatible with the type of the variable whose name is `variable_name` by throwing a `TypeError` if they're not.
+    /// @param new_value The value that we want to assign to a variable.
+    /// @param variable_name The name of the variable.
+    /// @param ctx The context in which to find the variable.
+    static void ensure_type_compatibility(const Value* new_value, const string variable_name, const Context* ctx);
 };

@@ -14,6 +14,6 @@ void Value::set_pos(const Position& start, const Position& end) {
 }
 
 void Value::set_ctx(const Context* ctx) { context = ctx; }
-string Value::get_type() const { return get_type_name(type); }
+Type Value::get_type() const { return type; }
 const Position* Value::get_pos_start() const { return &pos_start; }
 const Position* Value::get_pos_end() const { return &pos_end; }

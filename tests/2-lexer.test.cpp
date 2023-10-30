@@ -159,6 +159,16 @@ void test_variable_assignment() {
   print_success_msg("variable assignment", 1);
 }
 
+void test_variable_modification() {
+  auto tokens = list_to_vector(get_tokens_from("a = 5"));
+  assert(tokens.size() == 3);
+  assert(tokens[0]->matches(TokenType::IDENTIFIER, "a"));
+  assert(tokens[1]->ofType(TokenType::EQUALS));
+  assert(tokens[2]->ofType(TokenType::NUMBER));
+
+  print_success_msg("variable modification", 1);
+}
+
 void test_expression_with_identifier() {
   auto tokens = list_to_vector(get_tokens_from("a+5"));
   assert(tokens.size() == 3);
@@ -183,6 +193,7 @@ int main() {
   test_substraction_with_whitespace();
   test_substraction_without_whitespace();
   test_variable_assignment();
+  test_variable_modification();
   test_expression_with_identifier();
 
   print_success_msg("All \"Lexer\" tests successfully passed");

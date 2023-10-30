@@ -4,12 +4,13 @@
 #include "../include/symbol_table.hpp"
 #include "../include/exceptions/undefined_behavior.hpp"
 #include "../include/exceptions/runtime_error.hpp"
+#include "../include/exceptions/type_error.hpp"
 
 RuntimeResult* Interpreter::visit(const CustomNode* node, const Context* ctx) {
   if (instanceof<ListNode>(node)) {
     return visit_ListNode(cast_node<ListNode>(node), ctx);
-  } else if (instanceof<NumberNode>(node)) {
-    return visit_NumberNode(cast_node<NumberNode>(node), ctx);
+  } else if (instanceof<IntegerNode>(node)) {
+    return visit_IntegerNode(cast_node<IntegerNode>(node), ctx);
   } else if (instanceof<AddNode>(node)) {
     return visit_AddNode(cast_node<AddNode>(node), ctx);
   } else if (instanceof<SubstractNode>(node)) {
@@ -30,6 +31,8 @@ RuntimeResult* Interpreter::visit(const CustomNode* node, const Context* ctx) {
     return visit_VarAssignmentNode(cast_node<VarAssignmentNode>(node), ctx);
   } else if (instanceof<VarAccessNode>(node)) {
     return visit_VarAccessNode(cast_node<VarAccessNode>(node), ctx);
+  } else if (instanceof<VarModifyNode>(node)) {
+    return visit_VarModifyNode(cast_node<VarModifyNode>(node), ctx);
   }
   throw UndefinedBehaviorException("Unimplemented visit method for input node");
 }
@@ -53,14 +56,40 @@ void Interpreter::populate(Value* value, const CustomNode* node, const Context* 
 Value* Interpreter::to_value(Value* value) { return dynamic_cast<Value*>(value); }
 
 void Interpreter::illegal_operation(const CustomNode* node, const Context* ctx) {
-  Position start = node->getStartingPosition();
-  Position end = node->getEndingPosition();
+  const Position start = node->getStartingPosition();
+  const Position end = node->getEndingPosition();
   delete node;
   throw RuntimeError(
     start, end,
     "Illegal operation",
     ctx
   );
+}
+
+void Interpreter::type_error(const Value* value, const Type expected_type, const Context* ctx) {
+  const Position pos_start = *(value->get_pos_start());
+  const Position pos_end = *(value->get_pos_end());
+  delete value;
+  throw TypeError(
+    pos_start, pos_end,
+    "Type '" + get_type_name(value->get_type()) + "' is not assignable to type '" + get_type_name(expected_type) + "'",
+    ctx
+  );
+}
+
+void Interpreter::ensure_type_compatibility(const Value* new_value, const Type expected_type, const Context* ctx) {
+  const Type value_type = new_value->get_type();
+  if (expected_type != value_type) {
+    type_error(
+      new_value,
+      expected_type,
+      ctx
+    );
+  }
+}
+
+void Interpreter::ensure_type_compatibility(const Value* new_value, const string variable_name, const Context* ctx) {
+  ensure_type_compatibility(new_value, ctx->get_symbol_table()->get(variable_name)->get_type(), ctx);
 }
 
 /*
@@ -82,7 +111,7 @@ RuntimeResult* Interpreter::visit_ListNode(const ListNode* node, const Context* 
   return res->success(to_value(list_value));
 }
 
-RuntimeResult* Interpreter::visit_NumberNode(const NumberNode* node, const Context* ctx) {
+RuntimeResult* Interpreter::visit_IntegerNode(const IntegerNode* node, const Context* ctx) {
   RuntimeResult* res = new RuntimeResult();
   IntegerValue* i = new IntegerValue(node->getValue());
   populate(i, node, ctx);
@@ -297,6 +326,10 @@ RuntimeResult* Interpreter::visit_VarAssignmentNode(const VarAssignmentNode* nod
           ctx
         );
     }
+  } else {
+    // if a default value was given, we have to make sure that its type is compatible with the given type
+    // (store a as int = "hello" doesn't work).
+    ensure_type_compatibility(initial_value, node->get_type(), ctx);
   }
 
   populate(initial_value, node, ctx);
@@ -321,4 +354,26 @@ RuntimeResult* Interpreter::visit_VarAccessNode(const VarAccessNode* node, const
   // We have to keep in mind that the garbage collector will deallocate the returned value of a statement.
   // To make sure it doesn't delete a variable, we have to return a copy.
   return res->success(value->copy());
+}
+
+RuntimeResult* Interpreter::visit_VarModifyNode(const VarModifyNode* node, const Context* ctx) {
+  if (!ctx->get_symbol_table()->exists_globally(node->get_var_name())) {
+    throw RuntimeError(
+      node->getStartingPosition(), node->getEndingPosition(),
+      "Undefined variable '" + node->get_var_name() + "'.",
+      ctx
+    );
+  }
+  
+  RuntimeResult* res = new RuntimeResult();
+  Value* new_value = res->read(visit(node->get_value_node(), ctx));
+  if (res->should_return()) return res;
+
+  ensure_type_compatibility(new_value, node->get_var_name(), ctx);
+
+  ctx->get_symbol_table()->modify(node->get_var_name(), new_value);
+
+  // We have to keep in mind that the garbage collector will deallocate the returned value of a statement.
+  // To make sure it doesn't delete a variable, we have to return a copy.
+  return res->success(new_value->copy());
 }

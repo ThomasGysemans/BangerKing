@@ -103,12 +103,12 @@ You know maths, so you know that in this case, you'll do the addition first, the
 ```
 SubstractNode(
   AddNode(
-    NumberNode(1),
-    NumberNode(2)
+    IntegerNode(1),
+    IntegerNode(2)
   ),
   DivideNode(
-    NumberNode(10),
-    NumberNode(2)
+    IntegerNode(10),
+    IntegerNode(2)
   )
 )
 ```
@@ -116,6 +116,31 @@ SubstractNode(
 This way, the addition is done first, the division is done afterwards, and finally the code returns the result of the substraction.
 
 The last step is the `Interpreter` that's responsible of actually executing these expressions. It will first take as input the ListNode instance that was produced by the Parser and recursively "visit" each node. When it visits an instance of "AddNode" for example, it will visit member "a" and make sure there was no error during this visit, and then it will visit member "b", and once again make sure there was no error, and finally it'll apply a certain behavior depending on the types of the addition members: between two integers, it will add them together, between an integer and a string, it will produce a new string, etc. Each visit produces a new value. Old values are deallocated as soon as possible.
+
+## Variables
+
+The language allows the use of custom variables:
+
+```bangerking
+store a as int = 5
+store b as int = 10
+store c as int = a + b
+```
+
+The variables `a`, `b` and `c` are stored in a symbol table (`std::map<std::string, Value*>`), itself stored within a context. A new context is created when inside a function or a loop (not yet implemented). Since each context has its own symbol table, two variables of the same name can be declared and accessed in contexts of different depth. To keep track of this depth, the contexts are stored as a "reversed linked-list" where each context holds its symbol table as well as a reference to its parent context. The global context has a `nullptr` as parent. The symbol tables are also reversed linked-list to make the research of a variable easier.
+
+When accessed, a variable returns a copy of its value stored in the symbol table and the garbage collector automatically deallocates the memory of this returned value so as to avoid memory leaks of inaccessible values returned by previous statements.
+
+This is also why, in this code...
+
+```bangerking
+store a as int = 5
+store b as int = 10
+a = b
+b = 5
+```
+
+a != b, indeed `b = 10`, `a = 5`.
 
 ## Disclaimer
 

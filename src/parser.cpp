@@ -219,9 +219,21 @@ const CustomNode* Parser::atom() {
     return result;
   } else if (first_token.ofType(TokenType::NUMBER)) {
     advance();
-    return new NumberNode(first_token);
+    return new IntegerNode(first_token);
   } else if (first_token.ofType(TokenType::IDENTIFIER)) {
+    const Token var_tok = getTok()->copy();
     advance();
+    if (has_more_tokens() && getTok()->ofType(TokenType::EQUALS)) {
+      advance();
+      if (!has_more_tokens()) {
+        throw InvalidSyntaxError(
+          var_tok.getStartingPosition(), var_tok.getEndingPosition(),
+          "Expected a new value to be assigned to the variable."
+        );
+      }
+      const CustomNode* value_node = expr();
+      return new VarModifyNode(var_tok.getStringValue(), value_node, var_tok.getStartingPosition());
+    }
     return new VarAccessNode(first_token);
   } else {
     throw InvalidSyntaxError(

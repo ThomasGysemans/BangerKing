@@ -4,11 +4,11 @@
 #include "../token.hpp"
 using namespace std;
 
-class NumberNode: public CustomNode {
+class IntegerNode: public CustomNode {
   const int value;
 
   public:
-    NumberNode(const Token& token);
+    IntegerNode(const Token& token);
 
     int getValue() const;
     string to_string() const override;

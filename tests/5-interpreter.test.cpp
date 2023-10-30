@@ -267,6 +267,49 @@ void test_multiline_input_and_variables() {
   print_success_msg("works with variables on multiple lines", 1);
 }
 
+void test_variable_modification() {
+  try {
+    common_ctx->get_symbol_table()->clear();
+    execute("store a as int = 5");
+    assert(common_ctx->get_symbol_table()->exists("a"));
+    assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("a")));
+
+    auto values = get_values("a = 6", false);
+    assert(values.size() == 1);
+    assert(instanceof<IntegerValue>(values.front()));
+
+    auto value = dynamic_cast<const IntegerValue*>(values.front());
+    assert(value->get_actual_value() == 6);
+
+    auto a = dynamic_cast<IntegerValue*>(common_ctx->get_symbol_table()->get("a"));
+    assert(&value != &a);
+    assert(a->get_actual_value() == 6);
+    
+    print_success_msg("works with variable modification", 1);
+  } catch (RuntimeError e) {
+    cerr << e.to_string() << endl;
+    assert(false);
+  }
+}
+
+void test_variable_cloning() {
+  try {
+    common_ctx->get_symbol_table()->clear();
+    execute("store a as int = 5");
+    execute("store b as int = 10");
+    execute("a = b"); // since the VarAccessNode of "b" returns a copy of the value stored in the symbol table, &a != &b
+    auto a = dynamic_cast<IntegerValue*>(common_ctx->get_symbol_table()->get("a"));
+    auto b = dynamic_cast<IntegerValue*>(common_ctx->get_symbol_table()->get("b"));
+    assert(a->get_actual_value() == b->get_actual_value()); // same value
+    assert(&a != &b); // but not the same memory address
+    
+    print_success_msg("variable cloning works", 1);
+  } catch (RuntimeError e) {
+    cerr << e.to_string() << endl;
+    assert(false);
+  }
+}
+
 int main() {
   print_title("Interpreter tests...");
 
@@ -292,6 +335,8 @@ int main() {
     test_access_to_variable_in_maths_expression();
     test_multiline_input();
     test_multiline_input_and_variables();
+    test_variable_modification();
+    test_variable_cloning();
   } catch (string cast_error) {
     cerr << "ABORT. The tests crashed due to this error :" << endl;
     cerr << cast_error << endl;

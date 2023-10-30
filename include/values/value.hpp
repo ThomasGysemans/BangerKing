@@ -47,7 +47,7 @@ class Value {
 
     /// @brief Gets the name of the type associated with this value.
     /// @return The name of the type.
-    string get_type() const;
+    Type get_type() const;
 
     /// @brief Gets the starting position of this value.
     /// @return The pointer to the starting position of this value.
@@ -68,7 +68,7 @@ class Value {
       if (!actual_value.has_value()) {
         return "null";
       }
-      throw UndefinedBehaviorException("Cannot print a value of type '" + get_type() + "'");
+      throw UndefinedBehaviorException("Cannot print a value of type '" + get_type_name(get_type()) + "'");
     }
 
     /// @brief We don't always want the same string representation when used in a concatenation or printed to the screen.

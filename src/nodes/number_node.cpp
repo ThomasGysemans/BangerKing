@@ -1,11 +1,11 @@
 #include "../../include/nodes/number_node.hpp"
 
-NumberNode::NumberNode(
+IntegerNode::IntegerNode(
   const Token& token
 ): CustomNode(token.getStartingPosition(), token.getEndingPosition()), value(stoi(token.getStringValue())) {}
 
-int NumberNode::getValue() const { return value; }
+int IntegerNode::getValue() const { return value; }
 
-string NumberNode::to_string() const {
-  return "NumberNode(" + std::to_string(value) + ")";
+string IntegerNode::to_string() const {
+  return "IntegerNode(" + std::to_string(value) + ")";
 }
