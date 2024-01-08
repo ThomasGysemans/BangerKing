@@ -9,65 +9,56 @@ Look at [the example](./examples/hello_world.bk) to see what the language is sup
 
 **WORK IN PROGRESS**
 
-## How to test it?
+## How to use it?
 
 - Clone the repo
 - Make sure you've installed "g++"
-- Make sure you can execute Bash scripts (`chmod +x ./*.sh` on Linux)
+- Make sure you can run a Makefile via the command `make`
 
-Execute one of these scripts to...
-
-#### Compile
-
-To use the CLI:
+To compile the project and start the Command Line Interface (CLI):
 
 ```bash
-./compile.sh
+make cli
 ```
 
-To execute a file:
+To compile the project and execute a file:
 
 ```bash
-./compile.sh -file
+make file entrypoint=examples/main.bk
 ```
 
-#### Execute
+`examples/main.bk` being the entrypoint of the user's program. In this case, it's the main file containing the beginning of the BangerKing program.
 
-The CLI:
+To run the current executable:
 
 ```bash
-./exec.sh
+make execute
+# or
+make execute entrypoint=examples/main.bk
 ```
 
-A file:
+`make execute` will run the current executable located in the build folder.
+This command will fail if there is no executable.
+By default, this action should not be necessary.
+
+Specify an entrypoint if you compiled the project without the CLI (so if you used `make file` beforehand).
+
+### Measure performance
 
 ```bash
-./exec.sh examples/main.bk
+make perf
 ```
 
-#### Compile & Execute
+### Tests
 
 ```bash
-./run.sh
-# './run.sh examples/main.bk' to run a file
-```
-
-#### Measure performance
-
-```bash
-./perf.sh
-```
-
-#### Test
-
-```bash
-./tests.sh
+make tests
 ```
 
 Test a specific program:
 
 ```bash
-./test.sh 3-parser
+make single_test test=3-parser
 # this test is just for the Parser.
 # Look inside the "tests" folder to know the name of the tests.
 # They have a specific order because an error with Tokens, for example,
@@ -140,7 +131,7 @@ a = b
 b = 5
 ```
 
-a != b, indeed `b = 10`, `a = 5`.
+a != b, indeed `a = 10`, `b = 5`.
 
 ## Disclaimer
 
