@@ -27,8 +27,9 @@ class InterpreterPerformance: public Performance {
       const ListNode* tree = parser.parse();
       deallocate_list_of_pointers<Token>(tokens);
 
-      const Context* ctx = new Context("<program>");
-      const RuntimeResult* result = Interpreter::visit(tree, ctx);
+      Context* ctx = new Context("<program>");
+      Interpreter::set_shared_ctx(ctx);
+      const RuntimeResult* result = Interpreter::visit(tree);
       ListValue* main_value = dynamic_cast<ListValue*>(result->get_value());
       const list<const Value*>* values = main_value->get_elements();
 

@@ -8,9 +8,11 @@ const string DIGITS = NORMAL_DIGITS + "_";
 const string LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const string LETTERS_UNDERSCORE = LETTERS + "_";
 const string LETTERS_DIGITS = LETTERS + DIGITS;
-const string LETTERS_DIGITS_UNDERSCORE = LETTERS_DIGITS + "_";
 const map<char, char> ESCAPE_CHARACTERS{{'n', '\n'}, {'t', '\t'}, {'r', '\r'}};
 
+/// @brief Helper method to know if a specific identifier is a keyword or not.
+/// @param keyword The identifier that may or may not be a keyword.
+/// @return `true` if the given identifier is indeed a keyword.
 bool is_keyword(const string& keyword) {
   return std::find(KEYWORDS.begin(), KEYWORDS.end(), keyword) != KEYWORDS.end();
 }
@@ -43,7 +45,7 @@ list<Token*> Lexer::generate_tokens() {
       tokens.push_back(new Token(TokenType::NEWLINE, "\n", pos_start));
     } else if (string_contains(LETTERS_UNDERSCORE, *iter)) { // must be before "make_number()"
       tokens.push_back(make_identifier());
-    } else if (*iter == '.' || string_contains(DIGITS, *iter)) {
+    } else if (*iter == '.' || string_contains(DIGITS, *iter)) { // numbers are allowed to start with a dot (in case they're >= 0 and < 1)
       tokens.push_back(make_number());
     } else if (*iter == '+') {
       tokens.push_back(make_plus_or_increment());
@@ -54,23 +56,23 @@ list<Token*> Lexer::generate_tokens() {
     } else if (*iter == '/') {
       const Position pos_start = pos.copy();
       advance();
-      tokens.push_back(new Token(TokenType::SLASH, "/", pos_start));
+      tokens.push_back(new Token(TokenType::SLASH, "/", pos_start, &pos));
     } else if (*iter == '%') {
       const Position pos_start = pos.copy();
       advance();
-      tokens.push_back(new Token(TokenType::MODULO, "%", pos_start));
+      tokens.push_back(new Token(TokenType::MODULO, "%", pos_start, &pos));
     } else if (*iter == '(') {
       const Position pos_start = pos.copy();
       advance();
-      tokens.push_back(new Token(TokenType::LPAREN, "(", pos));
+      tokens.push_back(new Token(TokenType::LPAREN, "(", pos_start, &pos));
     } else if (*iter == ')') {
       const Position pos_start = pos.copy();
       advance();
-      tokens.push_back(new Token(TokenType::RPAREN, ")", pos));
+      tokens.push_back(new Token(TokenType::RPAREN, ")", pos_start, &pos));
     } else if (*iter == '=') {
       const Position pos_start = pos.copy();
       advance();
-      tokens.push_back(new Token(TokenType::EQUALS, "=", pos_start));
+      tokens.push_back(new Token(TokenType::EQUALS, "=", pos_start, &pos));
     } else {
       advance();
     }
@@ -81,6 +83,8 @@ list<Token*> Lexer::generate_tokens() {
 /*
 *
 * Makers
+* Those methods are responsible of constructing complex types of tokens (such as numbers, identifiers, keywords, etc.)
+* They are tokens composed of multiple characters.
 *
 */
 
@@ -89,7 +93,7 @@ Token* Lexer::make_identifier() {
   string identifier = string(1, *iter);
   advance();
 
-  while (hasMoreTokens() && LETTERS_DIGITS_UNDERSCORE.find(*iter) != string::npos) {
+  while (hasMoreTokens() && LETTERS_DIGITS.find(*iter) != string::npos) {
     identifier += *iter;
     advance();
   }

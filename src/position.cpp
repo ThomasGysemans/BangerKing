@@ -32,10 +32,11 @@ void Position::advance(const char& current_char) {
 }
 
 bool Position::equals(const Position& other) const {
-  return other.get_filename() == fn &&
-    other.get_idx() == idx &&
+  return this == &other ||
+    (other.get_idx() == idx &&
     other.get_col() == col &&
-    other.get_ln() == ln;
+    other.get_ln() == ln &&
+    other.get_filename() == fn);
 }
 
 string Position::to_string() const {

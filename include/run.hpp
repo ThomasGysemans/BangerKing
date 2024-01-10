@@ -8,4 +8,4 @@ class Context;
 
 class RuntimeResult;
 
-const RuntimeResult* run(const std::string&, const std::string&, const Context* ctx);
+const RuntimeResult* run(const std::string&, const std::string&, Context* ctx);

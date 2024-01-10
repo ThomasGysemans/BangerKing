@@ -9,7 +9,7 @@ using namespace std;
 class ListNode: public CustomNode {
   // A copy of the statements produced by the Parser
   // is necessary as the reference to the list created inside the parser
-  // is lost when at the end of the process. 
+  // is lost when reaching the end of the process. 
   list<const CustomNode*> element_nodes;
 
   public:

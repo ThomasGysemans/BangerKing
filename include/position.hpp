@@ -12,6 +12,8 @@ class Position {
   string fn;
 
   public:
+    /// @brief Gets the default position that an instance can have. It's just 0, 0, 0 and a filename of "<hidden>".
+    /// @return An instance of `Position`.
     static Position getDefaultPos();
 
     // virtual destructor of Position.
@@ -31,9 +33,20 @@ class Position {
       const string& filename
     );
 
+    /// @brief Compares two instances of Position.
+    /// @param other The instance to compare with.
+    /// @return `true` if this instance and the other have the same reference, or they both have the same values.
     bool equals(const Position& other) const;
 
+    /// @brief Increases the position (`idx`) and (`col`).
+    /// Takes the current character as argument and if it's a newline
+    /// then `col` gets reset to 0 and `ln` gets incremented.
+    /// @param current_char 
     void advance(const char& current_char);
+
+    /// @brief Creates a deep copy of this instance.
+    /// @return A deep copy.
     Position copy() const;
+
     string to_string() const;
 };

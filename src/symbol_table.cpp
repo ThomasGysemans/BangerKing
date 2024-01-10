@@ -4,10 +4,7 @@ SymbolTable::SymbolTable(SymbolTable* p): parent(p) {}
 
 SymbolTable::~SymbolTable() {
   for (const auto& [key, value] : symbols) {
-    // "value != nullptr" is a precaution in case we set a value to nullptr due to a premature deallocation.
-    // of course, "delete x" doesn't set "x" to "nullptr", so we'd have to make sure that when deallocating values prematurely
-    // we set it to "nullptr" as well.
-    if (value != nullptr) delete value;
+    delete value;
   }
   symbols.clear();
   delete parent;

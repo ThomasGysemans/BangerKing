@@ -9,18 +9,21 @@
 using namespace std;
 
 class Parser {
-  list<Token*>* tokens;
-  list<Token*>::const_iterator iter;
-  unsigned int idx;
+  /// @brief A pointer to the linked list containing the tokens of the source code.
+  const list<Token*>* tokens;
 
-  /// @brief Moves to the next token
+  /// @brief The parser reads the tokens one by one,
+  // therefore use this iterator to access the current token during the parsing process.
+  list<Token*>::const_iterator iter;
+
+  /// @brief Moves to the next token (by increasing the iterator).
   void advance();
 
   /// @brief Gets the current token that the parser is reading.
   /// @return The pointer to the current token.
-  Token* getTok() const;
+  const Token* getTok() const;
 
-  /// @brief Checks if the parser still has some tokens to read 
+  /// @brief Checks if the parser still has some tokens to read.
   /// @return `true` if the parsing isn't completed, `false` otherwise.
   bool has_more_tokens() const;
 
@@ -32,7 +35,7 @@ class Parser {
   void ignore_newlines();
 
   public:
-    Parser(list<Token*>& toks);
+    Parser(const list<Token*>& toks);
 
     /// @brief Parses the given list of tokens
     /// @return An instance of `ListNode` that contains all the parsed nodes of the code.

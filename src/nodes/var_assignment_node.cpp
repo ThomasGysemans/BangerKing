@@ -5,9 +5,10 @@ VarAssignmentNode::VarAssignmentNode(
   const string& var_name,
   const CustomNode* value,
   const Token type_tok,
-  const Position pos_start
+  const Position pos_start,
+  const Position pos_end
 )
-: CustomNode(pos_start, value == nullptr ? pos_start : value->getEndingPosition()),
+: CustomNode(pos_start, pos_end),
   var_name(var_name),
   value_node(value),
   type(get_type_from_name(type_tok.getStringValue())),

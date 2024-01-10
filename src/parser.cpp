@@ -7,11 +7,10 @@
 */
 
 void Parser::advance() {
-  ++idx;
   ++iter;
 }
 
-Token* Parser::getTok() const { return (*iter); }
+const Token* Parser::getTok() const { return (*iter); }
 bool Parser::has_more_tokens() const { return iter != tokens->end(); }
 bool Parser::is_newline() const { return getTok()->ofType(TokenType::NEWLINE); }
 
@@ -28,10 +27,9 @@ void Parser::ignore_newlines() {
 */
 
 Parser::Parser(
-  list<Token*>& toks
+  const list<Token*>& toks
 ): tokens(&toks) {
   iter = toks.begin();
-  idx = 0;
 }
 
 const ListNode* Parser::parse() {
@@ -87,7 +85,7 @@ const CustomNode* Parser::expr() {
         "Expected identifier for variable assignment"
       );
     }
-    string var_name = getTok()->getStringValue();
+    const string var_name = getTok()->getStringValue();
     advance();
     if (!has_more_tokens()) {
       throw InvalidSyntaxError(
@@ -102,7 +100,7 @@ const CustomNode* Parser::expr() {
       );
     }
     advance();
-    Token type_name = getTok()->copy();
+    const Token type_name = getTok()->copy();
     advance();
     if (has_more_tokens() && getTok()->ofType(TokenType::EQUALS)) {
       advance();
@@ -117,14 +115,16 @@ const CustomNode* Parser::expr() {
         var_name,
         value_node,
         type_name,
-        pos_start
+        pos_start,
+        value_node->getEndingPosition()
       );
     } else {
       return new VarAssignmentNode(
         var_name,
         nullptr,
         type_name,
-        pos_start
+        pos_start,
+        type_name.getEndingPosition()
       );
     }
   }

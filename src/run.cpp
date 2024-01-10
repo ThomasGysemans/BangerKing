@@ -17,7 +17,7 @@
 #include "../include/symbol_table.hpp"
 using namespace std;
 
-const RuntimeResult* run(const string& input, const string& filename, const Context* ctx) {
+const RuntimeResult* run(const string& input, const string& filename, Context* ctx) {
   try {
     READ_FILES[filename] = &input;
 
@@ -34,7 +34,8 @@ const RuntimeResult* run(const string& input, const string& filename, const Cont
     // The tokens are not necessary anymore so the memory can be released:
     deallocate_list_of_pointers<Token>(tokens);
 
-    const RuntimeResult* result = Interpreter::visit(tree, ctx);
+    Interpreter::set_shared_ctx(ctx);
+    const RuntimeResult* result = Interpreter::visit(tree);
 
     delete tree;
     return result;

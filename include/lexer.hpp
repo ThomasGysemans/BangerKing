@@ -6,31 +6,54 @@
 #include "token.hpp"
 using namespace std;
 
+// The "extern" keyword is used to make sure these static variables aren't only available in this single translation unit.
+// They get defined in the implementation file, "lexer.cpp".
+
+/// @brief The digits from 0 to 9.
 extern const string NORMAL_DIGITS;
+
+/// @brief The allowed digits (the "normal" digits + the underscore symbol).
 extern const string DIGITS;
+
+/// @brief The whole list of accepted ASCII letters for identifiers. Any other letter will not be accepted.
 extern const string LETTERS;
+
+/// @brief The whole list of accepted ASCII letters for identifiers + the underscore symbol.
 extern const string LETTERS_UNDERSCORE;
+
+/// @brief The whole list of accepted ASCII letters for identifiers + the digits (including the underscore symbol).
 extern const string LETTERS_DIGITS;
-extern const string LETTERS_DIGITS_UNDERSCORE;
+
+/// @brief The whole list of escape sequences (\n, \r, \t, etc.).
 extern const map<char, char> ESCAPE_CHARACTERS;
 
 class Lexer {
+  /// @brief The source code.
   const string* text;
+  
+  /// @brief The name of the file holding the source code currently being executed.
+  /// Defaults to "<stdin>" if the CLI is used.
   const string filename;
+
+  /// @brief The lexer is reading each character one by one.
+  /// This instance of `Position` allows the lexer to know where it is in the source code.
   Position pos;
+
+  /// @brief An iterator will read each character of the source code one by one.
+  /// The characters won't get modified, therefore we use a const_iterator.
   string::const_iterator iter;
 
   /// @brief Moves to the next character in the source code.
   void advance();
 
-  /// @brief Did we reach the end of the source code?
+  /// @brief Did we not reach the end of the source code?
   /// @return `true` if there is still some code to read
   bool hasMoreTokens() const;
 
   public:
     /// @brief Creates an instance of lexer.
     /// @param t The source code
-    /// @param filename The filename
+    /// @param filename The filename, defaults to <stdin> if the CLI is used.
     Lexer(
       const string* t,
       const string filename = "<stdin>"

@@ -8,23 +8,26 @@
 using namespace std;
 
 class Interpreter {
+  static Context* shared_ctx;
+  
   public:
-    static RuntimeResult* visit(const CustomNode* node, const Context* ctx);
+    static void set_shared_ctx(Context* ctx);
+    static RuntimeResult* visit(const CustomNode* node);
     
   private:
-    static RuntimeResult* visit_IntegerNode(const IntegerNode* node, const Context* ctx);
-    static RuntimeResult* visit_ListNode(const ListNode* node, const Context* ctx);
-    static RuntimeResult* visit_AddNode(const AddNode* node, const Context* ctx);
-    static RuntimeResult* visit_SubstractNode(const SubstractNode* node, const Context* ctx);
-    static RuntimeResult* visit_MultiplyNode(const MultiplyNode* node, const Context* ctx);
-    static RuntimeResult* visit_PowerNode(const PowerNode* node, const Context* ctx);
-    static RuntimeResult* visit_DivideNode(const DivideNode* node, const Context* ctx);
-    static RuntimeResult* visit_ModuloNode(const ModuloNode* node, const Context* ctx);
-    static RuntimeResult* visit_MinusNode(const MinusNode* node, const Context* ctx);
-    static RuntimeResult* visit_PlusNode(const PlusNode* node, const Context* ctx);
-    static RuntimeResult* visit_VarAssignmentNode(const VarAssignmentNode* node, const Context* ctx);
-    static RuntimeResult* visit_VarAccessNode(const VarAccessNode* node, const Context* ctx);
-    static RuntimeResult* visit_VarModifyNode(const VarModifyNode* node, const Context* ctx);
+    static RuntimeResult* visit_IntegerNode(const IntegerNode* node);
+    static RuntimeResult* visit_ListNode(const ListNode* node);
+    static RuntimeResult* visit_AddNode(const AddNode* node);
+    static RuntimeResult* visit_SubstractNode(const SubstractNode* node);
+    static RuntimeResult* visit_MultiplyNode(const MultiplyNode* node);
+    static RuntimeResult* visit_PowerNode(const PowerNode* node);
+    static RuntimeResult* visit_DivideNode(const DivideNode* node);
+    static RuntimeResult* visit_ModuloNode(const ModuloNode* node);
+    static RuntimeResult* visit_MinusNode(const MinusNode* node);
+    static RuntimeResult* visit_PlusNode(const PlusNode* node);
+    static RuntimeResult* visit_VarAssignmentNode(const VarAssignmentNode* node);
+    static RuntimeResult* visit_VarAccessNode(const VarAccessNode* node);
+    static RuntimeResult* visit_VarModifyNode(const VarModifyNode* node);
 
     // helper methods:
     
@@ -41,7 +44,7 @@ class Interpreter {
     /// @param ctx The reference of the context to give to the given value.
     static void populate(Value* value, const CustomNode* node, const Context* ctx);
     
-    /// @brief Dynamically casts an derived instance of "Value" to an actual instance of "Value".
+    /// @brief Dynamically casts a derived instance of "Value" to an actual instance of "Value".
     /// @param value The derived value.
     /// @return The same value, but dynamically casted to an instance of "Value".
     static Value* to_value(Value* value);
@@ -59,7 +62,7 @@ class Interpreter {
 
     /// @brief Makes sure that the type of the given value is compatible with the type of the variable whose name is `variable_name` by throwing a `TypeError` if they're not.
     /// @param new_value The value that we want to assign to a variable.
-    /// @param expected_type The type that `new_value` should have, or least be compatible with.
+    /// @param expected_type The type that `new_value` should have, or at least be compatible with.
     /// @param ctx The context in which to find the variable.
     static void ensure_type_compatibility(const Value* new_value, const Type expected_type, const Context* ctx);
 

@@ -28,6 +28,7 @@ void test_casts() {
   table->set("a", value->copy());
 
   assert(table->exists("a"));
+  assert(table->get("a") != value);
 
   Value* value_from_table = table->get("a");
   IntegerValue* integer_from_table = dynamic_cast<IntegerValue*>(value_from_table);
@@ -48,6 +49,7 @@ void test_remove() {
 
   table->remove("a");
   assert(!table->exists("a"));
+  assert(table->get("a") == nullptr);
 
   delete table;
   print_success_msg("removes variables", 1);
@@ -67,6 +69,9 @@ void test_modify() {
   assert(table->exists("a"));
   assert(table->get("a") != value);
   assert(table->get("a") == new_value);
+  
+  IntegerValue* new_value_from_table = dynamic_cast<IntegerValue*>(table->get("a"));
+  assert(new_value_from_table->get_actual_value() == 10);
 
   delete value;
   delete table;
@@ -83,6 +88,7 @@ void test_clear() {
 
   table->clear();
   assert(!table->exists("a"));
+  assert(table->get("a") == nullptr);
 
   delete table;
   delete value;
@@ -106,6 +112,7 @@ void test_nested_tables() {
   assert(global->exists("constant"));
   assert(nested->exists("a"));
   assert(nested->exists_globally("a"));
+  assert(nested->exists_globally("constant"));
   assert(nested->get_highest_parent_context() == global);
   assert(nested->does_constant_exist("constant"));
 

@@ -30,20 +30,19 @@ void test_keyword() {
 void test_copy() {
   Token token(TokenType::STR, "hello", pos_start);
   Token copy = token.copy();
-  assert(&token == &copy == false);
-  assert(&token == &token);
+  assert(&token != &copy);
   assert(token.getType() == copy.getType());
   assert(token.getStringValue() == copy.getStringValue());
   Position starting_position = token.getStartingPosition();
   Position copy_position = token.getStartingPosition();
-  assert(&starting_position == &copy_position == false);
+  assert(&starting_position != &copy_position);
   print_success_msg("copying tokens works!", 1);
 }
 
 void test_pos_start() {
   Token token(TokenType::KEYWORD, KEYWORDS[0], pos_start);
   Position token_pos_start = token.getStartingPosition();
-  assert(&token_pos_start == &pos_start == false); // Token is supposed to do a copy of the given pos_start
+  assert(&token_pos_start != &pos_start); // Token is supposed to do a copy of the given pos_start
   print_success_msg("copying pos_start works", 1);
 }
 
@@ -53,11 +52,8 @@ void test_implicit_pos_end() {
   Token token(TokenType::KEYWORD, KEYWORDS[0], pos_start);
   Position start = token.getStartingPosition();
   Position end = token.getEndingPosition();
-  assert(&start == &end == false); // "end" is supposed to be a copy
-  assert(start.get_ln() == end.get_ln());
-  assert(start.get_col() == end.get_col());
-  assert(start.get_idx() == end.get_idx());
-  assert(start.get_filename() == end.get_filename());
+  assert(&start != &end); // "end" is supposed to be a copy
+  assert(start.equals(end)); // they should have the same the properties though
   print_success_msg("implicit pos_end works", 1);
 }
 
@@ -67,8 +63,8 @@ void test_explicit_pos_end() {
   Token token(TokenType::KEYWORD, KEYWORDS[0], pos_start, &pos_end);
   Position token_start = token.getStartingPosition();
   Position token_end = token.getEndingPosition();
-  assert(&token_start == &pos_end == false); // it's not meant to be the same
-  assert(&pos_end == &token_end == false); // a copy is supposed to be made
+  assert(&token_start != &pos_end); // it's not meant to be the same
+  assert(&pos_end != &token_end); // a copy is made
   assert(token_end.get_idx() == token_start.get_idx() + 1);
   print_success_msg("explicit pos_end works", 1);
 }

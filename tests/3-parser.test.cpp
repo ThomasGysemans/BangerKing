@@ -11,7 +11,7 @@ using namespace std;
 
 list<const CustomNode*> get_element_nodes_from(const string& code, bool debug_print = false) {
   Lexer lexer(&code);
-  list<Token*> tokens = lexer.generate_tokens();
+  const list<Token*> tokens = lexer.generate_tokens();
   if (debug_print) {
     cout << "Resulft of lexer :" << endl;
     cout << display_tokens_list(tokens) << endl;
@@ -26,211 +26,240 @@ list<const CustomNode*> get_element_nodes_from(const string& code, bool debug_pr
 }
 
 void test_simple_number() {
-  auto element_nodes = get_element_nodes_from("5");
-  auto first_element = element_nodes.front();
-  auto number_node = cast_node<IntegerNode>(first_element);
+  const auto element_nodes = get_element_nodes_from("5");
+  const auto first_element = element_nodes.front();
+  const auto number_node = cast_node<IntegerNode>(first_element);
 
   assert(element_nodes.size() == 1);
   assert(number_node->getValue() == 5);
+
+  delete number_node;
 
   print_success_msg("parser with simple number", 1);
 }
 
 void test_simple_negative_number() {
-  auto nodes = get_element_nodes_from("-5");
-  auto first_element = nodes.front();
-  auto minus_node = cast_node<MinusNode>(first_element);
-  auto number_node = cast_node<IntegerNode>(minus_node->get_node());
+  const auto nodes = get_element_nodes_from("-5");
+  const auto first_element = nodes.front();
+  const auto minus_node = cast_node<MinusNode>(first_element);
+  const auto number_node = cast_node<IntegerNode>(minus_node->get_node());
   assert(nodes.size() == 1);
   assert(number_node->getValue() == 5);
+  
+  delete minus_node;
 
   print_success_msg("parser with simple negative number", 1);
 }
 
 void test_simple_positive_number() {
-  auto nodes = get_element_nodes_from("+670");
-  auto first_element = nodes.front();
-  auto plus_node = cast_node<PlusNode>(first_element);
-  auto number_node = cast_node<IntegerNode>(plus_node->get_node());
+  const auto nodes = get_element_nodes_from("+670");
+  const auto first_element = nodes.front();
+  const auto plus_node = cast_node<PlusNode>(first_element);
+  const auto number_node = cast_node<IntegerNode>(plus_node->get_node());
   assert(nodes.size() == 1);
   assert(number_node->getValue() == 670);
+
+  delete plus_node;
 
   print_success_msg("parser with simple positive number", 1);
 }
 
 void test_simple_addition() {
-  auto nodes = get_element_nodes_from("5+6");
-  auto first_element = nodes.front();
-  auto add_node = cast_node<AddNode>(first_element);
-  auto a = cast_node<IntegerNode>(add_node->get_a());
-  auto b = cast_node<IntegerNode>(add_node->get_b());
+  const auto nodes = get_element_nodes_from("5+6");
+  const auto first_element = nodes.front();
+  const auto add_node = cast_node<AddNode>(first_element);
+  const auto a = cast_node<IntegerNode>(add_node->get_a());
+  const auto b = cast_node<IntegerNode>(add_node->get_b());
   assert(nodes.size() == 1);
   assert(a->getValue() == 5);
   assert(b->getValue() == 6);
+
+  delete add_node;
 
   print_success_msg("parser with simple addition", 1);
 }
 
 void test_simple_addition_with_whitespace() {
-  auto nodes = get_element_nodes_from("5 + 6");
-  auto first_element = nodes.front();
-  auto add_node = cast_node<AddNode>(first_element);
-  auto a = cast_node<IntegerNode>(add_node->get_a());
-  auto b = cast_node<IntegerNode>(add_node->get_b());
+  const auto nodes = get_element_nodes_from("5 + 6");
+  const auto first_element = nodes.front();
+  const auto add_node = cast_node<AddNode>(first_element);
+  const auto a = cast_node<IntegerNode>(add_node->get_a());
+  const auto b = cast_node<IntegerNode>(add_node->get_b());
   assert(nodes.size() == 1);
   assert(a->getValue() == 5);
   assert(b->getValue() == 6);
+
+  delete add_node;
 
   print_success_msg("parser with simple addition and whitespace", 1);
 }
 
 void test_simple_substraction() {
-  auto nodes = get_element_nodes_from("0-6");
-  auto first_element = nodes.front();
-  auto sub_node = cast_node<SubstractNode>(first_element);
-  auto a = cast_node<IntegerNode>(sub_node->get_a());
-  auto b = cast_node<IntegerNode>(sub_node->get_b());
+  const auto nodes = get_element_nodes_from("0-6");
+  const auto first_element = nodes.front();
+  const auto sub_node = cast_node<SubstractNode>(first_element);
+  const auto a = cast_node<IntegerNode>(sub_node->get_a());
+  const auto b = cast_node<IntegerNode>(sub_node->get_b());
   assert(nodes.size() == 1);
   assert(a->getValue() == 0);
   assert(b->getValue() == 6);
+
+  delete sub_node;
 
   print_success_msg("parser with simple substraction", 1);
 }
 
 void test_simple_substraction_with_whitespace() {
-  auto nodes = get_element_nodes_from("0 - 6");
-  auto first_element = nodes.front();
-  auto sub_node = cast_node<SubstractNode>(first_element);
-  auto a = cast_node<IntegerNode>(sub_node->get_a());
-  auto b = cast_node<IntegerNode>(sub_node->get_b());
+  const auto nodes = get_element_nodes_from("0 - 6");
+  const auto first_element = nodes.front();
+  const auto sub_node = cast_node<SubstractNode>(first_element);
+  const auto a = cast_node<IntegerNode>(sub_node->get_a());
+  const auto b = cast_node<IntegerNode>(sub_node->get_b());
   assert(nodes.size() == 1);
   assert(a->getValue() == 0);
   assert(b->getValue() == 6);
+
+  delete sub_node;
 
   print_success_msg("parser with simple substraction and whitespace", 1);
 }
 
 void test_simple_multiplication() {
-  auto nodes = get_element_nodes_from("0*6");
-  auto first_element = nodes.front();
-  auto mul_node = cast_node<MultiplyNode>(first_element);
-  auto a = cast_node<IntegerNode>(mul_node->get_a());
-  auto b = cast_node<IntegerNode>(mul_node->get_b());
+  const auto nodes = get_element_nodes_from("0*6");
+  const auto first_element = nodes.front();
+  const auto mul_node = cast_node<MultiplyNode>(first_element);
+  const auto a = cast_node<IntegerNode>(mul_node->get_a());
+  const auto b = cast_node<IntegerNode>(mul_node->get_b());
   assert(nodes.size() == 1);
   assert(a->getValue() == 0);
   assert(b->getValue() == 6);
+
+  delete mul_node;
 
   print_success_msg("parser with simple multiplication", 1);
 }
 
 void test_simple_divison() {
-  auto nodes = get_element_nodes_from("10/2");
-  auto first_element = nodes.front();
-  auto div_node = cast_node<DivideNode>(first_element);
-  auto a = cast_node<IntegerNode>(div_node->get_a());
-  auto b = cast_node<IntegerNode>(div_node->get_b());
+  const auto nodes = get_element_nodes_from("10/2");
+  const auto first_element = nodes.front();
+  const auto div_node = cast_node<DivideNode>(first_element);
+  const auto a = cast_node<IntegerNode>(div_node->get_a());
+  const auto b = cast_node<IntegerNode>(div_node->get_b());
   assert(nodes.size() == 1);
   assert(a->getValue() == 10);
   assert(b->getValue() == 2);
+
+  delete div_node;
 
   print_success_msg("parser with simple divison", 1);
 }
 
 void test_simple_modulo() {
-  auto nodes = get_element_nodes_from("13%12");
-  auto first_element = nodes.front();
-  auto modulo_node = cast_node<ModuloNode>(first_element);
-  auto a = cast_node<IntegerNode>(modulo_node->get_a());
-  auto b = cast_node<IntegerNode>(modulo_node->get_b());
+  const auto nodes = get_element_nodes_from("13%12");
+  const auto first_element = nodes.front();
+  const auto modulo_node = cast_node<ModuloNode>(first_element);
+  const auto a = cast_node<IntegerNode>(modulo_node->get_a());
+  const auto b = cast_node<IntegerNode>(modulo_node->get_b());
   assert(nodes.size() == 1);
   assert(a->getValue() == 13);
   assert(b->getValue() == 12);
+
+  delete modulo_node;
 
   print_success_msg("parser with simple modulo", 1);
 }
 
 void test_simple_power() {
-  auto nodes = get_element_nodes_from("10**2");
-  auto first_element = nodes.front();
-  auto power_node = cast_node<PowerNode>(first_element);
-  auto a = cast_node<IntegerNode>(power_node->get_a());
-  auto b = cast_node<IntegerNode>(power_node->get_b());
+  const auto nodes = get_element_nodes_from("10**2");
+  const auto first_element = nodes.front();
+  const auto power_node = cast_node<PowerNode>(first_element);
+  const auto a = cast_node<IntegerNode>(power_node->get_a());
+  const auto b = cast_node<IntegerNode>(power_node->get_b());
   assert(nodes.size() == 1);
   assert(a->getValue() == 10);
   assert(b->getValue() == 2);
+
+  delete power_node;
 
   print_success_msg("parser with simple power", 1);
 }
 
 void test_complex_maths_expression_with_parenthesis() {
-  auto nodes = get_element_nodes_from("10+(5-2)/6"); // AddNode ( IntegerNode(10), DivideNode ( SubstractNode, IntegerNode(6) ) )
+  const auto nodes = get_element_nodes_from("10+(5-2)/6"); // AddNode ( IntegerNode(10), DivideNode ( SubstractNode, IntegerNode(6) ) )
   assert(nodes.size() == 1);
 
-  auto first_element = nodes.front();
-  auto add_node = cast_node<AddNode>(first_element);
-  auto add_a = cast_node<IntegerNode>(add_node->get_a()); // 10
-  auto add_b = cast_node<DivideNode>(add_node->get_b()); // DivideNode( SubstractNode(), IntegerNode(10) )
+  const auto first_element = nodes.front();
+  const auto add_node = cast_node<AddNode>(first_element);
+  const auto add_a = cast_node<IntegerNode>(add_node->get_a()); // 10
+  const auto add_b = cast_node<DivideNode>(add_node->get_b()); // DivideNode( SubstractNode(), IntegerNode(10) )
   assert(add_a->getValue() == 10);
 
-  auto sub_node = cast_node<SubstractNode>(add_b->get_a());
-  auto sub_a = cast_node<IntegerNode>(sub_node->get_a());
-  auto sub_b = cast_node<IntegerNode>(sub_node->get_b());
+  const auto sub_node = cast_node<SubstractNode>(add_b->get_a());
+  const auto sub_a = cast_node<IntegerNode>(sub_node->get_a());
+  const auto sub_b = cast_node<IntegerNode>(sub_node->get_b());
   assert(sub_a->getValue() == 5);
   assert(sub_b->getValue() == 2);
 
-  auto dem = cast_node<IntegerNode>(add_b->get_b());
-  assert(dem->getValue() == 6);
+  const auto den = cast_node<IntegerNode>(add_b->get_b());
+  assert(den->getValue() == 6);
+
+  delete add_node; // will delete everything it contains
 
   print_success_msg("parser with complex maths expression with parenthesis", 1);
 }
 
 void test_complex_maths_expression_without_parenthesis() {
-  auto nodes = get_element_nodes_from("10+5-2/6"); // SubstractNode( AddNode(10, 5), DivideNode(2, 6) )
+  const auto nodes = get_element_nodes_from("10+5-2/6"); // SubstractNode( AddNode(10, 5), DivideNode(2, 6) )
   assert(nodes.size() == 1);
 
-  auto first_element = nodes.front();
-  auto sub_node = cast_node<SubstractNode>(first_element);
-  auto add_node = cast_node<AddNode>(sub_node->get_a());
-  auto div_node = cast_node<DivideNode>(sub_node->get_b());
+  const auto first_element = nodes.front();
+  const auto sub_node = cast_node<SubstractNode>(first_element);
+  const auto add_node = cast_node<AddNode>(sub_node->get_a());
+  const auto div_node = cast_node<DivideNode>(sub_node->get_b());
 
-  auto add_a = cast_node<IntegerNode>(add_node->get_a());
-  auto add_b = cast_node<IntegerNode>(add_node->get_b());
+  const auto add_a = cast_node<IntegerNode>(add_node->get_a());
+  const auto add_b = cast_node<IntegerNode>(add_node->get_b());
   assert(add_a->getValue() == 10);
   assert(add_b->getValue() == 5);
 
-  auto div_a = cast_node<IntegerNode>(div_node->get_a());
-  auto div_b = cast_node<IntegerNode>(div_node->get_b());
+  const auto div_a = cast_node<IntegerNode>(div_node->get_a());
+  const auto div_b = cast_node<IntegerNode>(div_node->get_b());
   assert(div_a->getValue() == 2);
   assert(div_b->getValue() == 6);
+
+  delete sub_node;
 
   print_success_msg("parser with complex maths expression without parenthesis", 1);
 }
 
 void test_mutiple_lines() {
-  auto nodes = get_element_nodes_from(
+  const auto nodes = get_element_nodes_from(
     "1+2\n"
     "3-4"
   );
   assert(nodes.size() == 2);
 
-  auto first_node = cast_node<AddNode>(nodes.front());
-  auto second_node = cast_node<SubstractNode>(nodes.back());
+  const auto first_node = cast_node<AddNode>(nodes.front());
+  const auto second_node = cast_node<SubstractNode>(nodes.back());
 
   assert(cast_node<IntegerNode>(first_node->get_a())->getValue() == 1);
   assert(cast_node<IntegerNode>(first_node->get_b())->getValue() == 2);
   assert(cast_node<IntegerNode>(second_node->get_a())->getValue() == 3);
   assert(cast_node<IntegerNode>(second_node->get_b())->getValue() == 4);
 
+  delete first_node;
+  delete second_node;
+
   print_success_msg("parser with multiple lines", 1);
 }
 
-void test_positions() {
-  auto nodes = get_element_nodes_from("5");
+void test_positions_on_single_digit() {
+  const auto nodes = get_element_nodes_from("5");
   assert(nodes.size() == 1);
 
-  auto node = cast_node<IntegerNode>(nodes.front());
-  auto pos_start = node->getStartingPosition();
-  auto pos_end = node->getEndingPosition();
+  const auto node = cast_node<IntegerNode>(nodes.front());
+  const auto pos_start = node->getStartingPosition();
+  const auto pos_end = node->getEndingPosition();
 
   assert(pos_start.get_idx() == 0);
   assert(pos_start.get_col() == 0);
@@ -240,67 +269,133 @@ void test_positions() {
   assert(pos_end.get_col() == 1);
   assert(pos_end.get_ln() == 0);
 
-  print_success_msg("node's positions are valid", 1);
+  print_success_msg("node's positions are valid on a single digit", 1);
+}
+
+void test_positions_on_math_expression() {
+  const auto nodes = get_element_nodes_from("5+6-2");
+  assert(nodes.size() == 1);
+
+  const auto sub_node = cast_node<SubstractNode>(nodes.front());
+  const auto add_node = cast_node<AddNode>(sub_node->get_a());
+  const auto two = cast_node<IntegerNode>(sub_node->get_b());
+
+  const auto five = cast_node<IntegerNode>(add_node->get_a());
+  const auto six = cast_node<IntegerNode>(add_node->get_b());
+
+  assert(five->getValue() == 5);
+  assert(six->getValue() == 6);
+  assert(two->getValue() == 2);
+
+  assert(five->getStartingPosition().get_idx() == 0);
+  assert(five->getEndingPosition().get_idx() == 1);
+  assert(six->getStartingPosition().get_idx() == 2);
+  assert(six->getEndingPosition().get_idx() == 3);
+  assert(two->getStartingPosition().get_idx() == 4);
+  assert(two->getEndingPosition().get_idx() == 5);
+
+  assert(sub_node->getStartingPosition().get_idx() == five->getStartingPosition().get_idx());
+  assert(sub_node->getEndingPosition().get_idx() == two->getEndingPosition().get_idx());
+  assert(add_node->getStartingPosition().get_idx() == five->getStartingPosition().get_idx());
+  assert(add_node->getEndingPosition().get_idx() == six->getEndingPosition().get_idx());
+
+  delete sub_node;
+
+  print_success_msg("node's positions are valid on a math expression", 1);
 }
 
 void test_variable_assignment_with_initial_value() {
-  auto nodes = get_element_nodes_from("store a as int = 5");
+  const string code = "store a as int = 5";
+  const auto nodes = get_element_nodes_from(code);
   assert(nodes.size() == 1);
 
-  auto node = cast_node<VarAssignmentNode>(nodes.front());
+  const auto node = cast_node<VarAssignmentNode>(nodes.front());
   assert(node->get_type() == Type::INT);
   assert(node->get_type_name() == "int");
   assert(node->get_var_name() == "a");
   assert(node->has_value());
 
+  assert(node->getStartingPosition().get_idx() == 0);
+  assert(node->getEndingPosition().get_idx() == code.size());
+
+  assert(node->get_value_node()->getStartingPosition().get_idx() == code.size() - 1);
+  assert(node->get_value_node()->getEndingPosition().get_idx() == code.size());
+
+  delete node;
+
   print_success_msg("variable assignment of an integer with initial value", 1);
 }
 
 void test_variable_assignment_without_initial_value() {
-  auto nodes = get_element_nodes_from("store a as int");
+  const string code = "store a as int";
+  const auto nodes = get_element_nodes_from(code);
   assert(nodes.size() == 1);
 
-  auto node = cast_node<VarAssignmentNode>(nodes.front());
+  const auto node = cast_node<VarAssignmentNode>(nodes.front());
   assert(node->get_type() == Type::INT);
   assert(node->get_type_name() == "int");
   assert(node->get_var_name() == "a");
   assert(!node->has_value());
 
+  assert(node->getStartingPosition().get_idx() == 0);
+  assert(node->getEndingPosition().get_idx() == code.size());
+
+  delete node;
+
   print_success_msg("variable assignment of an integer without initial value", 1);
 }
 
 void test_variable_modification() {
-  auto nodes = get_element_nodes_from("a = 5");
+  const string code = "a = 5";
+  const auto nodes = get_element_nodes_from(code);
   assert(nodes.size() == 1);
 
-  auto node = cast_node<VarModifyNode>(nodes.front());
-  assert(node->get_var_name() == "a");
-  assert(instanceof<IntegerNode>(node->get_value_node()));
-  auto integer = cast_node<IntegerNode>(node->get_value_node());
+  const auto var_modify_node = cast_node<VarModifyNode>(nodes.front());
+  assert(var_modify_node->get_var_name() == "a");
+  assert(instanceof<IntegerNode>(var_modify_node->get_value_node()));
+
+  const auto integer = cast_node<IntegerNode>(var_modify_node->get_value_node());
   assert(integer->getValue() == 5);
+
+  assert(var_modify_node->getStartingPosition().get_idx() == 0);
+  assert(var_modify_node->getEndingPosition().get_idx() == code.size());
+  assert(integer->getStartingPosition().get_idx() == 4);
+  assert(integer->getEndingPosition().get_idx() == 5);
+
+  delete var_modify_node; // will delete "integer" too.
 
   print_success_msg("variable modification", 1);
 }
 
 void test_access_node() {
-  auto nodes = get_element_nodes_from("variable");
+  const string code = "variable";
+  const auto nodes = get_element_nodes_from(code);
   assert(nodes.size() == 1);
 
-  auto node = cast_node<VarAccessNode>(nodes.front());
+  const auto node = cast_node<VarAccessNode>(nodes.front());
   assert(node->get_var_name() == "variable");
   assert(node->to_string() == "(variable)");
+  assert(node->getStartingPosition().get_idx() == 0);
+  assert(node->getEndingPosition().get_idx() == code.size());
+
+  delete node;
 
   print_success_msg("variable access", 1);
 }
 
 void test_access_node_in_expression() {
-  auto nodes = get_element_nodes_from("a+5");
+  const string code = "a+5";
+  const auto nodes = get_element_nodes_from(code);
   assert(nodes.size() == 1);
   assert(instanceof<AddNode>(nodes.front()));
 
-  auto node = cast_node<AddNode>(nodes.front());
+  const auto node = cast_node<AddNode>(nodes.front());
   assert(instanceof<VarAccessNode>(node->get_a()));
   assert(instanceof<IntegerNode>(node->get_b()));
+  assert(node->getStartingPosition().get_idx() == 0);
+  assert(node->getEndingPosition().get_idx() == code.size());
+
+  delete node;
 
   print_success_msg("variable access in maths expression", 1);
 }
@@ -323,7 +418,8 @@ int main() {
     test_complex_maths_expression_with_parenthesis();
     test_complex_maths_expression_without_parenthesis();
     test_mutiple_lines();
-    test_positions();
+    test_positions_on_single_digit();
+    test_positions_on_math_expression();
     test_variable_assignment_with_initial_value();
     test_variable_assignment_without_initial_value();
     test_variable_modification();

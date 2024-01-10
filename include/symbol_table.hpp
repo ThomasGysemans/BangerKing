@@ -42,12 +42,12 @@ class SymbolTable {
     Value* get(const string& name);
 
     /// @brief Creates or modifies a variable from the current context, or the parent contexts.
-    /// @param name The name of the variable to create/modify.
+    /// @param name The name of the variable to modify.
     /// @param new_value The value to give to this variable.
     void modify(const string& name, Value* new_value);
 
     /// @brief Sets the variable `name` to `value`. It doesn't check if the variable already exists, and only creates the variable in this context.
-    /// @param name The name of the variable to create/modify in this current context.
+    /// @param name The name of the variable to create in this current context.
     /// @param value The value to give to this variable.
     void set(const string& name, Value* value);
 

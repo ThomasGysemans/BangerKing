@@ -48,6 +48,25 @@ void test_to_string() {
   print_success_msg("position as string", 1);
 }
 
+void test_equals() {
+  Position pos1 = Position::getDefaultPos();
+  Position pos2 = Position::getDefaultPos();
+  assert(pos1.equals(pos1));
+  assert(pos1.equals(pos2));
+
+  pos2.advance('5');
+  assert(!pos1.equals(pos2));
+
+  pos1.advance('5');
+  assert(pos1.equals(pos2));
+
+  pos1.advance('\n');
+  pos2.advance('\n');
+  assert(pos1.equals(pos2));
+
+  print_success_msg("compare two Position", 1);
+}
+
 int main() {
   print_title("Positions tests...");
 
@@ -55,6 +74,7 @@ int main() {
   test_advanced_position();
   test_multiline_position();
   test_to_string();
+  test_equals();
 
   print_success_msg("All \"Positions\" tests successfully passed");
   return 0;

@@ -6,33 +6,44 @@
 #include "../include/exceptions/runtime_error.hpp"
 #include "../include/exceptions/type_error.hpp"
 
-RuntimeResult* Interpreter::visit(const CustomNode* node, const Context* ctx) {
+// Since `shared_ctx` is static,
+// it must be redeclared here so that the compiler knows it exists.
+Context* Interpreter::shared_ctx = nullptr;
+
+void Interpreter::set_shared_ctx(Context* ctx) {
+  shared_ctx = ctx;
+}
+
+RuntimeResult* Interpreter::visit(const CustomNode* node) {
+  if (shared_ctx == nullptr) {
+    throw "A context was not provided for interpretation.";
+  }
   if (instanceof<ListNode>(node)) {
-    return visit_ListNode(cast_node<ListNode>(node), ctx);
+    return visit_ListNode(cast_node<ListNode>(node));
   } else if (instanceof<IntegerNode>(node)) {
-    return visit_IntegerNode(cast_node<IntegerNode>(node), ctx);
+    return visit_IntegerNode(cast_node<IntegerNode>(node));
   } else if (instanceof<AddNode>(node)) {
-    return visit_AddNode(cast_node<AddNode>(node), ctx);
+    return visit_AddNode(cast_node<AddNode>(node));
   } else if (instanceof<SubstractNode>(node)) {
-    return visit_SubstractNode(cast_node<SubstractNode>(node), ctx);
+    return visit_SubstractNode(cast_node<SubstractNode>(node));
   } else if (instanceof<MultiplyNode>(node)) {
-    return visit_MultiplyNode(cast_node<MultiplyNode>(node), ctx);
+    return visit_MultiplyNode(cast_node<MultiplyNode>(node));
   } else if (instanceof<PowerNode>(node)) {
-    return visit_PowerNode(cast_node<PowerNode>(node), ctx);
+    return visit_PowerNode(cast_node<PowerNode>(node));
   } else if (instanceof<DivideNode>(node)) {
-    return visit_DivideNode(cast_node<DivideNode>(node), ctx);
+    return visit_DivideNode(cast_node<DivideNode>(node));
   } else if (instanceof<ModuloNode>(node)) {
-    return visit_ModuloNode(cast_node<ModuloNode>(node), ctx);
+    return visit_ModuloNode(cast_node<ModuloNode>(node));
   } else if (instanceof<MinusNode>(node)) {
-    return visit_MinusNode(cast_node<MinusNode>(node), ctx);
+    return visit_MinusNode(cast_node<MinusNode>(node));
   } else if (instanceof<PlusNode>(node)) {
-    return visit_PlusNode(cast_node<PlusNode>(node), ctx);
+    return visit_PlusNode(cast_node<PlusNode>(node));
   } else if (instanceof<VarAssignmentNode>(node)) {
-    return visit_VarAssignmentNode(cast_node<VarAssignmentNode>(node), ctx);
+    return visit_VarAssignmentNode(cast_node<VarAssignmentNode>(node));
   } else if (instanceof<VarAccessNode>(node)) {
-    return visit_VarAccessNode(cast_node<VarAccessNode>(node), ctx);
+    return visit_VarAccessNode(cast_node<VarAccessNode>(node));
   } else if (instanceof<VarModifyNode>(node)) {
-    return visit_VarModifyNode(cast_node<VarModifyNode>(node), ctx);
+    return visit_VarModifyNode(cast_node<VarModifyNode>(node));
   }
   throw UndefinedBehaviorException("Unimplemented visit method for input node");
 }
@@ -77,6 +88,8 @@ void Interpreter::type_error(const Value* value, const Type expected_type, const
   );
 }
 
+// For know, it will simply compare if the types are the same,
+// but it will get much more complex soon.
 void Interpreter::ensure_type_compatibility(const Value* new_value, const Type expected_type, const Context* ctx) {
   const Type value_type = new_value->get_type();
   if (expected_type != value_type) {
@@ -98,38 +111,38 @@ void Interpreter::ensure_type_compatibility(const Value* new_value, const string
 *
 */
 
-RuntimeResult* Interpreter::visit_ListNode(const ListNode* node, const Context* ctx) {
+RuntimeResult* Interpreter::visit_ListNode(const ListNode* node) {
   RuntimeResult* res = new RuntimeResult();
   list<const Value*> elements;
   for (const CustomNode* element_node : node->get_element_nodes()) {
-    const Value* value = res->read(visit(element_node, ctx));
+    const Value* value = res->read(visit(element_node));
     if (res->should_return()) return res;
     elements.push_back(value);
   }
   ListValue* list_value = new ListValue(elements);
-  populate(list_value, node, ctx);
+  populate(list_value, node, shared_ctx);
   return res->success(to_value(list_value));
 }
 
-RuntimeResult* Interpreter::visit_IntegerNode(const IntegerNode* node, const Context* ctx) {
+RuntimeResult* Interpreter::visit_IntegerNode(const IntegerNode* node) {
   RuntimeResult* res = new RuntimeResult();
   IntegerValue* i = new IntegerValue(node->getValue());
-  populate(i, node, ctx);
+  populate(i, node, shared_ctx);
   return res->success(to_value(i));
 }
 
-RuntimeResult* Interpreter::visit_AddNode(const AddNode* node, const Context* ctx) {
+RuntimeResult* Interpreter::visit_AddNode(const AddNode* node) {
   RuntimeResult* res = new RuntimeResult();
-  const Value* left = res->read(visit(node->get_a(), ctx));
+  const Value* left = res->read(visit(node->get_a()));
   if (res->should_return()) return res;
-  const Value* right = res->read(visit(node->get_b(), ctx));
+  const Value* right = res->read(visit(node->get_b()));
   if (res->should_return()) return res;
 
   if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
     const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
     const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
     IntegerValue* r = (*a) + (*b);
-    populate(r, node, ctx);
+    populate(r, node, shared_ctx);
     delete a;
     delete b;
     return res->success(to_value(r));
@@ -138,22 +151,22 @@ RuntimeResult* Interpreter::visit_AddNode(const AddNode* node, const Context* ct
   delete left;
   delete right;
   delete res;
-  illegal_operation(node, ctx);
+  illegal_operation(node, shared_ctx);
   return nullptr;
 }
 
-RuntimeResult* Interpreter::visit_SubstractNode(const SubstractNode* node, const Context* ctx) {
+RuntimeResult* Interpreter::visit_SubstractNode(const SubstractNode* node) {
   RuntimeResult* res = new RuntimeResult();
-  const Value* left = res->read(visit(node->get_a(), ctx));
+  const Value* left = res->read(visit(node->get_a()));
   if (res->should_return()) return res;
-  const Value* right = res->read(visit(node->get_b(), ctx));
+  const Value* right = res->read(visit(node->get_b()));
   if (res->should_return()) return res;
 
   if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
     const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
     const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
     IntegerValue* r = (*a) - (*b);
-    populate(r, node, ctx);
+    populate(r, node, shared_ctx);
     delete a;
     delete b;
     return res->success(to_value(r));
@@ -162,22 +175,22 @@ RuntimeResult* Interpreter::visit_SubstractNode(const SubstractNode* node, const
   delete left;
   delete right;
   delete res;
-  illegal_operation(node, ctx);
+  illegal_operation(node, shared_ctx);
   return nullptr;
 }
 
-RuntimeResult* Interpreter::visit_MultiplyNode(const MultiplyNode* node, const Context* ctx) {
+RuntimeResult* Interpreter::visit_MultiplyNode(const MultiplyNode* node) {
   RuntimeResult* res = new RuntimeResult();
-  const Value* left = res->read(visit(node->get_a(), ctx));
+  const Value* left = res->read(visit(node->get_a()));
   if (res->should_return()) return res;
-  const Value* right = res->read(visit(node->get_b(), ctx));
+  const Value* right = res->read(visit(node->get_b()));
   if (res->should_return()) return res;
 
   if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
     const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
     const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
     IntegerValue* r = (*a) * (*b);
-    populate(r, node, ctx);
+    populate(r, node, shared_ctx);
     delete a;
     delete b;
     return res->success(to_value(r));
@@ -186,22 +199,22 @@ RuntimeResult* Interpreter::visit_MultiplyNode(const MultiplyNode* node, const C
   delete left;
   delete right;
   delete res;
-  illegal_operation(node, ctx);
+  illegal_operation(node, shared_ctx);
   return nullptr;
 }
 
-RuntimeResult* Interpreter::visit_PowerNode(const PowerNode* node, const Context* ctx) {
+RuntimeResult* Interpreter::visit_PowerNode(const PowerNode* node) {
   RuntimeResult* res = new RuntimeResult();
-  const Value* left = res->read(visit(node->get_a(), ctx));
+  const Value* left = res->read(visit(node->get_a()));
   if (res->should_return()) return res;
-  const Value* right = res->read(visit(node->get_b(), ctx));
+  const Value* right = res->read(visit(node->get_b()));
   if (res->should_return()) return res;
 
   if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
     const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
     const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
     IntegerValue* r = new IntegerValue(pow(a->get_actual_value(), b->get_actual_value()));
-    populate(r, node, ctx);
+    populate(r, node, shared_ctx);
     delete a;
     delete b;
     return res->success(to_value(r));
@@ -210,22 +223,22 @@ RuntimeResult* Interpreter::visit_PowerNode(const PowerNode* node, const Context
   delete left;
   delete right;
   delete res;
-  illegal_operation(node, ctx);
+  illegal_operation(node, shared_ctx);
   return nullptr;
 }
 
-RuntimeResult* Interpreter::visit_DivideNode(const DivideNode* node, const Context* ctx) {
+RuntimeResult* Interpreter::visit_DivideNode(const DivideNode* node) {
   RuntimeResult* res = new RuntimeResult();
-  const Value* left = res->read(visit(node->get_a(), ctx));
+  const Value* left = res->read(visit(node->get_a()));
   if (res->should_return()) return res;
-  const Value* right = res->read(visit(node->get_b(), ctx));
+  const Value* right = res->read(visit(node->get_b()));
   if (res->should_return()) return res;
 
   if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
     const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
     const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
     IntegerValue* r = (*a) / (*b);
-    populate(r, node, ctx);
+    populate(r, node, shared_ctx);
     delete a;
     delete b;
     return res->success(to_value(r));
@@ -234,22 +247,22 @@ RuntimeResult* Interpreter::visit_DivideNode(const DivideNode* node, const Conte
   delete left;
   delete right;
   delete res;
-  illegal_operation(node, ctx);
+  illegal_operation(node, shared_ctx);
   return nullptr;
 }
 
-RuntimeResult* Interpreter::visit_ModuloNode(const ModuloNode* node, const Context* ctx) {
+RuntimeResult* Interpreter::visit_ModuloNode(const ModuloNode* node) {
   RuntimeResult* res = new RuntimeResult();
-  const Value* left = res->read(visit(node->get_a(), ctx));
+  const Value* left = res->read(visit(node->get_a()));
   if (res->should_return()) return res;
-  const Value* right = res->read(visit(node->get_b(), ctx));
+  const Value* right = res->read(visit(node->get_b()));
   if (res->should_return()) return res;
 
   if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
     const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
     const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
     IntegerValue* r = (*a) % (*b);
-    populate(r, node, ctx);
+    populate(r, node, shared_ctx);
     delete a;
     delete b;
     return res->success(to_value(r));
@@ -258,59 +271,59 @@ RuntimeResult* Interpreter::visit_ModuloNode(const ModuloNode* node, const Conte
   delete left;
   delete right;
   delete res;
-  illegal_operation(node, ctx);
+  illegal_operation(node, shared_ctx);
   return nullptr;
 }
 
-RuntimeResult* Interpreter::visit_MinusNode(const MinusNode* node, const Context* ctx) {
+RuntimeResult* Interpreter::visit_MinusNode(const MinusNode* node) {
   RuntimeResult* res = new RuntimeResult();
-  const Value* value = res->read(visit(node->get_node(), ctx));
+  const Value* value = res->read(visit(node->get_node()));
   if (res->should_return()) return res;
 
   if (instanceof<IntegerValue>(value)) {
     const IntegerValue* integer = dynamic_cast<const IntegerValue*>(value);
     IntegerValue* negative_integer = new IntegerValue(-1 * integer->get_actual_value());
-    populate(negative_integer, node, ctx);
+    populate(negative_integer, node, shared_ctx);
     delete value;
     return res->success(to_value(negative_integer));
   }
 
   delete value;
   delete res;
-  illegal_operation(node, ctx);
+  illegal_operation(node, shared_ctx);
   return nullptr;
 }
 
-RuntimeResult* Interpreter::visit_PlusNode(const PlusNode* node, const Context* ctx) {
+RuntimeResult* Interpreter::visit_PlusNode(const PlusNode* node) {
   RuntimeResult* res = new RuntimeResult();
-  const Value* value = res->read(visit(node->get_node(), ctx));
+  const Value* value = res->read(visit(node->get_node()));
   if (res->should_return()) return res;
 
   if (instanceof<IntegerValue>(value)) {
     const IntegerValue* integer = dynamic_cast<const IntegerValue*>(value);
     IntegerValue* positive_integer = new IntegerValue(abs(integer->get_actual_value()));
-    populate(positive_integer, node, ctx);
+    populate(positive_integer, node, shared_ctx);
     delete value;
     return res->success(to_value(positive_integer));
   }
 
   delete value;
   delete res;
-  illegal_operation(node, ctx);
+  illegal_operation(node, shared_ctx);
   return nullptr;
 }
 
-RuntimeResult* Interpreter::visit_VarAssignmentNode(const VarAssignmentNode* node, const Context* ctx) {
-  if (ctx->get_symbol_table()->exists(node->get_var_name())) {
+RuntimeResult* Interpreter::visit_VarAssignmentNode(const VarAssignmentNode* node) {
+  if (shared_ctx->get_symbol_table()->exists(node->get_var_name())) {
     throw RuntimeError(
       node->getStartingPosition(), node->getEndingPosition(),
       "The variable named '" + node->get_var_name() + "' already defined in the current context.",
-      ctx
+      shared_ctx
     );
   }
 
   RuntimeResult* res = new RuntimeResult();
-  Value* initial_value = node->has_value() ? res->read(visit(node->get_value_node(), ctx)) : nullptr;
+  Value* initial_value = node->has_value() ? res->read(visit(node->get_value_node())) : nullptr;
   if (res->should_return()) return res;
 
   // A default value must be assigned
@@ -323,55 +336,55 @@ RuntimeResult* Interpreter::visit_VarAssignmentNode(const VarAssignmentNode* nod
         throw RuntimeError(
           node->getStartingPosition(), node->getEndingPosition(),
           "The variable named '" + node->get_var_name() + "' cannot receive a default value for this type.",
-          ctx
+          shared_ctx
         );
     }
   } else {
     // if a default value was given, we have to make sure that its type is compatible with the given type
     // (store a as int = "hello" doesn't work).
-    ensure_type_compatibility(initial_value, node->get_type(), ctx);
+    ensure_type_compatibility(initial_value, node->get_type(), shared_ctx);
   }
 
-  populate(initial_value, node, ctx);
-  ctx->get_symbol_table()->set(node->get_var_name(), initial_value->copy()); // copy's important because the garbage collector deallocates the returning value
+  populate(initial_value, node, shared_ctx);
+  shared_ctx->get_symbol_table()->set(node->get_var_name(), initial_value->copy()); // copy's important because the garbage collector deallocates the returning value
 
   return res->success(initial_value);
 }
 
-RuntimeResult* Interpreter::visit_VarAccessNode(const VarAccessNode* node, const Context* ctx) {
-  if (!ctx->get_symbol_table()->exists_globally(node->get_var_name())) {
+RuntimeResult* Interpreter::visit_VarAccessNode(const VarAccessNode* node) {
+  if (!shared_ctx->get_symbol_table()->exists_globally(node->get_var_name())) {
     throw RuntimeError(
       node->getStartingPosition(), node->getEndingPosition(),
       "Undefined variable '" + node->get_var_name() + "'.",
-      ctx
+      shared_ctx
     );
   }
   
   RuntimeResult* res = new RuntimeResult();
-  Value* value = ctx->get_symbol_table()->get(node->get_var_name());
-  populate(value, node, ctx);
+  Value* value = shared_ctx->get_symbol_table()->get(node->get_var_name());
+  populate(value, node, shared_ctx);
 
   // We have to keep in mind that the garbage collector will deallocate the returned value of a statement.
   // To make sure it doesn't delete a variable, we have to return a copy.
   return res->success(value->copy());
 }
 
-RuntimeResult* Interpreter::visit_VarModifyNode(const VarModifyNode* node, const Context* ctx) {
-  if (!ctx->get_symbol_table()->exists_globally(node->get_var_name())) {
+RuntimeResult* Interpreter::visit_VarModifyNode(const VarModifyNode* node) {
+  if (!shared_ctx->get_symbol_table()->exists_globally(node->get_var_name())) {
     throw RuntimeError(
       node->getStartingPosition(), node->getEndingPosition(),
       "Undefined variable '" + node->get_var_name() + "'.",
-      ctx
+      shared_ctx
     );
   }
   
   RuntimeResult* res = new RuntimeResult();
-  Value* new_value = res->read(visit(node->get_value_node(), ctx));
+  Value* new_value = res->read(visit(node->get_value_node()));
   if (res->should_return()) return res;
 
-  ensure_type_compatibility(new_value, node->get_var_name(), ctx);
+  ensure_type_compatibility(new_value, node->get_var_name(), shared_ctx);
 
-  ctx->get_symbol_table()->modify(node->get_var_name(), new_value);
+  shared_ctx->get_symbol_table()->modify(node->get_var_name(), new_value);
 
   // We have to keep in mind that the garbage collector will deallocate the returned value of a statement.
   // To make sure it doesn't delete a variable, we have to return a copy.

@@ -40,6 +40,7 @@ endef
 # an executable that would run the CLI for BangerKing.
 # Note that this target also executes the executable.
 cli:
+	@mkdir -p ${EXECUTABLE_DIRECTORY}
 	@$(call filter_one_main_function, src/main.cpp); \
 	${GPP} $$files -o ${EXECUTABLE_FULL_PATH}
 	@$(MAKE) execute
@@ -47,6 +48,7 @@ cli:
 # Runs the CLI but uses the "-fsanitize=address" option of gpp.
 # It's useful to locate memory issues more easily.
 debug:
+	@mkdir -p ${EXECUTABLE_DIRECTORY}
 	@$(call filter_one_main_function, src/main.cpp); \
 	${GPP} $$files -o ${EXECUTABLE_FULL_PATH} -fsanitize=address
 	@$(MAKE) execute

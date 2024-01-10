@@ -19,7 +19,6 @@ void test_replace_substring() {
   replace_substring(text, pattern, "undefined");
   assert(text == "hello planet, what a beautiful planet it is");
 
-
   print_success_msg("replace_substring", 1);
 }
 
