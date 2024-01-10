@@ -17,17 +17,21 @@ class Interpreter {
   private:
     static RuntimeResult* visit_IntegerNode(const IntegerNode* node);
     static RuntimeResult* visit_ListNode(const ListNode* node);
-    static RuntimeResult* visit_AddNode(const AddNode* node);
-    static RuntimeResult* visit_SubstractNode(const SubstractNode* node);
-    static RuntimeResult* visit_MultiplyNode(const MultiplyNode* node);
-    static RuntimeResult* visit_PowerNode(const PowerNode* node);
-    static RuntimeResult* visit_DivideNode(const DivideNode* node);
-    static RuntimeResult* visit_ModuloNode(const ModuloNode* node);
     static RuntimeResult* visit_MinusNode(const MinusNode* node);
     static RuntimeResult* visit_PlusNode(const PlusNode* node);
     static RuntimeResult* visit_VarAssignmentNode(const VarAssignmentNode* node);
     static RuntimeResult* visit_VarAccessNode(const VarAccessNode* node);
     static RuntimeResult* visit_VarModifyNode(const VarModifyNode* node);
+
+    /// @brief Explores a binary operation node (addition, substraction, division, power, multiplication, modulo, etc.)
+    /// @param node A binary operation node.
+    static RuntimeResult* visit_BinaryOperationNode(const BinaryOperationNode* node);
+    static Value* interpret_addition(const Value* left, const Value* right, const BinaryOperationNode* node);
+    static Value* interpret_substraction(const Value* left, const Value* right, const BinaryOperationNode* node);
+    static Value* interpret_multiplication(const Value* left, const Value* right, const BinaryOperationNode* node);
+    static Value* interpret_power(const Value* left, const Value* right, const BinaryOperationNode* node);
+    static Value* interpret_division(const Value* left, const Value* right, const BinaryOperationNode* node);
+    static Value* interpret_modulo(const Value* left, const Value* right, const BinaryOperationNode* node);
 
     // helper methods:
     

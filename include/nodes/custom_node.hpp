@@ -23,5 +23,5 @@ class CustomNode {
 
     virtual ~CustomNode(); // to allow the use of `dynamic_cast` (), it's "RTTI" (runtime type identification)
 
-    virtual string to_string() const;
+    virtual string to_string() const = 0; // pure virtual method
 };

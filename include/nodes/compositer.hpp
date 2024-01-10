@@ -3,6 +3,7 @@
 // It's the case for the parser and the interpreter.
 
 #include "custom_node.hpp"
+#include "binary_operation.hpp"
 #include "add_node.hpp"
 #include "divide_node.hpp"
 #include "list_node.hpp"

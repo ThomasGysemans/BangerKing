@@ -1,21 +1,14 @@
 #pragma once
 
-#include "custom_node.hpp"
+#include "binary_operation.hpp"
 using namespace std;
 
-class MultiplyNode: public CustomNode {
-  const CustomNode* node_a;
-  const CustomNode* node_b;
-
+class MultiplyNode: public BinaryOperationNode {
   public:
     MultiplyNode(
       const CustomNode* a,
       const CustomNode* b
     );
 
-    ~MultiplyNode();
-
-    const CustomNode* get_a() const;
-    const CustomNode* get_b() const;
     string to_string() const override;
 };

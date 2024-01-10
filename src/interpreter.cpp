@@ -22,18 +22,8 @@ RuntimeResult* Interpreter::visit(const CustomNode* node) {
     return visit_ListNode(cast_node<ListNode>(node));
   } else if (instanceof<IntegerNode>(node)) {
     return visit_IntegerNode(cast_node<IntegerNode>(node));
-  } else if (instanceof<AddNode>(node)) {
-    return visit_AddNode(cast_node<AddNode>(node));
-  } else if (instanceof<SubstractNode>(node)) {
-    return visit_SubstractNode(cast_node<SubstractNode>(node));
-  } else if (instanceof<MultiplyNode>(node)) {
-    return visit_MultiplyNode(cast_node<MultiplyNode>(node));
-  } else if (instanceof<PowerNode>(node)) {
-    return visit_PowerNode(cast_node<PowerNode>(node));
-  } else if (instanceof<DivideNode>(node)) {
-    return visit_DivideNode(cast_node<DivideNode>(node));
-  } else if (instanceof<ModuloNode>(node)) {
-    return visit_ModuloNode(cast_node<ModuloNode>(node));
+  } else if (instanceof<BinaryOperationNode>(node)) {
+    return visit_BinaryOperationNode(cast_node<BinaryOperationNode>(node));
   } else if (instanceof<MinusNode>(node)) {
     return visit_MinusNode(cast_node<MinusNode>(node));
   } else if (instanceof<PlusNode>(node)) {
@@ -131,150 +121,6 @@ RuntimeResult* Interpreter::visit_IntegerNode(const IntegerNode* node) {
   return res->success(to_value(i));
 }
 
-RuntimeResult* Interpreter::visit_AddNode(const AddNode* node) {
-  RuntimeResult* res = new RuntimeResult();
-  const Value* left = res->read(visit(node->get_a()));
-  if (res->should_return()) return res;
-  const Value* right = res->read(visit(node->get_b()));
-  if (res->should_return()) return res;
-
-  if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
-    const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
-    const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
-    IntegerValue* r = (*a) + (*b);
-    populate(r, node, shared_ctx);
-    delete a;
-    delete b;
-    return res->success(to_value(r));
-  }
-
-  delete left;
-  delete right;
-  delete res;
-  illegal_operation(node, shared_ctx);
-  return nullptr;
-}
-
-RuntimeResult* Interpreter::visit_SubstractNode(const SubstractNode* node) {
-  RuntimeResult* res = new RuntimeResult();
-  const Value* left = res->read(visit(node->get_a()));
-  if (res->should_return()) return res;
-  const Value* right = res->read(visit(node->get_b()));
-  if (res->should_return()) return res;
-
-  if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
-    const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
-    const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
-    IntegerValue* r = (*a) - (*b);
-    populate(r, node, shared_ctx);
-    delete a;
-    delete b;
-    return res->success(to_value(r));
-  }
-
-  delete left;
-  delete right;
-  delete res;
-  illegal_operation(node, shared_ctx);
-  return nullptr;
-}
-
-RuntimeResult* Interpreter::visit_MultiplyNode(const MultiplyNode* node) {
-  RuntimeResult* res = new RuntimeResult();
-  const Value* left = res->read(visit(node->get_a()));
-  if (res->should_return()) return res;
-  const Value* right = res->read(visit(node->get_b()));
-  if (res->should_return()) return res;
-
-  if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
-    const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
-    const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
-    IntegerValue* r = (*a) * (*b);
-    populate(r, node, shared_ctx);
-    delete a;
-    delete b;
-    return res->success(to_value(r));
-  }
-
-  delete left;
-  delete right;
-  delete res;
-  illegal_operation(node, shared_ctx);
-  return nullptr;
-}
-
-RuntimeResult* Interpreter::visit_PowerNode(const PowerNode* node) {
-  RuntimeResult* res = new RuntimeResult();
-  const Value* left = res->read(visit(node->get_a()));
-  if (res->should_return()) return res;
-  const Value* right = res->read(visit(node->get_b()));
-  if (res->should_return()) return res;
-
-  if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
-    const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
-    const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
-    IntegerValue* r = new IntegerValue(pow(a->get_actual_value(), b->get_actual_value()));
-    populate(r, node, shared_ctx);
-    delete a;
-    delete b;
-    return res->success(to_value(r));
-  }
-
-  delete left;
-  delete right;
-  delete res;
-  illegal_operation(node, shared_ctx);
-  return nullptr;
-}
-
-RuntimeResult* Interpreter::visit_DivideNode(const DivideNode* node) {
-  RuntimeResult* res = new RuntimeResult();
-  const Value* left = res->read(visit(node->get_a()));
-  if (res->should_return()) return res;
-  const Value* right = res->read(visit(node->get_b()));
-  if (res->should_return()) return res;
-
-  if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
-    const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
-    const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
-    IntegerValue* r = (*a) / (*b);
-    populate(r, node, shared_ctx);
-    delete a;
-    delete b;
-    return res->success(to_value(r));
-  }
-
-  delete left;
-  delete right;
-  delete res;
-  illegal_operation(node, shared_ctx);
-  return nullptr;
-}
-
-RuntimeResult* Interpreter::visit_ModuloNode(const ModuloNode* node) {
-  RuntimeResult* res = new RuntimeResult();
-  const Value* left = res->read(visit(node->get_a()));
-  if (res->should_return()) return res;
-  const Value* right = res->read(visit(node->get_b()));
-  if (res->should_return()) return res;
-
-  if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
-    const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
-    const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
-    IntegerValue* r = (*a) % (*b);
-    populate(r, node, shared_ctx);
-    delete a;
-    delete b;
-    return res->success(to_value(r));
-  }
-
-  delete left;
-  delete right;
-  delete res;
-  illegal_operation(node, shared_ctx);
-  return nullptr;
-}
-
 RuntimeResult* Interpreter::visit_MinusNode(const MinusNode* node) {
   RuntimeResult* res = new RuntimeResult();
   const Value* value = res->read(visit(node->get_node()));
@@ -308,6 +154,124 @@ RuntimeResult* Interpreter::visit_PlusNode(const PlusNode* node) {
   }
 
   delete value;
+  delete res;
+  illegal_operation(node, shared_ctx);
+  return nullptr;
+}
+
+Value* Interpreter::interpret_addition(const Value* left, const Value* right, const BinaryOperationNode* node) {
+  if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
+    const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
+    const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
+    IntegerValue* r = (*a) + (*b);
+    populate(r, node, shared_ctx);
+    delete a;
+    delete b;
+    return to_value(r);
+  }
+
+  illegal_operation(node, shared_ctx);
+  return nullptr;
+}
+
+Value* Interpreter::interpret_substraction(const Value* left, const Value* right, const BinaryOperationNode* node) {
+  if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
+    const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
+    const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
+    IntegerValue* r = (*a) - (*b);
+    populate(r, node, shared_ctx);
+    delete a;
+    delete b;
+    return to_value(r);
+  }
+
+  illegal_operation(node, shared_ctx);
+  return nullptr;
+}
+
+Value* Interpreter::interpret_multiplication(const Value* left, const Value* right, const BinaryOperationNode* node) {
+  if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
+    const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
+    const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
+    IntegerValue* r = (*a) * (*b);
+    populate(r, node, shared_ctx);
+    delete a;
+    delete b;
+    return to_value(r);
+  }
+
+  illegal_operation(node, shared_ctx);
+  return nullptr;
+}
+
+Value* Interpreter::interpret_power(const Value* left, const Value* right, const BinaryOperationNode* node) {
+  if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
+    const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
+    const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
+    IntegerValue* r = new IntegerValue(pow(a->get_actual_value(), b->get_actual_value()));
+    populate(r, node, shared_ctx);
+    delete a;
+    delete b;
+    return to_value(r);
+  }
+
+  illegal_operation(node, shared_ctx);
+  return nullptr;
+}
+
+Value* Interpreter::interpret_division(const Value* left, const Value* right, const BinaryOperationNode* node) {
+  if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
+    const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
+    const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
+    IntegerValue* r = (*a) / (*b);
+    populate(r, node, shared_ctx);
+    delete a;
+    delete b;
+    return to_value(r);
+  }
+
+  illegal_operation(node, shared_ctx);
+  return nullptr;
+}
+
+Value* Interpreter::interpret_modulo(const Value* left, const Value* right, const BinaryOperationNode* node) {
+  if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
+    const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
+    const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
+    IntegerValue* r = (*a) % (*b);
+    populate(r, node, shared_ctx);
+    delete a;
+    delete b;
+    return to_value(r);
+  }
+
+  illegal_operation(node, shared_ctx);
+  return nullptr;
+}
+
+RuntimeResult* Interpreter::visit_BinaryOperationNode(const BinaryOperationNode* node) {
+  RuntimeResult* res = new RuntimeResult();
+  const Value* left = res->read(visit(node->get_a()));
+  if (res->should_return()) return res;
+  const Value* right = res->read(visit(node->get_b()));
+  if (res->should_return()) return res;
+
+  if (instanceof<AddNode>(node)) {
+    return res->success(interpret_addition(left, right, node));
+  } else if (instanceof<SubstractNode>(node)) {
+    return res->success(interpret_substraction(left, right, node));
+  } else if (instanceof<MultiplyNode>(node)) {
+    return res->success(interpret_multiplication(left, right, node));
+  } else if (instanceof<PowerNode>(node)) {
+    return res->success(interpret_power(left, right, node));
+  } else if (instanceof<DivideNode>(node)) {
+    return res->success(interpret_division(left, right, node));
+  } else if (instanceof<ModuloNode>(node)) {
+    return res->success(interpret_modulo(left, right, node));
+  }
+
+  delete left;
+  delete right;
   delete res;
   illegal_operation(node, shared_ctx);
   return nullptr;

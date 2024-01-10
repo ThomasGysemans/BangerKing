@@ -119,7 +119,7 @@ objects:
 # The executable and the object files get removed afterwards.
 perf:
 	@$(MAKE) objects
-	perfs="./tests/perf/*.perf.cpp"; \
+	@perfs="./tests/perf/*.perf.cpp"; \
 	for perf in $$perfs; do \
 		echo "Measuring performance of $$perf..."; \
 		base=$$(basename "$$perf"); \
