@@ -4,36 +4,34 @@
 #include "../include/lexer.hpp"
 #include "../include/parser.hpp"
 #include "../include/miscellaneous.hpp"
-#include "../include/values/integer.hpp"
+#include "../include/values/compositer.hpp"
 #include "../include/utils/deallocate_list_of_pointers.hpp"
 using namespace std;
 
 void test_integer() {
-  const string code = "5";
-  Lexer lexer(&code);
-  list<Token*> tokens = lexer.generate_tokens();
-  Parser parser(tokens);
-  const ListNode* tree = parser.parse();
-  const list<const CustomNode*> nodes = tree->get_element_nodes();
-  const IntegerNode* n = cast_node<IntegerNode>(nodes.front());
-  assert(n->getValue() == 5);
-  assert(n->getStartingPosition().get_idx() == 0);
-  assert(n->getEndingPosition().get_idx() == 1);
-
-  IntegerValue* integer = new IntegerValue(n->getValue());
-  integer->set_pos(n->getStartingPosition(), n->getEndingPosition());
-  assert(integer->get_actual_value() == n->getValue());
-  assert(integer->get_pos_start()->equals(n->getStartingPosition()));
-  assert(integer->get_pos_end()->equals(n->getEndingPosition()));
+  const IntegerValue* integer = new IntegerValue(5);
+  const IntegerValue* default_integer = new IntegerValue();
+  assert(integer->get_actual_value() == 5);
+  assert(integer->to_string() == "5");
+  assert(default_integer->get_actual_value() == IntegerValue::get_default_value());
   
-  const auto node_pos_start = n->getStartingPosition();
-  assert(integer->get_pos_start() != &node_pos_start);
-
   delete integer;
-  delete tree;
-  deallocate_list_of_pointers<Token>(tokens);
+  delete default_integer;
 
   print_success_msg("integer value", 1);
+}
+
+void test_double() {
+  const DoubleValue* d = new DoubleValue(3.14);
+  const DoubleValue* double_default = new DoubleValue();
+  assert(d->get_actual_value() == 3.14);
+  assert(d->to_string() == "3.14");
+  assert(double_default->get_actual_value() == DoubleValue::get_default_value());
+
+  delete d;
+  delete double_default;
+
+  return print_success_msg("double value", 1);
 }
 
 void test_copy() {
@@ -59,6 +57,7 @@ int main() {
   print_title("Values tests...");
 
   test_integer();
+  test_double();
   test_copy();
 
   print_success_msg("All \"Values\" tests successfully passed");

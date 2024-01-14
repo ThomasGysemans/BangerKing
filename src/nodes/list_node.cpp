@@ -21,6 +21,9 @@ list<const CustomNode*> ListNode::get_element_nodes() const { return element_nod
 int ListNode::get_number_of_nodes() const { return element_nodes.size(); }
 
 string ListNode::to_string() const {
+  if (element_nodes.empty()) {
+    return "[]";
+  }
   list<const CustomNode*>::const_iterator iter = element_nodes.begin();
   string result = "[" + (*iter)->to_string(); // (or (**iter).to_string() it's the same thing
   ++iter;

@@ -16,4 +16,10 @@ class ListValue: public Value {
     bool is_true() const override;
     ListValue* copy() const override;
     const list<const Value*>* get_elements() const;
+
+    /// @brief Transforms this value into another type.
+    /// Transforming into the same type will produce an error.
+    /// These transformations are possible, from the ListValue:
+    /// - Type::INT => returns an integer with the length of the list.
+    Value* cast(Type output_type) const override;
 };

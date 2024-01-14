@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <array>
 #include "runtime.hpp"
 #include "context.hpp"
@@ -16,6 +17,7 @@ class Interpreter {
     
   private:
     static RuntimeResult* visit_IntegerNode(const IntegerNode* node);
+    static RuntimeResult* visit_DoubleNode(const DoubleNode* node);
     static RuntimeResult* visit_ListNode(const ListNode* node);
     static RuntimeResult* visit_MinusNode(const MinusNode* node);
     static RuntimeResult* visit_PlusNode(const PlusNode* node);
@@ -50,7 +52,7 @@ class Interpreter {
     
     /// @brief Dynamically casts a derived instance of "Value" to an actual instance of "Value".
     /// @param value The derived value.
-    /// @return The same value, but dynamically casted to an instance of "Value".
+    /// @return The same value, but dynamically cast to an instance of "Value".
     static Value* to_value(Value* value);
 
     /// @brief Throws a `RuntimeError` for an illegal operation (like "5 + a_function" for example).
@@ -64,15 +66,62 @@ class Interpreter {
     /// @param ctx The context in which the error occured.
     static void type_error(const Value* value, const Type expected_type, const Context* ctx);
 
-    /// @brief Makes sure that the type of the given value is compatible with the type of the variable whose name is `variable_name` by throwing a `TypeError` if they're not.
-    /// @param new_value The value that we want to assign to a variable.
-    /// @param expected_type The type that `new_value` should have, or at least be compatible with.
-    /// @param ctx The context in which to find the variable.
-    static void ensure_type_compatibility(const Value* new_value, const Type expected_type, const Context* ctx);
+    /// @brief Applies a binary mathematical operation between `left` and `right` during the interpretation of `node`.
+    /// The operation to apply is given as a lambda function via the `operation` argument.
+    /// This method will populate the new value with the positions of the provided `node` and the `shared_ctx`.
+    /// This method also deallocates the memory used by `left` and `right`.
+    /// @tparam A The exact type of the left member.
+    /// @tparam B The exact type of the right member.
+    /// @tparam Op The lambda function that's automatically deduced when calling this function. No need to specify it explicitely.
+    /// @param left The left member of the operation.
+    /// @param right The right member of the operation.
+    /// @param node The binary operation node that the Interpreter is currently interpreting.
+    /// @return An instance of `Value` from the operation.
+    template <typename A, typename B, typename Op>
+    static Value* make_operation(const Value* left, const Value* right, const BinaryOperationNode* node, Op operation) {
+      const A* a = dynamic_cast<const A*>(left);
+      const B* b = dynamic_cast<const B*>(right);
+      auto r = operation(*a, *b);
+      populate(r, node, shared_ctx);
+      delete a;
+      delete b;
+      return to_value(r);
+    }
 
-    /// @brief Makes sure that the type of the given value is compatible with the type of the variable whose name is `variable_name` by throwing a `TypeError` if they're not.
-    /// @param new_value The value that we want to assign to a variable.
-    /// @param variable_name The name of the variable.
-    /// @param ctx The context in which to find the variable.
-    static void ensure_type_compatibility(const Value* new_value, const string variable_name, const Context* ctx);
+    /// @brief Applies an addition between `left` and `right`.
+    template <typename A, typename B>
+    static Value* make_addition(const Value* left, const Value* right, const BinaryOperationNode* node) {
+      return make_operation<A, B>(left, right, node, [](const A& a, const B& b) { return a + b; });
+    }
+
+    /// @brief Applies a substraction between `left` and `right`.
+    template <typename A, typename B>
+    static Value* make_substraction(const Value* left, const Value* right, const BinaryOperationNode* node) {
+      return make_operation<A, B>(left, right, node, [](const A& a, const B& b) { return a - b; });
+    }
+
+    /// @brief Applies a multiplication between `left` and `right`.
+    template <typename A, typename B>
+    static Value* make_multiplication(const Value* left, const Value* right, const BinaryOperationNode* node) {
+      return make_operation<A, B>(left, right, node, [](const A& a, const B& b) { return a * b; });
+    }
+
+    /// @brief Applies a power operation between `left` and `right`.
+    /// @tparam R Since the result type cannot be deduced, it must be specified when calling this method.
+    template <typename A, typename B, typename R>
+    static Value* make_power(const Value* left, const Value* right, const BinaryOperationNode* node) {
+      return make_operation<A, B>(left, right, node, [](const A& a, const B& b) { return new R(std::pow(a.get_actual_value(), b.get_actual_value())); });
+    }
+
+    /// @brief Applies a division between `left` and `right`.
+    template <typename A, typename B>
+    static Value* make_division(const Value* left, const Value* right, const BinaryOperationNode* node) {
+      return make_operation<A, B>(left, right, node, [](const A& a, const B& b) { return a / b; });
+    }
+
+    /// @brief Applies a modulo between `left` and `right`.
+    template <typename A, typename B>
+    static Value* make_modulo(const Value* left, const Value* right, const BinaryOperationNode* node) {
+      return make_operation<A, B>(left, right, node, [](const A& a, const B& b) { return a % b; });
+    }
 };

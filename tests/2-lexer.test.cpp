@@ -30,6 +30,18 @@ void test_simple_digit() {
   print_success_msg("lexer with simple digits", 1);
 }
 
+void test_simple_decimal_number() {
+  const string code = "3.14";
+  const list<Token*> tokens = get_tokens_from(code);
+  assert(tokens.size() == 1);
+  assert(tokens.front()->ofType(TokenType::NUMBER));
+  assert(tokens.front()->getStringValue() == "3.14");
+
+  delete tokens.front();
+
+  print_success_msg("lexer with simple decimal number", 1);
+}
+
 void test_simple_identifier() {
   const string code = "hello";
   const list<Token*> tokens = get_tokens_from(code);
@@ -240,6 +252,7 @@ int main() {
   print_title("Lexer tests...");
 
   test_simple_digit();
+  test_simple_decimal_number();
   test_simple_identifier();
   test_simple_keyword();
   test_simple_maths();

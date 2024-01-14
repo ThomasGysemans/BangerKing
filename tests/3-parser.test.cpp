@@ -38,6 +38,20 @@ void test_simple_number() {
   print_success_msg("parser with simple number", 1);
 }
 
+void test_simple_decimal_number() {
+  const auto element_nodes = get_element_nodes_from("3.14");
+  const auto first_element = element_nodes.front();
+  const auto number_node = cast_node<DoubleNode>(first_element);
+
+  assert(element_nodes.size() == 1);
+  assert(number_node->getValue() == 3.14);
+  assert(number_node->to_string() == "DoubleNode(3.14)"); // to make sure the double is printed out correctly
+
+  delete number_node;
+
+  print_success_msg("parser with simple decimal number", 1);
+}
+
 void test_simple_negative_number() {
   const auto nodes = get_element_nodes_from("-5");
   const auto first_element = nodes.front();
@@ -405,6 +419,7 @@ int main() {
 
   try {
     test_simple_number();
+    test_simple_decimal_number();
     test_simple_negative_number();
     test_simple_positive_number();
     test_simple_addition();

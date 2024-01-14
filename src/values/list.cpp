@@ -1,5 +1,8 @@
 #include "../../include/values/value.hpp"
+#include "../../include/values/integer.hpp"
+#include "../../include/values/double.hpp"
 #include "../../include/values/list.hpp"
+using namespace std;
 
 ListValue::ListValue(
   const list<const Value*>& elts
@@ -24,4 +27,16 @@ string ListValue::to_string() const {
     res += ", " + (*iter)->to_string();
   }
   return res + "]";
+}
+
+Value* ListValue::cast(Type output_type) const {
+  Value* cast_value = nullptr;
+  switch (output_type) {
+    case Type::INT: cast_value = new IntegerValue(elements.size()); break;
+    default:
+      return nullptr;
+  }
+  cast_value->set_pos(pos_start, pos_end);
+  cast_value->set_ctx(context);
+  return cast_value;
 }

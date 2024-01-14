@@ -12,7 +12,7 @@ string get_token_name(TokenType type);
 
 /// @brief Displays a list of tokens.
 /// @param l The list that contains all the tokens.
-/// @return A string to be displayed for debugging.
+/// @return A string to be displayed for debugging purposes.
 string display_tokens_list(const list<Token*>& l);
 
 /// @brief Displays the type of each token contained in the given list.

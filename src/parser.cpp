@@ -219,7 +219,11 @@ const CustomNode* Parser::atom() {
     return result;
   } else if (first_token.ofType(TokenType::NUMBER)) {
     advance();
-    return new IntegerNode(first_token);
+    if (string_contains(first_token.getStringValue(), '.')) {
+      return new DoubleNode(first_token);
+    } else {
+      return new IntegerNode(first_token);
+    }
   } else if (first_token.ofType(TokenType::IDENTIFIER)) {
     const Token var_tok = getTok()->copy();
     advance();

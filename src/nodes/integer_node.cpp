@@ -1,4 +1,4 @@
-#include "../../include/nodes/number_node.hpp"
+#include "../../include/nodes/integer_node.hpp"
 
 IntegerNode::IntegerNode(
   const Token& token

@@ -76,4 +76,6 @@ class Value {
     virtual string repr() const {
       return this->to_string();
     }
+
+    virtual Value* cast(Type output_type) const = 0;
 };

@@ -1,4 +1,3 @@
-#include <cmath>
 #include "../include/miscellaneous.hpp"
 #include "../include/interpreter.hpp"
 #include "../include/symbol_table.hpp"
@@ -22,6 +21,8 @@ RuntimeResult* Interpreter::visit(const CustomNode* node) {
     return visit_ListNode(cast_node<ListNode>(node));
   } else if (instanceof<IntegerNode>(node)) {
     return visit_IntegerNode(cast_node<IntegerNode>(node));
+  } else if (instanceof<DoubleNode>(node)) {
+    return visit_DoubleNode(cast_node<DoubleNode>(node));
   } else if (instanceof<BinaryOperationNode>(node)) {
     return visit_BinaryOperationNode(cast_node<BinaryOperationNode>(node));
   } else if (instanceof<MinusNode>(node)) {
@@ -35,7 +36,7 @@ RuntimeResult* Interpreter::visit(const CustomNode* node) {
   } else if (instanceof<VarModifyNode>(node)) {
     return visit_VarModifyNode(cast_node<VarModifyNode>(node));
   }
-  throw UndefinedBehaviorException("Unimplemented visit method for input node");
+  throw UndefinedBehaviorException("Unimplemented visit method for input node '" + node->to_string() + "'");
 }
 
 /*
@@ -70,29 +71,13 @@ void Interpreter::illegal_operation(const CustomNode* node, const Context* ctx) 
 void Interpreter::type_error(const Value* value, const Type expected_type, const Context* ctx) {
   const Position pos_start = *(value->get_pos_start());
   const Position pos_end = *(value->get_pos_end());
+  const Type type = value->get_type();
   delete value;
   throw TypeError(
     pos_start, pos_end,
-    "Type '" + get_type_name(value->get_type()) + "' is not assignable to type '" + get_type_name(expected_type) + "'",
+    "Type '" + get_type_name(type) + "' is not assignable to type '" + get_type_name(expected_type) + "'",
     ctx
   );
-}
-
-// For know, it will simply compare if the types are the same,
-// but it will get much more complex soon.
-void Interpreter::ensure_type_compatibility(const Value* new_value, const Type expected_type, const Context* ctx) {
-  const Type value_type = new_value->get_type();
-  if (expected_type != value_type) {
-    type_error(
-      new_value,
-      expected_type,
-      ctx
-    );
-  }
-}
-
-void Interpreter::ensure_type_compatibility(const Value* new_value, const string variable_name, const Context* ctx) {
-  ensure_type_compatibility(new_value, ctx->get_symbol_table()->get(variable_name)->get_type(), ctx);
 }
 
 /*
@@ -121,6 +106,13 @@ RuntimeResult* Interpreter::visit_IntegerNode(const IntegerNode* node) {
   return res->success(to_value(i));
 }
 
+RuntimeResult* Interpreter::visit_DoubleNode(const DoubleNode* node) {
+  RuntimeResult* res = new RuntimeResult();
+  DoubleValue* i = new DoubleValue(node->getValue());
+  populate(i, node, shared_ctx);
+  return res->success(to_value(i));
+}
+
 RuntimeResult* Interpreter::visit_MinusNode(const MinusNode* node) {
   RuntimeResult* res = new RuntimeResult();
   const Value* value = res->read(visit(node->get_node()));
@@ -132,6 +124,12 @@ RuntimeResult* Interpreter::visit_MinusNode(const MinusNode* node) {
     populate(negative_integer, node, shared_ctx);
     delete value;
     return res->success(to_value(negative_integer));
+  } else if (instanceof<DoubleValue>(value)) {
+    const DoubleValue* d = dynamic_cast<const DoubleValue*>(value);
+    DoubleValue* negative_double = new DoubleValue(-1 * d->get_actual_value());
+    populate(negative_double, node, shared_ctx);
+    delete value;
+    return res->success(to_value(negative_double));
   }
 
   delete value;
@@ -151,6 +149,12 @@ RuntimeResult* Interpreter::visit_PlusNode(const PlusNode* node) {
     populate(positive_integer, node, shared_ctx);
     delete value;
     return res->success(to_value(positive_integer));
+  } else if (instanceof<DoubleValue>(value)) {
+    const DoubleValue* d = dynamic_cast<const DoubleValue*>(value);
+    DoubleValue* positive_double = new DoubleValue(abs(d->get_actual_value()));
+    populate(positive_double, node, shared_ctx);
+    delete value;
+    return res->success(to_value(positive_double));
   }
 
   delete value;
@@ -160,90 +164,90 @@ RuntimeResult* Interpreter::visit_PlusNode(const PlusNode* node) {
 }
 
 Value* Interpreter::interpret_addition(const Value* left, const Value* right, const BinaryOperationNode* node) {
-  if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
-    const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
-    const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
-    IntegerValue* r = (*a) + (*b);
-    populate(r, node, shared_ctx);
-    delete a;
-    delete b;
-    return to_value(r);
-  }
+  // The permutations:
+  // - int + int = int
+  // - int + double = double
+  // - double + double = double
+  // - double + int = double
+  if      (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) return make_addition<IntegerValue, IntegerValue>(left, right, node);
+  else if (instanceof<IntegerValue>(left) && instanceof<DoubleValue>(right))  return make_addition<IntegerValue, DoubleValue>(left, right, node);
+  else if (instanceof<DoubleValue>(left)  && instanceof<DoubleValue>(right))  return make_addition<DoubleValue, DoubleValue>(left, right, node);
+  else if (instanceof<DoubleValue>(left)  && instanceof<IntegerValue>(right)) return make_addition<DoubleValue, IntegerValue>(left, right, node);
 
   illegal_operation(node, shared_ctx);
   return nullptr;
 }
 
 Value* Interpreter::interpret_substraction(const Value* left, const Value* right, const BinaryOperationNode* node) {
-  if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
-    const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
-    const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
-    IntegerValue* r = (*a) - (*b);
-    populate(r, node, shared_ctx);
-    delete a;
-    delete b;
-    return to_value(r);
-  }
-
+  // The permutations:
+  // - int - int = int
+  // - int - double = double
+  // - double - double = double
+  // - double - int = double
+  if      (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) return make_substraction<IntegerValue, IntegerValue>(left, right, node);
+  else if (instanceof<IntegerValue>(left) && instanceof<DoubleValue>(right))  return make_substraction<IntegerValue, DoubleValue>(left, right, node);
+  else if (instanceof<DoubleValue>(left)  && instanceof<DoubleValue>(right))  return make_substraction<DoubleValue, DoubleValue>(left, right, node);
+  else if (instanceof<DoubleValue>(left)  && instanceof<IntegerValue>(right)) return make_substraction<DoubleValue, IntegerValue>(left, right, node);
+  
   illegal_operation(node, shared_ctx);
   return nullptr;
 }
 
 Value* Interpreter::interpret_multiplication(const Value* left, const Value* right, const BinaryOperationNode* node) {
-  if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
-    const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
-    const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
-    IntegerValue* r = (*a) * (*b);
-    populate(r, node, shared_ctx);
-    delete a;
-    delete b;
-    return to_value(r);
-  }
+  // The permutations:
+  // - int * int = int
+  // - int * double = double
+  // - double * double = double
+  // - double * int = double
+  if      (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) return make_multiplication<IntegerValue, IntegerValue>(left, right, node);
+  else if (instanceof<IntegerValue>(left) && instanceof<DoubleValue>(right))  return make_multiplication<IntegerValue, DoubleValue>(left, right, node);
+  else if (instanceof<DoubleValue>(left)  && instanceof<DoubleValue>(right))  return make_multiplication<DoubleValue, DoubleValue>(left, right, node);
+  else if (instanceof<DoubleValue>(left)  && instanceof<IntegerValue>(right)) return make_multiplication<DoubleValue, IntegerValue>(left, right, node);
 
   illegal_operation(node, shared_ctx);
   return nullptr;
 }
 
 Value* Interpreter::interpret_power(const Value* left, const Value* right, const BinaryOperationNode* node) {
-  if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
-    const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
-    const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
-    IntegerValue* r = new IntegerValue(pow(a->get_actual_value(), b->get_actual_value()));
-    populate(r, node, shared_ctx);
-    delete a;
-    delete b;
-    return to_value(r);
-  }
+  // The permutations:
+  // - int ** int = int
+  // - int ** double = double
+  // - double ** double = double
+  // - double ** int = double
+  if      (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) return make_power<IntegerValue, IntegerValue, IntegerValue>(left, right, node);
+  else if (instanceof<IntegerValue>(left) && instanceof<DoubleValue>(right))  return make_power<IntegerValue, DoubleValue, DoubleValue>(left, right, node);
+  else if (instanceof<DoubleValue>(left)  && instanceof<DoubleValue>(right))  return make_power<DoubleValue, DoubleValue, DoubleValue>(left, right, node);
+  else if (instanceof<DoubleValue>(left)  && instanceof<IntegerValue>(right)) return make_power<DoubleValue, IntegerValue, DoubleValue>(left, right, node);
 
   illegal_operation(node, shared_ctx);
   return nullptr;
 }
 
 Value* Interpreter::interpret_division(const Value* left, const Value* right, const BinaryOperationNode* node) {
-  if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
-    const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
-    const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
-    IntegerValue* r = (*a) / (*b);
-    populate(r, node, shared_ctx);
-    delete a;
-    delete b;
-    return to_value(r);
-  }
+  // The permutations:
+  // - int / int = int
+  // - int / double = double
+  // - double / double = double
+  // - double / int = double
+  if      (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) return make_division<IntegerValue, IntegerValue>(left, right, node);
+  else if (instanceof<IntegerValue>(left) && instanceof<DoubleValue>(right))  return make_division<IntegerValue, DoubleValue>(left, right, node);
+  else if (instanceof<DoubleValue>(left)  && instanceof<DoubleValue>(right))  return make_division<DoubleValue, DoubleValue>(left, right, node);
+  else if (instanceof<DoubleValue>(left)  && instanceof<IntegerValue>(right)) return make_division<DoubleValue, IntegerValue>(left, right, node);
 
   illegal_operation(node, shared_ctx);
   return nullptr;
 }
 
 Value* Interpreter::interpret_modulo(const Value* left, const Value* right, const BinaryOperationNode* node) {
-  if (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) {
-    const IntegerValue* a = dynamic_cast<const IntegerValue*>(left);
-    const IntegerValue* b = dynamic_cast<const IntegerValue*>(right);
-    IntegerValue* r = (*a) % (*b);
-    populate(r, node, shared_ctx);
-    delete a;
-    delete b;
-    return to_value(r);
-  }
+  // The permutations:
+  // - int % int = int
+  // - int % double = double
+  // - double % double = double
+  // - double % int = double
+  if      (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) return make_modulo<IntegerValue, IntegerValue>(left, right, node);
+  else if (instanceof<IntegerValue>(left) && instanceof<DoubleValue>(right))  return make_modulo<IntegerValue, DoubleValue>(left, right, node);
+  else if (instanceof<DoubleValue>(left)  && instanceof<DoubleValue>(right))  return make_modulo<DoubleValue, DoubleValue>(left, right, node);
+  else if (instanceof<DoubleValue>(left)  && instanceof<IntegerValue>(right)) return make_modulo<DoubleValue, IntegerValue>(left, right, node);
 
   illegal_operation(node, shared_ctx);
   return nullptr;
@@ -256,19 +260,12 @@ RuntimeResult* Interpreter::visit_BinaryOperationNode(const BinaryOperationNode*
   const Value* right = res->read(visit(node->get_b()));
   if (res->should_return()) return res;
 
-  if (instanceof<AddNode>(node)) {
-    return res->success(interpret_addition(left, right, node));
-  } else if (instanceof<SubstractNode>(node)) {
-    return res->success(interpret_substraction(left, right, node));
-  } else if (instanceof<MultiplyNode>(node)) {
-    return res->success(interpret_multiplication(left, right, node));
-  } else if (instanceof<PowerNode>(node)) {
-    return res->success(interpret_power(left, right, node));
-  } else if (instanceof<DivideNode>(node)) {
-    return res->success(interpret_division(left, right, node));
-  } else if (instanceof<ModuloNode>(node)) {
-    return res->success(interpret_modulo(left, right, node));
-  }
+  if      (instanceof<AddNode>(node))       return res->success(interpret_addition(left, right, node));
+  else if (instanceof<SubstractNode>(node)) return res->success(interpret_substraction(left, right, node));
+  else if (instanceof<MultiplyNode>(node))  return res->success(interpret_multiplication(left, right, node));
+  else if (instanceof<PowerNode>(node))     return res->success(interpret_power(left, right, node));
+  else if (instanceof<DivideNode>(node))    return res->success(interpret_division(left, right, node));
+  else if (instanceof<ModuloNode>(node))    return res->success(interpret_modulo(left, right, node));
 
   delete left;
   delete right;
@@ -296,6 +293,7 @@ RuntimeResult* Interpreter::visit_VarAssignmentNode(const VarAssignmentNode* nod
   if (!node->has_value()) {
     switch (node->get_type()) {
       case Type::INT: initial_value = new IntegerValue(); break;
+      case Type::DOUBLE: initial_value = new DoubleValue(); break;
       default:
         throw RuntimeError(
           node->getStartingPosition(), node->getEndingPosition(),
@@ -304,9 +302,18 @@ RuntimeResult* Interpreter::visit_VarAssignmentNode(const VarAssignmentNode* nod
         );
     }
   } else {
-    // if a default value was given, we have to make sure that its type is compatible with the given type
-    // (store a as int = "hello" doesn't work).
-    ensure_type_compatibility(initial_value, node->get_type(), shared_ctx);
+    if (node->get_type() != initial_value->get_type()) {
+      Value* cast_value = initial_value->cast(node->get_type());
+      if (cast_value == nullptr) {
+        type_error(
+          initial_value,
+          node->get_type(),
+          shared_ctx
+        );
+      }
+      delete initial_value;
+      initial_value = cast_value;
+    }
   }
 
   populate(initial_value, node, shared_ctx);
@@ -346,7 +353,23 @@ RuntimeResult* Interpreter::visit_VarModifyNode(const VarModifyNode* node) {
   Value* new_value = res->read(visit(node->get_value_node()));
   if (res->should_return()) return res;
 
-  ensure_type_compatibility(new_value, node->get_var_name(), shared_ctx);
+  // If the type isn't exactly the same,
+  // then try to cast the given value
+  // so as to match the one of the variable.
+  // If it doesn't work, throw a TypeError.
+  Value* existing_value = shared_ctx->get_symbol_table()->get(node->get_var_name());
+  if (new_value->get_type() != existing_value->get_type()) {
+    Value* cast_value = new_value->cast(existing_value->get_type());
+    if (cast_value == nullptr) {
+      type_error(
+        new_value,
+        existing_value->get_type(),
+        shared_ctx
+      );
+    }
+    delete new_value;
+    new_value = cast_value;
+  }
 
   shared_ctx->get_symbol_table()->modify(node->get_var_name(), new_value);
 
