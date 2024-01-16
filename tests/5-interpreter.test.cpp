@@ -39,6 +39,7 @@ const list<const Value*> get_values(const string& code, bool clear_ctx = true) {
     if (values == nullptr) {
       throw "Invalid cast of interpreter result. It did not return a valid instance of ListValue.";
     }
+    delete tree;
     return *(values->get_elements());
   } catch (Exception e) {
     cerr << "The program crashed due to this error: " << e.to_string() << endl;
@@ -54,7 +55,24 @@ void execute(const string& code) {
   deallocate_list_of_pointers<Token>(tokens);
   
   Interpreter::set_shared_ctx(common_ctx);
-  Interpreter::visit(tree);
+  auto res = Interpreter::visit(tree);
+  delete res;
+  delete tree;
+}
+
+template <typename V>
+unique_ptr<const V> get_custom_value_from(const string& code, bool clear_ctx = true) {
+  return make_unique<const V>(*(dynamic_cast<const V*>(get_values(code, clear_ctx).front())));
+}
+
+template <typename V, typename N>
+N get_actual_value_from(const string& code, bool clear_ctx = true) {
+  return make_unique<const V>(*(dynamic_cast<const V*>(get_values(code, clear_ctx).front())))->get_actual_value();
+}
+
+template <typename V, typename N>
+bool compare_actual_value(const string& code, const N& expected, bool clear_ctx = true) {
+  return get_actual_value_from<V, N>(code, clear_ctx) == expected;
 }
 
 void test_empty_input() {
@@ -65,169 +83,122 @@ void test_empty_input() {
 }
 
 void test_integer() {
-  const auto normal = dynamic_cast<const IntegerValue*>(get_values("5").front());
-  const auto positive = dynamic_cast<const IntegerValue*>(get_values("+5").front());
-  const auto negative = dynamic_cast<const IntegerValue*>(get_values("-5").front());
-  assert(normal->get_actual_value() == 5);
-  assert(positive->get_actual_value() == 5);
-  assert(negative->get_actual_value() == -5);
+  assert(compare_actual_value<IntegerValue>("5", 5));
+  assert(compare_actual_value<IntegerValue>("+5", 5));
+  assert(compare_actual_value<IntegerValue>("-5", -5));
 
-  assert(dynamic_cast<const IntegerValue*>(get_values("5+2").front())->get_actual_value() == 7);
-  assert(dynamic_cast<const IntegerValue*>(get_values("10-5").front())->get_actual_value() == 5);
-  assert(dynamic_cast<const IntegerValue*>(get_values("2*2").front())->get_actual_value() == 4);
-  assert(dynamic_cast<const IntegerValue*>(get_values("10**2").front())->get_actual_value() == 100);
-  assert(dynamic_cast<const IntegerValue*>(get_values("10/3").front())->get_actual_value() == 3);
-  assert(dynamic_cast<const IntegerValue*>(get_values("10%2").front())->get_actual_value() == 0);
+  assert(compare_actual_value<IntegerValue>("5+2", 7));
+  assert(compare_actual_value<IntegerValue>("10-5", 5));
+  assert(compare_actual_value<IntegerValue>("2*2", 4));
+  assert(compare_actual_value<IntegerValue>("10**2", 100));
+  assert(compare_actual_value<IntegerValue>("10**2", 100));
+  assert(compare_actual_value<IntegerValue>("10/3", 3));
+  assert(compare_actual_value<IntegerValue>("10%2", 0));
 
-  assert(dynamic_cast<const IntegerValue*>(get_values("5+-2").front())->get_actual_value() == 3);
-  assert(dynamic_cast<const IntegerValue*>(get_values("-10-5").front())->get_actual_value() == -15);
-  assert(dynamic_cast<const IntegerValue*>(get_values("-2*2").front())->get_actual_value() == -4);
-  assert(dynamic_cast<const IntegerValue*>(get_values("-10**2").front())->get_actual_value() == 100);
-  assert(dynamic_cast<const IntegerValue*>(get_values("-10/3").front())->get_actual_value() == -3);
-  assert(dynamic_cast<const IntegerValue*>(get_values("-10%2").front())->get_actual_value() == 0);
-  assert(dynamic_cast<const IntegerValue*>(get_values("10%-3").front())->get_actual_value() == 1);
-  assert(dynamic_cast<const IntegerValue*>(get_values("-10%-3").front())->get_actual_value() == -1);
-  assert(dynamic_cast<const IntegerValue*>(get_values("-10%3").front())->get_actual_value() == -1); // the first operand defines the sign of the result
-
-  delete normal;
-  delete positive;
-  delete negative;
+  assert(compare_actual_value<IntegerValue>("5+-2", 3));
+  assert(compare_actual_value<IntegerValue>("-10-5", -15));
+  assert(compare_actual_value<IntegerValue>("-2*2", -4));
+  assert(compare_actual_value<IntegerValue>("-10**2", 100));
+  assert(compare_actual_value<IntegerValue>("-10/3", -3));
+  assert(compare_actual_value<IntegerValue>("-10%2", 0));
+  assert(compare_actual_value<IntegerValue>("10%-3", 1));
+  assert(compare_actual_value<IntegerValue>("-10%-3", -1));
+  assert(compare_actual_value<IntegerValue>("-10%3", -1)); // the first operand defines the sign of the result
 
   print_success_msg("works with positive and negative integers, and works with operations between integers", 1);
 }
 
 void test_double() {
-  const auto normal = dynamic_cast<const DoubleValue*>(get_values("3.14").front());
-  const auto positive = dynamic_cast<const DoubleValue*>(get_values("3.14").front());
-  const auto negative = dynamic_cast<const DoubleValue*>(get_values("-3.14").front());
-  assert(normal->get_actual_value() == 3.14);
-  assert(positive->get_actual_value() == 3.14);
-  assert(negative->get_actual_value() == -3.14);
-
-  delete normal;
-  delete positive;
-  delete negative;
+  assert(compare_actual_value<DoubleValue>("3.14", 3.14));
+  assert(compare_actual_value<DoubleValue>("+3.14", 3.14));
+  assert(compare_actual_value<DoubleValue>("-3.14", -3.14));
 
   // Additions
-  assert(dynamic_cast<const DoubleValue*>(get_values("1+0.2").front())->get_actual_value() == 1.2);
-  assert(dynamic_cast<const DoubleValue*>(get_values("0.1+1").front())->get_actual_value() == 1.1);
-  assert(dynamic_cast<const DoubleValue*>(get_values("0.1+0.2").front())->get_actual_value() != 0.3); // when using doubles, 0.1+0.2 != 0.3
-  assert(dynamic_cast<const DoubleValue*>(get_values("0.1+0.2").front())->to_string() == "0.3"); // however it should still print the right value
-  assert(dynamic_cast<const DoubleValue*>(get_values("5.0+-1").front())->get_actual_value() == 4.0);
+  assert(compare_actual_value<DoubleValue>("1+0.2", 1.2));
+  assert(compare_actual_value<DoubleValue>("0.1+1", 1.1));
+  assert((get_actual_value_from<DoubleValue, double>("0.1+0.2")) != 0.3); // when using doubles, 0.1+0.2 != 0.3
+  assert(get_custom_value_from<DoubleValue>("0.1+0.2")->to_string() == "0.3"); // however it should still print the right value
+  assert(compare_actual_value<DoubleValue>("5.0+-1", 4.0));
   // Substraction
-  assert(dynamic_cast<const DoubleValue*>(get_values("1-0.5").front())->get_actual_value() == 0.5);
-  assert(dynamic_cast<const DoubleValue*>(get_values("1.5-0.5").front())->get_actual_value() == 1.0);
-  assert(dynamic_cast<const DoubleValue*>(get_values("0.5-0.5").front())->get_actual_value() == 0.0);
-  assert(dynamic_cast<const DoubleValue*>(get_values("0.5- -0.5").front())->get_actual_value() == 1.0); // a whitespace is needed because '--' is the decrement operator
+  assert(compare_actual_value<DoubleValue>("1-0.5", 0.5));
+  assert(compare_actual_value<DoubleValue>("1.5-0.5", 1.0));
+  assert(compare_actual_value<DoubleValue>("0.5-0.5", 0.0));
+  assert(compare_actual_value<DoubleValue>("0.5- -0.5", 1.0)); // a whitespace is needed because '--' is the decrement operator
   // Multiplications
-  assert(dynamic_cast<const DoubleValue*>(get_values("2.2*2").front())->get_actual_value() == 4.4);
-  assert(dynamic_cast<const DoubleValue*>(get_values("2*2.5").front())->get_actual_value() == 5.0);
-  assert(dynamic_cast<const DoubleValue*>(get_values("2.5*0.1").front())->get_actual_value() == 0.25);
-  assert(dynamic_cast<const DoubleValue*>(get_values("2.5*-0.1").front())->get_actual_value() == -0.25);
+  assert(compare_actual_value<DoubleValue>("2.2*2", 4.4));
+  assert(compare_actual_value<DoubleValue>("2*2.5", 5.0));
+  assert(compare_actual_value<DoubleValue>("2.5*0.1", 0.25));
+  assert(compare_actual_value<DoubleValue>("2.5*-0.1", -0.25));
   // Power
-  assert(dynamic_cast<const DoubleValue*>(get_values("10**2.0").front())->get_actual_value() == 100.0);
-  assert(dynamic_cast<const DoubleValue*>(get_values("10.0**2").front())->get_actual_value() == 100.0);
-  assert(dynamic_cast<const DoubleValue*>(get_values("10.0**2.0").front())->get_actual_value() == 100.0);
-  assert(dynamic_cast<const DoubleValue*>(get_values("10.0**-2.0").front())->get_actual_value() == 0.01);
+  assert(compare_actual_value<DoubleValue>("10**2.0", 100.0));
+  assert(compare_actual_value<DoubleValue>("10.0**2", 100.0));
+  assert(compare_actual_value<DoubleValue>("10.0**2.0", 100.0));
+  assert(compare_actual_value<DoubleValue>("10.0**-2.0", 0.01));
   // Divisions
-  assert(dynamic_cast<const DoubleValue*>(get_values("10/2.0").front())->get_actual_value() == 5.0);
-  assert(dynamic_cast<const DoubleValue*>(get_values("2.0/2").front())->get_actual_value() == 1.0);
-  assert(dynamic_cast<const DoubleValue*>(get_values("5.0/2.0").front())->get_actual_value() == 2.5);
-  assert(dynamic_cast<const DoubleValue*>(get_values("5.0/-2.0").front())->get_actual_value() == -2.5);
+  assert(compare_actual_value<DoubleValue>("10/2.0", 5.0));
+  assert(compare_actual_value<DoubleValue>("2.0/2", 1.0));
+  assert(compare_actual_value<DoubleValue>("5.0/2.0", 2.5));
+  assert(compare_actual_value<DoubleValue>("5.0/-2.0", -2.5));
   // Modulo
-  assert(dynamic_cast<const DoubleValue*>(get_values("10%2.0").front())->get_actual_value() == 0.0);
-  assert(dynamic_cast<const DoubleValue*>(get_values("2.0%2").front())->get_actual_value() == 0.0);
-  assert(dynamic_cast<const DoubleValue*>(get_values("5.0%2.0").front())->get_actual_value() == 1.0);
-  assert(dynamic_cast<const DoubleValue*>(get_values("5.0%-2.0").front())->get_actual_value() == 1);
-  assert(dynamic_cast<const DoubleValue*>(get_values("-5.0%-2.0").front())->get_actual_value() == -1);
-  assert(dynamic_cast<const DoubleValue*>(get_values("-5.0%2.0").front())->get_actual_value() == -1); // the first operand defines the sign of the result
+  assert(compare_actual_value<DoubleValue>("10%2.0", 0.0));
+  assert(compare_actual_value<DoubleValue>("2.0%2", 0.0));
+  assert(compare_actual_value<DoubleValue>("5.0%2.0", 1.0));
+  assert(compare_actual_value<DoubleValue>("5.0%-2.0", 1));
+  assert(compare_actual_value<DoubleValue>("-5.0%-2.0", -1));
+  assert(compare_actual_value<DoubleValue>("-5.0%2.0", -1)); // the first operand defines the sign of the result
 
   print_success_msg("works with positive and negative doubles, and works with operations involving doubles", 1);
 }
 
 void test_addition_of_two_max_integers() {
   const string half = std::to_string(INT_MAX / 2);
-  const auto values = get_values(half + " + " + half);
-  const auto result = dynamic_cast<const IntegerValue*>(values.front());
-  assert(result->get_actual_value() == (INT_MAX - 1)); // (-1 because INT_MAX is not even, and so is rounded down)
-  
-  delete result;
-
+  assert(compare_actual_value<IntegerValue>(half + " + " + half, (INT_MAX - 1))); // (-1 because INT_MAX is not even, and so is rounded down)
   print_success_msg("works with addition between two max integers", 1);
 }
 
 void test_mathematical_operation_without_parenthesis() {
-  const auto values = get_values("5 * 2 -2 / 2");
-  const auto result = dynamic_cast<const IntegerValue*>(values.front());
-  assert(result->get_actual_value() == 9);
-
-  delete result;
-
+  assert(compare_actual_value<IntegerValue>("5 * 2 -2 / 2", 9));
   print_success_msg("works with a mathematical operation without parenthesis", 1);
 }
 
 void test_mathematical_operation_with_parenthesis() {
-  const auto values = get_values("5 * (2 - 2) / 2");
-  const auto result = dynamic_cast<const IntegerValue*>(values.front());
-  assert(result->get_actual_value() == 0);
-
-  delete result;
-
+  assert(compare_actual_value<IntegerValue>("5 * (2 - 2) / 2", 0));
   print_success_msg("works with a mathematical operation with parenthesis", 1);
 }
 
 void test_mathematical_operation_with_negative_and_double_numbers() {
-  const auto values = get_values("(-2.5 * 2 / -5.0) * 10 ** 2");
-  const auto result = dynamic_cast<const DoubleValue*>(values.front());
-  assert(result->get_actual_value() == 100);
-
-  delete result;
-
+  assert(compare_actual_value<DoubleValue>("(-2.5 * 2 / -5.0) * 10 ** 2", 100));
   print_success_msg("works with a complex mathematical operation with negative numbers and doubles", 1);
 }
 
 void test_variable_assignment_of_an_integer() {
-  const auto int_with_initial_value = dynamic_cast<const IntegerValue*>(get_values("store a as int = 5").front());
-  assert(int_with_initial_value->get_actual_value() == 5);
+  assert(compare_actual_value<IntegerValue>("store a as int = 5", 5));
   assert(common_ctx->get_symbol_table()->exists("a"));
   assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("a")));
 
-  const auto int_without_initial_value = dynamic_cast<const IntegerValue*>(get_values("store b as int").front());
-  assert(int_without_initial_value->get_actual_value() == IntegerValue::get_default_value());
+  assert(compare_actual_value<IntegerValue>("store b as int", IntegerValue::get_default_value()));
   assert(common_ctx->get_symbol_table()->exists("b"));
   assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("b")));
 
-  const auto int_with_double_as_initial_value = dynamic_cast<const IntegerValue*>(get_values("store c as int = 5.6").front());
-  assert(int_with_double_as_initial_value->get_actual_value() == 5);
+  assert(compare_actual_value<IntegerValue>("store c as int = 5.6", 5));
   assert(common_ctx->get_symbol_table()->exists("c"));
   assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("c")));
-
-  delete int_with_initial_value;
-  delete int_without_initial_value;
-  delete int_with_double_as_initial_value;
 
   print_success_msg("works with the variable assignment of an integer", 1);
 }
 
 void test_variable_assignment_of_a_double() {
-  const auto double_with_int_as_initial_value = dynamic_cast<const DoubleValue*>(get_values("store a as double = 5").front());
-  assert(double_with_int_as_initial_value->get_actual_value() == 5);
+  assert(compare_actual_value<DoubleValue>("store a as double = 5", 5));
   assert(common_ctx->get_symbol_table()->exists("a"));
   assert(instanceof<DoubleValue>(common_ctx->get_symbol_table()->get("a")));
 
-  const auto double_with_initial_value = dynamic_cast<const DoubleValue*>(get_values("store b as double = 5.5").front());
-  assert(double_with_initial_value->get_actual_value() == 5.5);
+  assert(compare_actual_value<DoubleValue>("store b as double = 5.5", 5.5));
   assert(common_ctx->get_symbol_table()->exists("b"));
   assert(instanceof<DoubleValue>(common_ctx->get_symbol_table()->get("b")));
 
-  const auto double_without_initial_value = dynamic_cast<const DoubleValue*>(get_values("store c as double").front());
-  assert(double_without_initial_value->get_actual_value() == DoubleValue::get_default_value());
+  assert(compare_actual_value<DoubleValue>("store c as double", DoubleValue::get_default_value()));
   assert(common_ctx->get_symbol_table()->exists("c"));
   assert(instanceof<DoubleValue>(common_ctx->get_symbol_table()->get("c")));
-
-  delete double_with_int_as_initial_value;
-  delete double_with_initial_value;
-  delete double_without_initial_value;
 
   print_success_msg("works with the variable assignment of a double", 1);
 }
@@ -250,12 +221,8 @@ void test_access_to_variable() {
   try {
     common_ctx->get_symbol_table()->clear();
     execute("store a as int = 5");
-    const auto values = get_values("a", false);
-    const auto result = dynamic_cast<const IntegerValue*>(values.front());
-    assert(result->get_actual_value() == 5);
+    assert(compare_actual_value<IntegerValue>("a", 5, false)); // "false" because we don't want to clear the context before the interpretation
     assert(common_ctx->get_symbol_table()->exists("a"));
-
-    delete result;
     
     print_success_msg("works the access to a variable", 1);
   } catch (RuntimeError e) {
@@ -367,25 +334,30 @@ void test_variable_cloning() {
 }
 
 void test_string() {
-  const auto double_quotes = dynamic_cast<const StringValue*>(get_values("\"hello\"").front());
-  const auto simple_quotes = dynamic_cast<const StringValue*>(get_values("'world'").front());
-  const auto escaped_quote = dynamic_cast<const StringValue*>(get_values("'c\\'est'").front());
-  assert(double_quotes->get_actual_value() == "hello");
-  assert(simple_quotes->get_actual_value() == "world");
-  assert(escaped_quote->get_actual_value() == "c'est");
+  assert((compare_actual_value<StringValue, string>("\"hello\"", "hello")));
+  assert((compare_actual_value<StringValue, string>("'world'", "world")));
+  assert((compare_actual_value<StringValue, string>("'c\\'est'", "c'est")));
 
-  assert(dynamic_cast<const StringValue*>(get_values("'a'+'b'").front())->get_actual_value() == "ab");
-  assert(dynamic_cast<const StringValue*>(get_values("\"hello\"+'world'").front())->get_actual_value() == "helloworld");
-  assert(dynamic_cast<const StringValue*>(get_values("\"hello\"+' '").front())->get_actual_value() == "hello ");
-  assert(dynamic_cast<const StringValue*>(get_values("'hello'+3").front())->get_actual_value() == "hello3");
-  assert(dynamic_cast<const StringValue*>(get_values("'hello'+3.14").front())->get_actual_value() == "hello3.14");
-  assert(dynamic_cast<const StringValue*>(get_values("'c\\'est'+' \\'ouf\\''").front())->get_actual_value() == "c'est 'ouf'");
+  assert((compare_actual_value<StringValue, string>("'a'+'b'", "ab")));
+  assert((compare_actual_value<StringValue, string>("\"hello\"+'world'", "helloworld")));
+  assert((compare_actual_value<StringValue, string>("\"hello\"+' '", "hello ")));
+  assert((compare_actual_value<StringValue, string>("'hello'+3", "hello3")));
+  assert((compare_actual_value<StringValue, string>("3+'hello'", "3hello")));
+  assert((compare_actual_value<StringValue, string>("'hello'+3.14", "hello3.14")));
+  assert((compare_actual_value<StringValue, string>("'c\\'est'+' \\'ouf\\''", "c'est 'ouf'")));
 
-  assert(dynamic_cast<const StringValue*>(get_values("'hello'*2").front())->get_actual_value() == "hellohello");
-  assert(dynamic_cast<const StringValue*>(get_values("2*'hello'").front())->get_actual_value() == "hellohello");
-  assert(dynamic_cast<const StringValue*>(get_values("\"hello\"*2").front())->get_actual_value() == "hellohello");
-  assert(dynamic_cast<const StringValue*>(get_values("\"hello\"*0").front())->get_actual_value().empty());
-  assert(dynamic_cast<const StringValue*>(get_values("'c\\'est'*2").front())->get_actual_value() == "c'estc'est");
+  assert((compare_actual_value<StringValue, string>("'hello'*2", "hellohello")));
+  assert((compare_actual_value<StringValue, string>("2*'hello'", "hellohello")));
+  assert((compare_actual_value<StringValue, string>("\"hello\"*2", "hellohello")));
+  assert((get_actual_value_from<StringValue, string>("\"hello\"*0")).empty());
+  assert((compare_actual_value<StringValue, string>("'c\\'est'*2", "c'estc'est")));
+
+  try {
+    execute("+'hello'"); // invalid operation (a "positive string" isn't possible)
+    assert(false);
+  } catch (RuntimeError e) {
+    assert(true); // we want the program to throw an error
+  }
 
   try {
     execute("\"hello\"*-1"); // invalid operation
@@ -407,10 +379,6 @@ void test_string() {
   } catch (RuntimeError e) {
     assert(true); // we want the program to throw an error
   }
-
-  delete double_quotes;
-  delete simple_quotes;
-  delete escaped_quote;
 
   print_success_msg("works with strings", 1);
 }

@@ -8,3 +8,5 @@ store a as list = 5
 ```
 
 - Make sure that an integer doesn't exceed INT_MAX, and make sure that a double doesn't exceed its maximum value either.
+
+- Make sure that an error is properly triggered when a quote isn't closed properly

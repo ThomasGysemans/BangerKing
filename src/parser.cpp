@@ -33,7 +33,7 @@ Parser::Parser(
 }
 
 const ListNode* Parser::parse() {
-  const ListNode * stmts = statements();
+  const ListNode* stmts = statements();
 
   if (has_more_tokens()) {
     const Token invalid_token = getTok()->copy();
