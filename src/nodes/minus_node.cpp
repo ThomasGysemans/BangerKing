@@ -3,7 +3,7 @@ using namespace std;
 
 MinusNode::MinusNode(
   const CustomNode* n
-):  CustomNode((*n).getStartingPosition(), (*n).getEndingPosition()), node(n) {}
+):  CustomNode(n->getStartingPosition(), n->getEndingPosition()), node(n) {}
 
 MinusNode::~MinusNode() {
   delete node;

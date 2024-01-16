@@ -18,7 +18,7 @@ class IntegerValue: public Value {
     /// @return The default value for an integer (0).
     static int get_default_value();
     
-    bool is_true() const override;
+    bool is_truthy() const override;
     string to_string() const override;
     IntegerValue* copy() const override;
 

@@ -47,7 +47,7 @@ call_func     : (LPAREN (expr (COMMA expr)*)? RPAREN)*
 call_list     : (QMARK DOT LSQUARE (expr)|(expr COLON expr) RSQUARE)*
               : (LSQUARE (expr)|(expr COLON expr) RSQUARE)* (EQUALS expr)? # almost the same for dictionnaries
 
-atom          : NUMBER|(f)?STRING|IDENTIFIER
+atom          : NUMBER|STRING|IDENTIFIER
               : LPAREN expr RPAREN
               : list-expr
               : func-def
@@ -61,5 +61,6 @@ func-def      : KEYWORD:FEATURE IDENTIFIER?
                 LPAREN (IDENTIFIER (QMARK (COLON Types)? (EQUALS expr)?)? (COMMA IDENTIFIER)*|TRIPLE_DOTS IDENTIFIER)? RPAREN
                 (ARROW expr|KEYWORD:pass)
                 | (COLON statements|KEYWORD:pass KEYWORD:END)
+###
 
-
+concatenation = "I'm $age years old"

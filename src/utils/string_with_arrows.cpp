@@ -6,8 +6,8 @@ string string_with_arrows(const string& text, const Position& pos_start, const P
   // Calculate the indices
   size_t last_line = result.substr(0, pos_start.get_idx()).find_last_of('\n');
   int index_start = last_line == string::npos ? 0 : last_line;
-  int index_end = text.find_first_of('\n', index_start + 1);
-  if (index_end < 0) index_end = text.length();
+  size_t first_newline = text.find_first_of('\n', index_start + 1);
+  int index_end = first_newline == string::npos ? text.length() : first_newline;
 
   // Generate each line
   int line_count = pos_end.get_ln() - pos_start.get_ln() + 1;

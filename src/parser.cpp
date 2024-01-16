@@ -239,6 +239,9 @@ const CustomNode* Parser::atom() {
       return new VarModifyNode(var_tok.getStringValue(), value_node, var_tok.getStartingPosition());
     }
     return new VarAccessNode(first_token);
+  } else if (first_token.ofType(TokenType::STR)) {
+    advance();
+    return new StringNode(first_token);
   } else {
     throw InvalidSyntaxError(
       first_token.getStartingPosition(), first_token.getEndingPosition(),

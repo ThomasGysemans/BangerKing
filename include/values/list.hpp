@@ -13,7 +13,7 @@ class ListValue: public Value {
     ~ListValue();
 
     string to_string() const override;
-    bool is_true() const override;
+    bool is_truthy() const override;
     ListValue* copy() const override;
     const list<const Value*>* get_elements() const;
 

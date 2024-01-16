@@ -1,5 +1,5 @@
-#include "../include/miscellaneous.hpp"
 #include "../include/interpreter.hpp"
+#include "../include/miscellaneous.hpp"
 #include "../include/symbol_table.hpp"
 #include "../include/exceptions/undefined_behavior.hpp"
 #include "../include/exceptions/runtime_error.hpp"
@@ -35,6 +35,8 @@ RuntimeResult* Interpreter::visit(const CustomNode* node) {
     return visit_VarAccessNode(cast_node<VarAccessNode>(node));
   } else if (instanceof<VarModifyNode>(node)) {
     return visit_VarModifyNode(cast_node<VarModifyNode>(node));
+  } else if (instanceof<StringNode>(node)) {
+    return visit_StringNode(cast_node<StringNode>(node));
   }
   throw UndefinedBehaviorException("Unimplemented visit method for input node '" + node->to_string() + "'");
 }
@@ -108,9 +110,9 @@ RuntimeResult* Interpreter::visit_IntegerNode(const IntegerNode* node) {
 
 RuntimeResult* Interpreter::visit_DoubleNode(const DoubleNode* node) {
   RuntimeResult* res = new RuntimeResult();
-  DoubleValue* i = new DoubleValue(node->getValue());
-  populate(i, node, shared_ctx);
-  return res->success(to_value(i));
+  DoubleValue* d = new DoubleValue(node->getValue());
+  populate(d, node, shared_ctx);
+  return res->success(to_value(d));
 }
 
 RuntimeResult* Interpreter::visit_MinusNode(const MinusNode* node) {
@@ -174,6 +176,24 @@ Value* Interpreter::interpret_addition(const Value* left, const Value* right, co
   else if (instanceof<DoubleValue>(left)  && instanceof<DoubleValue>(right))  return make_addition<DoubleValue, DoubleValue>(left, right, node);
   else if (instanceof<DoubleValue>(left)  && instanceof<IntegerValue>(right)) return make_addition<DoubleValue, IntegerValue>(left, right, node);
 
+  // Since concatenation is possible with any type of value,
+  // it must be treated differently than the other types of additions.
+  if (instanceof<StringValue>(left)) {
+    const StringValue* a = dynamic_cast<const StringValue*>(left);
+    StringValue* concatenation = *a + *right;
+    populate(concatenation, node, shared_ctx);
+    delete a;
+    delete right;
+    return to_value(concatenation);
+  } else if (instanceof<StringValue>(right)) {
+    const StringValue* b = dynamic_cast<const StringValue*>(right);
+    StringValue* concatenation = StringValue::make_concatenation_rtl(left, b);
+    populate(concatenation, node, shared_ctx);
+    delete left;
+    delete b;
+    return to_value(concatenation);
+  }
+
   illegal_operation(node, shared_ctx);
   return nullptr;
 }
@@ -199,10 +219,14 @@ Value* Interpreter::interpret_multiplication(const Value* left, const Value* rig
   // - int * double = double
   // - double * double = double
   // - double * int = double
+  // - string * int = string
+  // - int * string = string
   if      (instanceof<IntegerValue>(left) && instanceof<IntegerValue>(right)) return make_multiplication<IntegerValue, IntegerValue>(left, right, node);
   else if (instanceof<IntegerValue>(left) && instanceof<DoubleValue>(right))  return make_multiplication<IntegerValue, DoubleValue>(left, right, node);
   else if (instanceof<DoubleValue>(left)  && instanceof<DoubleValue>(right))  return make_multiplication<DoubleValue, DoubleValue>(left, right, node);
   else if (instanceof<DoubleValue>(left)  && instanceof<IntegerValue>(right)) return make_multiplication<DoubleValue, IntegerValue>(left, right, node);
+  else if (instanceof<StringValue>(left)  && instanceof<IntegerValue>(right)) return make_multiplication<StringValue, IntegerValue>(left, right, node);
+  else if (instanceof<IntegerValue>(left)  && instanceof<StringValue>(right)) return make_multiplication<StringValue, IntegerValue>(right, left, node); // we inverse the operation because it comes to the same thing, but as a consequence it cannot be tested in values.test.cpp
 
   illegal_operation(node, shared_ctx);
   return nullptr;
@@ -376,4 +400,11 @@ RuntimeResult* Interpreter::visit_VarModifyNode(const VarModifyNode* node) {
   // We have to keep in mind that the garbage collector will deallocate the returned value of a statement.
   // To make sure it doesn't delete a variable, we have to return a copy.
   return res->success(new_value->copy());
+}
+
+RuntimeResult* Interpreter::visit_StringNode(const StringNode* node) {
+  RuntimeResult* res = new RuntimeResult();
+  StringValue* str = new StringValue(node->getValue());
+  populate(str, node, shared_ctx);
+  return res->success(to_value(str));
 }

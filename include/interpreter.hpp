@@ -24,6 +24,7 @@ class Interpreter {
     static RuntimeResult* visit_VarAssignmentNode(const VarAssignmentNode* node);
     static RuntimeResult* visit_VarAccessNode(const VarAccessNode* node);
     static RuntimeResult* visit_VarModifyNode(const VarModifyNode* node);
+    static RuntimeResult* visit_StringNode(const StringNode* node);
 
     /// @brief Explores a binary operation node (addition, substraction, division, power, multiplication, modulo, etc.)
     /// @param node A binary operation node.
@@ -82,6 +83,16 @@ class Interpreter {
       const A* a = dynamic_cast<const A*>(left);
       const B* b = dynamic_cast<const B*>(right);
       auto r = operation(*a, *b);
+      if (r == nullptr) {
+        // It's possible in some cases that during the operation
+        // it fails and needs to throw a RuntimeError.
+        // It happens in this example: string * int (if int is negative).
+        // Therefore I delete the values, and the node should get deallocated separately.
+        delete a;
+        delete b;
+        delete r;
+        illegal_operation(node, shared_ctx);
+      }
       populate(r, node, shared_ctx);
       delete a;
       delete b;

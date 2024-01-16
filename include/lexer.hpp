@@ -27,6 +27,15 @@ extern const string LETTERS_DIGITS;
 /// @brief The whole list of escape sequences (\n, \r, \t, etc.).
 extern const map<char, char> ESCAPE_CHARACTERS;
 
+/// @brief A double quote ("), allowing internal concatenation.
+extern const char DOUBLE_QUOTE;
+
+/// @brief A simple quote ('), which doesn't allow internal concatenation.
+extern const char SIMPLE_QUOTE;
+
+/// @brief A simple backslash (\).
+extern const char BACKSLASH;
+
 class Lexer {
   /// @brief The source code.
   const string* text;
@@ -83,4 +92,10 @@ class Lexer {
     /// @brief Makes a token of type * or **
     /// @return A token of type MUL or POWER
     Token * make_mul_or_power();
+
+    /// @brief Makes a token of type string.
+    /// If double quotes are used, then `allow_concatenation` will be set to `true`.
+    /// If simple quotes are used, then `allow_concatenation` will be set to `false`.
+    /// @return A token of type STRING.
+    Token * make_string();
 };

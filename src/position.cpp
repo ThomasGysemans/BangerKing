@@ -1,6 +1,4 @@
 #include "../include/position.hpp"
-
-#include <iostream>
 using namespace std;
 
 Position::Position(

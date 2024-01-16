@@ -414,6 +414,32 @@ void test_access_node_in_expression() {
   print_success_msg("variable access in maths expression", 1);
 }
 
+void test_string() {
+  const auto double_quote_string = cast_node<StringNode>(get_element_nodes_from("\"hello\"").front());
+  assert(double_quote_string->canConcatenate());
+  assert(double_quote_string->getToken()->canConcatenate());
+  assert(double_quote_string->getToken()->ofType(TokenType::STR));
+  assert(double_quote_string->getValue() == "hello");
+
+  const auto simple_quote_string = cast_node<StringNode>(get_element_nodes_from("'YOYO'").front());
+  assert(!simple_quote_string->canConcatenate());
+  assert(!simple_quote_string->getToken()->canConcatenate());
+  assert(simple_quote_string->getToken()->ofType(TokenType::STR));
+  assert(simple_quote_string->getValue() == "YOYO");
+
+  const auto escaped_backslash = cast_node<StringNode>(get_element_nodes_from("'C\\'EST'").front());
+  assert(!escaped_backslash->canConcatenate());
+  assert(!escaped_backslash->getToken()->canConcatenate());
+  assert(escaped_backslash->getToken()->ofType(TokenType::STR));
+  assert(escaped_backslash->getValue() == "C'EST");
+
+  delete double_quote_string;
+  delete simple_quote_string;
+  delete escaped_backslash;
+
+  print_success_msg("strings with simple, double quotes and backslashes", 1);
+}
+
 int main() {
   print_title("Parser tests...");
 
@@ -440,6 +466,7 @@ int main() {
     test_variable_modification();
     test_access_node();
     test_access_node_in_expression();
+    test_string();
   } catch (CustomError custom_error) {
     cerr << "Oops, the program unexpectedly thrown an error :" << endl;
     cerr << custom_error.get_details() << endl;

@@ -10,8 +10,9 @@ CustomError::CustomError(
 
 string CustomError::to_string() const {
   string result = error_name + ": " + details + "\n";
+  const string text = *(READ_FILES.at(pos_start.get_filename()));
   result += "File " + pos_start.get_filename() + ", line " + std::to_string(pos_start.get_ln() + 1) + "\n\n";
-  result += string_with_arrows(*(READ_FILES[pos_start.get_filename()]), pos_start, pos_end);
+  result += string_with_arrows(text, pos_start, pos_end);
   return result;
 }
 

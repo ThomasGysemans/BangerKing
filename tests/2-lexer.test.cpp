@@ -7,10 +7,12 @@
 #include "../include/debug/print_tokens.hpp"
 #include "../include/debug/compare_tokens.hpp"
 #include "../include/utils/deallocate_list_of_pointers.hpp"
+#include "../include/exceptions/illegal_char_error.hpp"
 using namespace std;
 
 list<Token*> get_tokens_from(const string& code) {
   Lexer lexer(&code);
+  READ_FILES.insert({ "<stdin>", &code });
   return lexer.generate_tokens();
 }
 
@@ -248,26 +250,53 @@ void test_expression_with_identifier() {
   print_success_msg("maths expression with identifier", 1);
 }
 
+void test_string() {
+  const auto tokens = list_to_vector(get_tokens_from("\"Hello\" 'yoyo' 'c\\'est' "));
+  assert(tokens.size() == 3);
+  assert(tokens[0]->canConcatenate());
+  assert(tokens[0]->ofType(TokenType::STR));
+  assert(tokens[0]->getStringValue() == "Hello");
+
+  assert(!tokens[1]->canConcatenate());
+  assert(tokens[1]->ofType(TokenType::STR));
+  assert(tokens[1]->getStringValue() == "yoyo");
+  
+  assert(!tokens[2]->canConcatenate());
+  assert(tokens[2]->ofType(TokenType::STR));
+  assert(tokens[2]->getStringValue() == "c'est");
+
+  deallocate_const_vector_of_pointers<Token>(tokens);
+
+  print_success_msg("simple strings with single and double quotes, including backslashes", 1);
+}
+
 int main() {
   print_title("Lexer tests...");
 
-  test_simple_digit();
-  test_simple_decimal_number();
-  test_simple_identifier();
-  test_simple_keyword();
-  test_simple_maths();
-  test_increment();
-  test_positions();
-  test_operator();
-  test_parenthesis();
-  test_addition_with_whitespace();
-  test_addition_without_whitespace();
-  test_substraction_with_whitespace();
-  test_substraction_without_whitespace();
-  test_variable_assignment();
-  test_variable_modification();
-  test_expression_with_identifier();
+  try {
+    test_simple_digit();
+    test_simple_decimal_number();
+    test_simple_identifier();
+    test_simple_keyword();
+    test_simple_maths();
+    test_increment();
+    test_positions();
+    test_operator();
+    test_parenthesis();
+    test_addition_with_whitespace();
+    test_addition_without_whitespace();
+    test_substraction_with_whitespace();
+    test_substraction_without_whitespace();
+    test_variable_assignment();
+    test_variable_modification();
+    test_expression_with_identifier();
+    test_string();
 
-  print_success_msg("All \"Lexer\" tests successfully passed");
+    print_success_msg("All \"Lexer\" tests successfully passed");
+  } catch (IllegalCharError e) {
+    cerr << "ABORT. An exception was caught during the tests:" << endl;
+    cerr << e.to_string() << endl;
+  }
+
   return 0;
 }

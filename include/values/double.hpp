@@ -18,7 +18,7 @@ class DoubleValue: public Value {
     /// @return The default value for a double (0.0).
     static double get_default_value();
     
-    bool is_true() const override;
+    bool is_truthy() const override;
     string to_string() const override;
     DoubleValue* copy() const override;
 

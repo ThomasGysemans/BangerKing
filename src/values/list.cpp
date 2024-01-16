@@ -16,7 +16,7 @@ ListValue::~ListValue() {
 }
 
 const list<const Value*>* ListValue::get_elements() const { return &elements; }
-bool ListValue::is_true() const { return !elements.empty(); }
+bool ListValue::is_truthy() const { return !elements.empty(); }
 ListValue* ListValue::copy() const { return new ListValue(*this); }
 
 string ListValue::to_string() const {

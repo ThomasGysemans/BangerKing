@@ -58,8 +58,8 @@ class Value {
     const Position* get_pos_end() const;
 
     /// @brief Indicates how this particular value can evaluate to true if used in a condition.
-    /// @return a boolean
-    virtual bool is_true() const { return false; }
+    /// @return `true` if the value can evaluate to `true` if used in a condition.
+    virtual bool is_truthy() const { return false; }
 
     /// @brief Transforms the value into a string.
     /// @throw UndefinedBehaviorException if "to_string()" is called on an instance of "Value"
@@ -69,12 +69,6 @@ class Value {
         return "null";
       }
       throw UndefinedBehaviorException("Cannot print a value of type '" + get_type_name(get_type()) + "'");
-    }
-
-    /// @brief We don't always want the same string representation when used in a concatenation or printed to the screen.
-    /// @return The string to be printed when used on a `println()` .
-    virtual string repr() const {
-      return this->to_string();
     }
 
     virtual Value* cast(Type output_type) const = 0;

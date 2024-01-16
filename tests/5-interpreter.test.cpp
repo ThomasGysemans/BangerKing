@@ -366,6 +366,55 @@ void test_variable_cloning() {
   }
 }
 
+void test_string() {
+  const auto double_quotes = dynamic_cast<const StringValue*>(get_values("\"hello\"").front());
+  const auto simple_quotes = dynamic_cast<const StringValue*>(get_values("'world'").front());
+  const auto escaped_quote = dynamic_cast<const StringValue*>(get_values("'c\\'est'").front());
+  assert(double_quotes->get_actual_value() == "hello");
+  assert(simple_quotes->get_actual_value() == "world");
+  assert(escaped_quote->get_actual_value() == "c'est");
+
+  assert(dynamic_cast<const StringValue*>(get_values("'a'+'b'").front())->get_actual_value() == "ab");
+  assert(dynamic_cast<const StringValue*>(get_values("\"hello\"+'world'").front())->get_actual_value() == "helloworld");
+  assert(dynamic_cast<const StringValue*>(get_values("\"hello\"+' '").front())->get_actual_value() == "hello ");
+  assert(dynamic_cast<const StringValue*>(get_values("'hello'+3").front())->get_actual_value() == "hello3");
+  assert(dynamic_cast<const StringValue*>(get_values("'hello'+3.14").front())->get_actual_value() == "hello3.14");
+  assert(dynamic_cast<const StringValue*>(get_values("'c\\'est'+' \\'ouf\\''").front())->get_actual_value() == "c'est 'ouf'");
+
+  assert(dynamic_cast<const StringValue*>(get_values("'hello'*2").front())->get_actual_value() == "hellohello");
+  assert(dynamic_cast<const StringValue*>(get_values("2*'hello'").front())->get_actual_value() == "hellohello");
+  assert(dynamic_cast<const StringValue*>(get_values("\"hello\"*2").front())->get_actual_value() == "hellohello");
+  assert(dynamic_cast<const StringValue*>(get_values("\"hello\"*0").front())->get_actual_value().empty());
+  assert(dynamic_cast<const StringValue*>(get_values("'c\\'est'*2").front())->get_actual_value() == "c'estc'est");
+
+  try {
+    execute("\"hello\"*-1"); // invalid operation
+    assert(false);
+  } catch (RuntimeError e) {
+    assert(true); // we want the program to throw an error
+  }
+
+  try {
+    execute("\"hello\"*2.45"); // invalid operation
+    assert(false);
+  } catch (RuntimeError e) {
+    assert(true); // we want the program to throw an error
+  }
+
+  try {
+    execute("\"hello\"*-3.14"); // invalid operation
+    assert(false);
+  } catch (RuntimeError e) {
+    assert(true); // we want the program to throw an error
+  }
+
+  delete double_quotes;
+  delete simple_quotes;
+  delete escaped_quote;
+
+  print_success_msg("works with strings", 1);
+}
+
 int main() {
   print_title("Interpreter tests...");
 
@@ -386,6 +435,7 @@ int main() {
     test_multiline_input_and_variables();
     test_variable_modification();
     test_variable_cloning();
+    test_string();
 
     print_success_msg("All \"Interpreter\" tests successfully passed");
   } catch (TypeError e) {

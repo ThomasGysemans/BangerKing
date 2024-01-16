@@ -1,6 +1,7 @@
 #include "../include/lexer.hpp"
 #include "../include/miscellaneous.hpp"
-
+#include "../include/exceptions/type_overflow_error.hpp"
+#include "../include/exceptions/illegal_char_error.hpp"
 using namespace std;
 
 const string NORMAL_DIGITS = "0123456789";
@@ -9,6 +10,9 @@ const string LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const string LETTERS_UNDERSCORE = LETTERS + "_";
 const string LETTERS_DIGITS = LETTERS + DIGITS;
 const map<char, char> ESCAPE_CHARACTERS{{'n', '\n'}, {'t', '\t'}, {'r', '\r'}};
+const char DOUBLE_QUOTE = '"';
+const char SIMPLE_QUOTE = '\'';
+const char BACKSLASH = '\\';
 
 /// @brief Helper method to know if a specific identifier is a keyword or not.
 /// @param keyword The identifier that may or may not be a keyword.
@@ -73,8 +77,17 @@ list<Token*> Lexer::generate_tokens() {
       const Position pos_start = pos.copy();
       advance();
       tokens.push_back(new Token(TokenType::EQUALS, "=", pos_start, &pos));
+    } else if (*iter == DOUBLE_QUOTE || *iter == SIMPLE_QUOTE) {
+      tokens.push_back(make_string());
     } else {
-      advance();
+      if (*iter == ' ') {
+        advance();
+      } else {
+        throw IllegalCharError(
+          pos, pos,
+          string(1, *iter)
+        );
+      }
     }
   }
   return tokens;
@@ -134,7 +147,6 @@ Token* Lexer::make_number() {
   }
 
   remove_character(number_str, '_');
-  // const bool is_int = string_contains(number_str, '.'); // TODO: needed to later separate "integer" from "double"
   return new Token(TokenType::NUMBER, number_str, pos_start, &pos);
 }
 
@@ -181,4 +193,41 @@ Token* Lexer::make_mul_or_power() {
   }
 
   return new Token(tok_type, value, pos_start, &pos);
+}
+
+Token* Lexer::make_string() {
+  const Position pos_start = pos.copy();
+  char opening_quote = (*iter);
+  bool allow_concatenation = *iter == DOUBLE_QUOTE;
+  string value = "";
+  advance();
+
+  bool escaped = false; // `true` if the previous character was a backslash (\)
+  while (
+    hasMoreTokens() &&
+    (escaped || *iter != opening_quote)
+  ) {
+    if (value.length() == UINT_MAX) {
+      throw TypeOverflowError(
+        pos_start, pos,
+        "The maximum length of a string has been reached: " + std::to_string(value.length())
+      );
+    }
+    if (*iter == BACKSLASH) {
+      if (escaped) {
+        value.push_back(BACKSLASH);
+        escaped = false;
+      } else {
+        escaped = true;
+      }
+    } else {
+      value.push_back(*iter);
+      escaped = false;
+    }
+    advance();
+  }
+
+  advance(); // to skip the ending quote (the lexer must not believe it's the start of a new string).
+
+  return new Token(TokenType::STR, value, pos_start, &pos, allow_concatenation);
 }

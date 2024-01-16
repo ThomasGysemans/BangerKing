@@ -14,7 +14,7 @@ DoubleValue::DoubleValue(): Value(Type::DOUBLE) {
 
 double DoubleValue::get_default_value() { return 0.0; }
 double DoubleValue::get_actual_value() const { return any_cast<double>(actual_value); }
-bool DoubleValue::is_true() const { return get_actual_value() != 0.0; }
+bool DoubleValue::is_truthy() const { return get_actual_value() != 0.0; }
 string DoubleValue::to_string() const { return double_to_string(get_actual_value()); }
 DoubleValue* DoubleValue::copy() const { return new DoubleValue(*this); }
 
