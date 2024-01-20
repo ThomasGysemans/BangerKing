@@ -1,3 +1,3 @@
 #include "../include/files.hpp"
 
-map<string, const string*> READ_FILES;
+map<string, unique_ptr<const string>> READ_FILES;

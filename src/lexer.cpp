@@ -37,8 +37,8 @@ bool Lexer::hasMoreTokens() const {
   return iter != (*text).end();
 }
 
-list<Token*> Lexer::generate_tokens() {
-  list<Token*> tokens;
+list<unique_ptr<const Token>> Lexer::generate_tokens() {
+  list<unique_ptr<const Token>> tokens;
   while (hasMoreTokens()) {
     if (*iter == '\n' || *iter == '\r') {
       const Position pos_start = pos.copy();
@@ -46,7 +46,7 @@ list<Token*> Lexer::generate_tokens() {
         advance();
       }
       advance();
-      tokens.push_back(new Token(TokenType::NEWLINE, "\n", pos_start));
+      tokens.push_back(make_unique<Token>(TokenType::NEWLINE, "\n", pos_start));
     } else if (string_contains(LETTERS_UNDERSCORE, *iter)) { // must be before "make_number()"
       tokens.push_back(make_identifier());
     } else if (*iter == '.' || string_contains(DIGITS, *iter)) { // numbers are allowed to start with a dot (in case they're >= 0 and < 1)
@@ -60,23 +60,23 @@ list<Token*> Lexer::generate_tokens() {
     } else if (*iter == '/') {
       const Position pos_start = pos.copy();
       advance();
-      tokens.push_back(new Token(TokenType::SLASH, "/", pos_start, &pos));
+      tokens.push_back(make_unique<Token>(TokenType::SLASH, "/", pos_start, &pos));
     } else if (*iter == '%') {
       const Position pos_start = pos.copy();
       advance();
-      tokens.push_back(new Token(TokenType::MODULO, "%", pos_start, &pos));
+      tokens.push_back(make_unique<Token>(TokenType::MODULO, "%", pos_start, &pos));
     } else if (*iter == '(') {
       const Position pos_start = pos.copy();
       advance();
-      tokens.push_back(new Token(TokenType::LPAREN, "(", pos_start, &pos));
+      tokens.push_back(make_unique<Token>(TokenType::LPAREN, "(", pos_start, &pos));
     } else if (*iter == ')') {
       const Position pos_start = pos.copy();
       advance();
-      tokens.push_back(new Token(TokenType::RPAREN, ")", pos_start, &pos));
+      tokens.push_back(make_unique<Token>(TokenType::RPAREN, ")", pos_start, &pos));
     } else if (*iter == '=') {
       const Position pos_start = pos.copy();
       advance();
-      tokens.push_back(new Token(TokenType::EQUALS, "=", pos_start, &pos));
+      tokens.push_back(make_unique<Token>(TokenType::EQUALS, "=", pos_start, &pos));
     } else if (*iter == DOUBLE_QUOTE || *iter == SIMPLE_QUOTE) {
       tokens.push_back(make_string());
     } else {
@@ -101,7 +101,7 @@ list<Token*> Lexer::generate_tokens() {
 *
 */
 
-Token* Lexer::make_identifier() {
+unique_ptr<Token> Lexer::make_identifier() {
   const Position pos_start = pos.copy();
   string identifier = string(1, *iter);
   advance();
@@ -113,10 +113,10 @@ Token* Lexer::make_identifier() {
 
   const bool keyword = is_keyword(identifier);
   const TokenType token_type = keyword ? TokenType::KEYWORD : TokenType::IDENTIFIER;
-  return new Token(token_type, identifier, pos_start, &pos);
+  return make_unique<Token>(token_type, identifier, pos_start, &pos);
 }
 
-Token* Lexer::make_number() {
+unique_ptr<Token> Lexer::make_number() {
   const Position pos_start = pos.copy();
   const bool is_beginning_with_dot = *iter == '.';
   string number_str = string(1, *iter);
@@ -124,7 +124,7 @@ Token* Lexer::make_number() {
   advance();
 
   if (is_beginning_with_dot && !string_contains(NORMAL_DIGITS, *iter)) {
-    return new Token(TokenType::DOT, ".", pos_start);
+    return make_unique<Token>(TokenType::DOT, ".", pos_start);
   }
 
   const string digits_and_point = DIGITS + ".";
@@ -147,10 +147,10 @@ Token* Lexer::make_number() {
   }
 
   remove_character(number_str, '_');
-  return new Token(TokenType::NUMBER, number_str, pos_start, &pos);
+  return make_unique<Token>(TokenType::NUMBER, number_str, pos_start, &pos);
 }
 
-Token* Lexer::make_plus_or_increment() {
+unique_ptr<Token> Lexer::make_plus_or_increment() {
   const Position pos_start = pos.copy();
   TokenType tok_type = TokenType::PLUS;
   string value = "+";
@@ -162,10 +162,10 @@ Token* Lexer::make_plus_or_increment() {
     value = "++";
   }
 
-  return new Token(tok_type, value, pos_start, &pos);
+  return make_unique<Token>(tok_type, value, pos_start, &pos);
 }
 
-Token* Lexer::make_minus_or_decrement() {
+unique_ptr<Token> Lexer::make_minus_or_decrement() {
   const Position pos_start = pos.copy();
   TokenType tok_type = TokenType::MINUS;
   string value = "-";
@@ -177,10 +177,10 @@ Token* Lexer::make_minus_or_decrement() {
     value = "--";
   }
 
-  return new Token(tok_type, value, pos_start, &pos);
+  return make_unique<Token>(tok_type, value, pos_start, &pos);
 }
 
-Token* Lexer::make_mul_or_power() {
+unique_ptr<Token> Lexer::make_mul_or_power() {
   const Position pos_start = pos.copy();
   TokenType tok_type = TokenType::MULTIPLY;
   string value = "*";
@@ -192,10 +192,10 @@ Token* Lexer::make_mul_or_power() {
     value = "**";
   }
 
-  return new Token(tok_type, value, pos_start, &pos);
+  return make_unique<Token>(tok_type, value, pos_start, &pos);
 }
 
-Token* Lexer::make_string() {
+unique_ptr<Token> Lexer::make_string() {
   const Position pos_start = pos.copy();
   char opening_quote = (*iter);
   bool allow_concatenation = *iter == DOUBLE_QUOTE;
@@ -229,5 +229,5 @@ Token* Lexer::make_string() {
 
   advance(); // to skip the ending quote (the lexer must not believe it's the start of a new string).
 
-  return new Token(TokenType::STR, value, pos_start, &pos, allow_concatenation);
+  return make_unique<Token>(TokenType::STR, value, pos_start, &pos, allow_concatenation);
 }

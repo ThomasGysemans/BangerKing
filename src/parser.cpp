@@ -10,7 +10,7 @@ void Parser::advance() {
   ++iter;
 }
 
-const Token* Parser::getTok() const { return (*iter); }
+const unique_ptr<const Token>& Parser::getTok() const { return (*iter); }
 bool Parser::has_more_tokens() const { return iter != tokens->end(); }
 bool Parser::is_newline() const { return getTok()->ofType(TokenType::NEWLINE); }
 
@@ -27,13 +27,17 @@ void Parser::ignore_newlines() {
 */
 
 Parser::Parser(
-  const list<Token*>& toks
+  const list<unique_ptr<const Token>>& toks
 ): tokens(&toks) {
   iter = toks.begin();
 }
 
-const ListNode* Parser::parse() {
-  const ListNode* stmts = statements();
+unique_ptr<ListNode> Parser::parse() {
+  // To ensure that the unique pointers
+  // do not get copied when assigned to a local variable,
+  // I do not declare the pointer as `const`.
+  // This way, I allow the move semantic to work properly.
+  unique_ptr<ListNode> stmts = statements();
 
   if (has_more_tokens()) {
     const Token invalid_token = getTok()->copy();
@@ -55,27 +59,28 @@ const ListNode* Parser::parse() {
 *
 */
 
-const ListNode* Parser::statements() {
+unique_ptr<ListNode> Parser::statements() {
   const Position pos_start = getTok()->getStartingPosition().copy();
-  list<const CustomNode*> stmts;
+  unique_ptr<list<unique_ptr<CustomNode>>> stmts = make_unique<list<unique_ptr<CustomNode>>>();
 
   ignore_newlines();
 
   if (!has_more_tokens()) {
-    return new ListNode(stmts, pos_start, pos_start);
+    return make_unique<ListNode>(move(stmts), pos_start, pos_start);
   }
 
   do {
-    stmts.push_back(statement());
+    unique_ptr<CustomNode> stmt = statement();
+    stmts->push_back(move(stmt));
     ignore_newlines();
   } while (has_more_tokens());
 
-  return new ListNode(stmts, pos_start, stmts.back()->getEndingPosition());
+  return make_unique<ListNode>(move(stmts), pos_start, stmts->back()->getEndingPosition());
 }
 
-const CustomNode* Parser::statement() { return expr(); }
+unique_ptr<CustomNode> Parser::statement() { return expr(); }
 
-const CustomNode* Parser::expr() {
+unique_ptr<CustomNode> Parser::expr() {
   if (getTok()->is_keyword("store")) {
     const Position pos_start = getTok()->getStartingPosition();
     advance();
@@ -110,16 +115,17 @@ const CustomNode* Parser::expr() {
           "Expected an expression after '=' for variable assignment"
         );
       }
-      const CustomNode* value_node = cond_expr();
-      return new VarAssignmentNode(
+      unique_ptr<CustomNode> value_node = cond_expr();
+      const Position ending_pos = value_node->getEndingPosition();
+      return make_unique<VarAssignmentNode>(
         var_name,
-        value_node,
+        move(value_node),
         type_name,
         pos_start,
-        value_node->getEndingPosition()
+        ending_pos
       );
     } else {
-      return new VarAssignmentNode(
+      return make_unique<VarAssignmentNode>(
         var_name,
         nullptr,
         type_name,
@@ -132,33 +138,34 @@ const CustomNode* Parser::expr() {
   return cond_expr();
 }
 
-const CustomNode* Parser::cond_expr() { return comp_expr(); }
+unique_ptr<CustomNode> Parser::cond_expr() { return comp_expr(); }
 
-const CustomNode* Parser::comp_expr() { return bin_op(); }
+unique_ptr<CustomNode> Parser::comp_expr() { return bin_op(); }
 
-const CustomNode* Parser::bin_op() { return arith_expr(); }
+unique_ptr<CustomNode> Parser::bin_op() { return arith_expr(); }
 
-const CustomNode* Parser::arith_expr() {
-  const CustomNode* result = term();
+unique_ptr<CustomNode> Parser::arith_expr() {
+  unique_ptr<CustomNode> result = term();
 
   while (has_more_tokens() && (
     getTok()->ofType(TokenType::PLUS) ||
     getTok()->ofType(TokenType::MINUS)
   )) {
-    if (getTok()->ofType(TokenType::PLUS)) {
-      advance();
-      result = new AddNode(result, term());
-    } else if (getTok()->ofType(TokenType::MINUS)) {
-      advance();
-      result = new SubstractNode(result, term());
+    auto& tok = getTok();
+    advance();
+    auto ter = term();
+    if (tok->ofType(TokenType::PLUS)) {
+      result = make_unique<AddNode>(result, ter);
+    } else {
+      result = make_unique<SubstractNode>(result, ter);
     }
   }
 
   return result;
 }
 
-const CustomNode* Parser::term() {
-  const CustomNode * result = factor();
+unique_ptr<CustomNode> Parser::term() {
+  unique_ptr<CustomNode> result = factor();
 
   while (has_more_tokens() && (
     getTok()->ofType(TokenType::MULTIPLY) ||
@@ -166,50 +173,48 @@ const CustomNode* Parser::term() {
     getTok()->ofType(TokenType::POWER) ||
     getTok()->ofType(TokenType::MODULO)
   )) {
-    if (getTok()->ofType(TokenType::MULTIPLY)) {
-      advance();
-      result = new MultiplyNode(result, factor());
-    } else if (getTok()->ofType(TokenType::SLASH)) {
-      advance();
-      result = new DivideNode(result, factor());
-    } else if (getTok()->ofType(TokenType::MODULO)) {
-      advance();
-      result = new ModuloNode(result, factor());
-    } else if (getTok()->ofType(TokenType::POWER)) {
-      advance();
-      result = new PowerNode(result, factor());
+    auto& tok = getTok();
+    advance();
+    auto fac = factor();
+    if (tok->ofType(TokenType::MULTIPLY)) {
+      result = make_unique<MultiplyNode>(result, fac);
+    } else if (tok->ofType(TokenType::SLASH)) {
+      result = make_unique<DivideNode>(result, fac);
+    } else if (tok->ofType(TokenType::MODULO)) {
+      result = make_unique<ModuloNode>(result, fac);
+    } else {
+      result = make_unique<PowerNode>(result, fac);
     }
   }
 
   return result;
 }
 
-const CustomNode* Parser::factor() {
+unique_ptr<CustomNode> Parser::factor() {
   if (getTok()->ofType(TokenType::PLUS)) { // +5
     advance();
-    return new PlusNode(factor());
+    return make_unique<PlusNode>(factor());
   } else if (getTok()->ofType(TokenType::MINUS)) { // -5
     advance();
-    return new MinusNode(factor());
+    return make_unique<MinusNode>(factor());
   } else {
     return prop();
   }
 }
 
-const CustomNode* Parser::prop() { return call(); }
+unique_ptr<CustomNode> Parser::prop() { return call(); }
 
-const CustomNode* Parser::call() { return atom(); }
+unique_ptr<CustomNode> Parser::call() { return atom(); }
 
-const CustomNode* Parser::atom() {
+unique_ptr<CustomNode> Parser::atom() {
   const Token first_token = getTok()->copy();
 
   if (first_token.ofType(TokenType::LPAREN)) {
     advance();
     ignore_newlines();
-    const CustomNode* result = expr();
+    unique_ptr<CustomNode> result = expr();
     ignore_newlines();
     if (getTok()->notOfType(TokenType::RPAREN)) {
-      delete result;
       throw InvalidSyntaxError(
         getTok()->getStartingPosition(), getTok()->getEndingPosition(),
         "Expected ')'"
@@ -220,9 +225,9 @@ const CustomNode* Parser::atom() {
   } else if (first_token.ofType(TokenType::NUMBER)) {
     advance();
     if (string_contains(first_token.getStringValue(), '.')) {
-      return new DoubleNode(first_token);
+      return make_unique<DoubleNode>(first_token);
     } else {
-      return new IntegerNode(first_token);
+      return make_unique<IntegerNode>(first_token);
     }
   } else if (first_token.ofType(TokenType::IDENTIFIER)) {
     const Token var_tok = getTok()->copy();
@@ -235,13 +240,13 @@ const CustomNode* Parser::atom() {
           "Expected a new value to be assigned to the variable."
         );
       }
-      const CustomNode* value_node = expr();
-      return new VarModifyNode(var_tok.getStringValue(), value_node, var_tok.getStartingPosition());
+      unique_ptr<CustomNode> value_node = expr();
+      return make_unique<VarModifyNode>(var_tok.getStringValue(), move(value_node), var_tok.getStartingPosition());
     }
-    return new VarAccessNode(first_token);
+    return make_unique<VarAccessNode>(first_token);
   } else if (first_token.ofType(TokenType::STR)) {
     advance();
-    return new StringNode(first_token);
+    return make_unique<StringNode>(first_token);
   } else {
     throw InvalidSyntaxError(
       first_token.getStartingPosition(), first_token.getEndingPosition(),

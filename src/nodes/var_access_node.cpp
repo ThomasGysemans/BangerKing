@@ -1,7 +1,5 @@
 #include "../../include/nodes/var_access_node.hpp"
 
-VarAccessNode::~VarAccessNode() {}
-
 VarAccessNode::VarAccessNode(
   const Token& tok
 ): CustomNode(tok.getStartingPosition(), tok.getEndingPosition()), var_name(tok.getStringValue()) {}

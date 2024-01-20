@@ -18,17 +18,17 @@ class SymbolTable;
 /// An empty symbol table is created when a context is instantiated.
 class Context {
   const string display_name;
-  const Context* parent;
-  const Position* parent_entry_pos;
-  SymbolTable* symbol_table = nullptr;
+  shared_ptr<const Context> parent;
+  shared_ptr<const Position> parent_entry_pos;
+  shared_ptr<SymbolTable> symbol_table;
 
   public:
     const string get_display_name() const;
-    const Position* get_parent_entry_pos() const;
-    const Context* get_parent() const;
-    SymbolTable* get_symbol_table() const;
+    shared_ptr<const Context> get_parent() const;
+    shared_ptr<const Position> get_parent_entry_pos() const;
+    shared_ptr<SymbolTable> get_symbol_table() const;
 
-    virtual ~Context();
+    ~Context() = default;
 
     /// @brief Checks if this context is contained in another context of the given name.
     /// @param name The name of a potential parent context.
@@ -41,7 +41,7 @@ class Context {
     /// @param entry_pos The entry position in the program of this context.
     Context(
       const string& name,
-      const Context* p_ctx = nullptr,
-      const Position* entry_pos = nullptr
+      shared_ptr<const Context> p_ctx = nullptr,
+      shared_ptr<const Position> entry_pos = nullptr
     );
 };

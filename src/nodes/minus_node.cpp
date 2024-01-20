@@ -2,14 +2,10 @@
 using namespace std;
 
 MinusNode::MinusNode(
-  const CustomNode* n
-):  CustomNode(n->getStartingPosition(), n->getEndingPosition()), node(n) {}
+  unique_ptr<CustomNode> n
+): CustomNode(n->getStartingPosition(), n->getEndingPosition()), node(move(n)) {}
 
-MinusNode::~MinusNode() {
-  delete node;
-}
-
-const CustomNode* MinusNode::get_node() const { return node; }
+unique_ptr<CustomNode> MinusNode::get_node() { return move(node); }
 
 string MinusNode::to_string() const {
   return "(-" + node->to_string() + ")";

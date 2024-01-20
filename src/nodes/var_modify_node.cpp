@@ -2,15 +2,11 @@
 
 VarModifyNode::VarModifyNode(
   const string& var_name,
-  const CustomNode* value,
+  unique_ptr<CustomNode> value,
   const Position pos_start
-): CustomNode(pos_start, value->getEndingPosition()), var_name(var_name), value_node(value) { }
+): CustomNode(pos_start, value->getEndingPosition()), var_name(var_name), value_node(move(value)) { }
 
-VarModifyNode::~VarModifyNode() {
-  delete value_node;
-}
-
-const CustomNode* VarModifyNode::get_value_node() const { return value_node; }
+unique_ptr<CustomNode> VarModifyNode::get_value_node() { return move(value_node); }
 const string VarModifyNode::get_var_name() const { return var_name; }
 
 string VarModifyNode::to_string() const {

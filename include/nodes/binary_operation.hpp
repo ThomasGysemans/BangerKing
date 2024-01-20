@@ -7,18 +7,18 @@ using namespace std;
 /// It applies to additions, substractions, multiplications, etc.
 class BinaryOperationNode: public CustomNode {
   protected:
-    const CustomNode* node_a;
-    const CustomNode* node_b;
+    unique_ptr<CustomNode> node_a;
+    unique_ptr<CustomNode> node_b;
 
     BinaryOperationNode(
-      const CustomNode* a,
-      const CustomNode* b
+      unique_ptr<CustomNode> a,
+      unique_ptr<CustomNode> b
     );
 
   public:
-    ~BinaryOperationNode();
+    virtual ~BinaryOperationNode() override = default;
 
-    const CustomNode* get_a() const;
-    const CustomNode* get_b() const;
+    unique_ptr<CustomNode> retrieve_a();
+    unique_ptr<CustomNode> retrieve_b();
     virtual string to_string() const override = 0; // pure inherited virtual method
 };

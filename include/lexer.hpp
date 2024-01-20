@@ -70,32 +70,32 @@ class Lexer {
 
     /// @brief Generates the tokens in a list.
     /// @return The list of tokens in the given source code.
-    list<Token*> generate_tokens();
+    list<unique_ptr<const Token>> generate_tokens();
 
   private:
     /// @brief Makes an identifier.(a simple word starting with a letter or an underscore)
     /// @return A token that is either a keyword or an identifier.
-    Token * make_identifier();
+    unique_ptr<Token> make_identifier();
 
     /// @brief Makes a number or a DOT.
     /// @return A token for a number (integer as well as float and double), or a dot.
-    Token * make_number();
+    unique_ptr<Token> make_number();
 
     /// @brief Makes a token of type + or ++
     /// @return A token of type PLUS or INC
-    Token * make_plus_or_increment();
+    unique_ptr<Token> make_plus_or_increment();
 
     /// @brief Makes a token of type - or --
     /// @return A token of type MINUS or DEC
-    Token * make_minus_or_decrement();
+    unique_ptr<Token> make_minus_or_decrement();
 
     /// @brief Makes a token of type * or **
     /// @return A token of type MUL or POWER
-    Token * make_mul_or_power();
+    unique_ptr<Token> make_mul_or_power();
 
     /// @brief Makes a token of type string.
     /// If double quotes are used, then `allow_concatenation` will be set to `true`.
     /// If simple quotes are used, then `allow_concatenation` will be set to `false`.
     /// @return A token of type STRING.
-    Token * make_string();
+    unique_ptr<Token> make_string();
 };

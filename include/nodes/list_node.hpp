@@ -7,23 +7,24 @@ using namespace std;
 
 /// @brief A list of nodes. It can also contain the whole program, as it is just a list of nodes too.
 class ListNode: public CustomNode {
-  // A copy of the statements produced by the Parser
-  // is necessary as the reference to the list created inside the parser
-  // is lost when reaching the end of the process. 
-  list<const CustomNode*> element_nodes;
+  // Note that the CustomNode instances inside of this list
+  // cannot be constant, because during interpretation
+  // the nodes get progressively deallocated hence
+  // modifying some nodes that would contain smart pointers to others.
+  unique_ptr<list<unique_ptr<CustomNode>>> element_nodes;
 
   public:
     ListNode(
-      list<const CustomNode*> nodes,
+      unique_ptr<list<unique_ptr<CustomNode>>> nodes,
       const Position& start,
       const Position& end
     );
     
-    ListNode(list<const CustomNode*> nodes);
+    ListNode(unique_ptr<list<unique_ptr<CustomNode>>> nodes);
 
-    ~ListNode();
+    ~ListNode() = default;
 
-    list<const CustomNode*> get_element_nodes() const;
+    unique_ptr<list<unique_ptr<CustomNode>>> get_element_nodes();
     int get_number_of_nodes() const;
     string to_string() const override;
 };

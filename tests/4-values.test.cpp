@@ -6,12 +6,11 @@
 #include "../include/types.hpp"
 #include "../include/miscellaneous.hpp"
 #include "../include/values/compositer.hpp"
-#include "../include/utils/deallocate_list_of_pointers.hpp"
 using namespace std;
 
 void test_copy() {
-  const IntegerValue* integer = new IntegerValue(5);
-  const IntegerValue* copy = integer->copy();
+  unique_ptr<IntegerValue> integer = make_unique<IntegerValue>(5);
+  unique_ptr<IntegerValue> copy = unique_ptr<IntegerValue>(integer->copy());
 
   const Position* copy_pos_start = copy->get_pos_start();
   const Position* copy_pos_end = copy->get_pos_end();
@@ -21,39 +20,31 @@ void test_copy() {
   assert(integer->get_pos_end() != copy_pos_end);
   assert(integer->get_pos_start()->equals(*copy_pos_start));
   assert(integer->get_pos_end()->equals(*copy_pos_end));
-  assert(&integer != &copy);
+  assert(integer.get() != copy.get());
 
-  delete integer;
-  delete copy;
   print_success_msg("copy of an integer", 1);
 }
 
 void test_integer() {
-  const IntegerValue* integer = new IntegerValue(5);
-  const IntegerValue* default_integer = new IntegerValue();
+  unique_ptr<IntegerValue> integer = make_unique<IntegerValue>(5);
+  unique_ptr<IntegerValue> default_integer = make_unique<IntegerValue>();
   assert(integer->get_actual_value() == 5);
   assert(integer->to_string() == "5");
   assert(integer->is_truthy());
   assert(default_integer->get_actual_value() == IntegerValue::get_default_value());
   assert(!default_integer->is_truthy());
   
-  delete integer;
-  delete default_integer;
-
   print_success_msg("integer value", 1);
 }
 
 void test_double() {
-  const DoubleValue* d = new DoubleValue(3.14);
-  const DoubleValue* double_default = new DoubleValue();
+  unique_ptr<DoubleValue> d = make_unique<DoubleValue>(3.14);
+  unique_ptr<DoubleValue> double_default = make_unique<DoubleValue>();
   assert(d->get_actual_value() == 3.14);
   assert(d->to_string() == "3.14");
   assert(d->is_truthy());
   assert(double_default->get_actual_value() == DoubleValue::get_default_value());
   assert(!double_default->is_truthy());
-
-  delete d;
-  delete double_default;
 
   print_success_msg("double value", 1);
 }
@@ -73,9 +64,8 @@ void test_string() {
   assert(!default_str.is_truthy());
 
   // Test the possible casts from StringValue to another type
-  const IntegerValue* cast_int = dynamic_cast<IntegerValue*>(hello.cast(Type::INT));
+  unique_ptr<IntegerValue> cast_int = cast_value<IntegerValue>(hello.cast(Type::INT));
   assert(cast_int->get_actual_value() == hello.get_actual_value().length());
-  delete cast_int;
 
   // Test external concatenation
   const StringValue world("world");

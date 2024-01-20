@@ -4,4 +4,4 @@
 #include <string>
 using namespace std;
 
-extern map<string, const string*> READ_FILES;
+extern map<string, unique_ptr<const string>> READ_FILES;

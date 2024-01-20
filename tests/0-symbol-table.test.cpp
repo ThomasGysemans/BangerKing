@@ -6,104 +6,92 @@
 using namespace std;
 
 void test_set() {
-  SymbolTable* table = new SymbolTable();
-  IntegerValue* value = new IntegerValue(5);
-  table->set("a", value);
+  unique_ptr<SymbolTable> table = make_unique<SymbolTable>();
+  unique_ptr<IntegerValue> integer = make_unique<IntegerValue>(5);
+  table->set("a", move(integer));
 
   assert(table->exists("a"));
-  assert(table->get("a") == value);
 
-  Value* value_from_table = table->get("a");
-  IntegerValue* integer_from_table = dynamic_cast<IntegerValue*>(value_from_table);
-  assert(integer_from_table != nullptr);
-  assert(integer_from_table->get_actual_value() == 5);
-
-  delete table; // will also delete "value"
   print_success_msg("defines variables", 1);
 }
 
-void test_casts() {
-  SymbolTable* table = new SymbolTable();
-  IntegerValue* value = new IntegerValue(5);
-  table->set("a", value->copy());
+void test_get() {
+  unique_ptr<SymbolTable> table = make_unique<SymbolTable>();
+  unique_ptr<IntegerValue> integer = make_unique<IntegerValue>(5);
+  table->set("a", move(integer));
 
   assert(table->exists("a"));
-  assert(table->get("a") != value);
 
-  Value* value_from_table = table->get("a");
-  IntegerValue* integer_from_table = dynamic_cast<IntegerValue*>(value_from_table);
-  assert(integer_from_table != nullptr);
-  assert(integer_from_table->get_actual_value() == 5);
+  // A new unique pointer cannot be created to store the result of the cast
+  // because it's still the same memory for both,
+  // and creating another unique_ptr for the same memory
+  // will make the variable get deallocated twice,
+  // at the end of the scope
+  unique_ptr<IntegerValue> casted_copy = cast_value<IntegerValue>(table->get("a"));
 
-  delete table; // will also delete "value"
-  print_success_msg("defines variables and casts them", 1);
+  assert(casted_copy != nullptr);
+  assert(casted_copy->get_actual_value() == 5);
+
+  print_success_msg("copies variables", 1);
 }
 
 void test_remove() {
-  SymbolTable* table = new SymbolTable();
-  IntegerValue* value = new IntegerValue(5);
-  table->set("a", value);
+  unique_ptr<SymbolTable> table = make_unique<SymbolTable>();
+  unique_ptr<IntegerValue> integer = make_unique<IntegerValue>(5);
+  table->set("a", move(integer));
 
   assert(table->exists("a"));
-  assert(table->get("a") == value);
 
   table->remove("a");
   assert(!table->exists("a"));
   assert(table->get("a") == nullptr);
 
-  delete table;
   print_success_msg("removes variables", 1);
 }
 
 void test_modify() {
-  SymbolTable* table = new SymbolTable();
-  IntegerValue* value = new IntegerValue(5);
-  table->set("a", value);
+  unique_ptr<SymbolTable> table = make_unique<SymbolTable>();
+  unique_ptr<IntegerValue> integer = make_unique<IntegerValue>(5);
+  table->set("a", move(integer));
 
   assert(table->exists("a"));
-  assert(table->get("a") == value);
 
-  IntegerValue* new_value = new IntegerValue(10);
-  table->modify("a", new_value);
+  unique_ptr<IntegerValue> new_value = make_unique<IntegerValue>(10);
+  table->modify("a", move(new_value));
 
   assert(table->exists("a"));
-  assert(table->get("a") != value);
-  assert(table->get("a") == new_value);
+  assert(table->get("a").get() != integer.get());
+  assert(table->get("a").get() != new_value.get());
   
-  IntegerValue* new_value_from_table = dynamic_cast<IntegerValue*>(table->get("a"));
+  unique_ptr<IntegerValue> new_value_from_table = cast_value<IntegerValue>(table->get("a"));
   assert(new_value_from_table->get_actual_value() == 10);
 
-  delete value;
-  delete table;
   print_success_msg("modifies variables", 1);
 }
 
 void test_clear() {
-  SymbolTable* table = new SymbolTable();
-  IntegerValue* value = new IntegerValue(5);
-  table->set("a", value);
+  unique_ptr<SymbolTable> table = make_unique<SymbolTable>();
+  unique_ptr<IntegerValue> integer = make_unique<IntegerValue>(5);
+  table->set("a", move(integer));
 
   assert(table->exists("a"));
-  assert(table->get("a") == value);
 
   table->clear();
   assert(!table->exists("a"));
   assert(table->get("a") == nullptr);
 
-  delete table;
-  delete value;
   print_success_msg("clears table", 1);
 }
 
 void test_nested_tables() {
-  SymbolTable* global = new SymbolTable();
-  SymbolTable* nested = new SymbolTable(global); // we give as argument the parent symbol table
+  shared_ptr<SymbolTable> global = make_shared<SymbolTable>(); // it's shared, so it can be used even after the creation of `nested`
+  unique_ptr<SymbolTable> nested = make_unique<SymbolTable>(global); // expects a shared_ptr to another table as parent
 
-  IntegerValue* a = new IntegerValue(5);
-  nested->set("a", a);
+  unique_ptr<IntegerValue> a = make_unique<IntegerValue>(5);
+  nested->set("a", move(a));
 
-  IntegerValue* constant = new IntegerValue(10);
-  global->set("constant", constant);
+  unique_ptr<IntegerValue> constant = make_unique<IntegerValue>(10);
+  global->set("constant", move(constant));
   
   assert(nested->has_parent());
   assert(!global->has_parent());
@@ -113,39 +101,21 @@ void test_nested_tables() {
   assert(nested->exists("a"));
   assert(nested->exists_globally("a"));
   assert(nested->exists_globally("constant"));
-  assert(nested->get_highest_parent_context() == global);
+  assert(nested->get_highest_level_table().get() == global.get());
   assert(nested->does_constant_exist("constant"));
 
-  delete nested; // deletes its values and all the parent symbol tables
   print_success_msg("works with nested symbol tables", 1);
-}
-
-void test_has_value() {
-  SymbolTable* global = new SymbolTable();
-  SymbolTable* nested = new SymbolTable(global);
-
-  IntegerValue* a = new IntegerValue(5);
-  global->set("a", a);
-
-  assert(!nested->exists("a"));
-  assert(global->exists("a"));
-  assert(nested->has_value_globally(a));
-  assert(global->has_value_globally(a));
-
-  delete nested;
-  print_success_msg("has value", 1);
 }
 
 int main() {
   print_title("SymbolTable tests...");
 
   test_set();
-  test_casts();
+  test_get();
   test_remove();
   test_modify();
   test_clear();
   test_nested_tables();
-  test_has_value();
 
   print_success_msg("All \"SymbolTable\" tests successfully passed");
   return 0;

@@ -13,7 +13,7 @@ using namespace std;
 class Value {
   protected:
     const Type type;
-    const Context* context = nullptr;
+    shared_ptr<const Context> context = nullptr; // TODO: is having the context in the Value that necessary?
     Position pos_start;
     Position pos_end;
     any actual_value = nullptr;
@@ -43,7 +43,12 @@ class Value {
 
     /// @brief Sets the context in which this value was created
     /// @param ctx The context that created this value.
-    void set_ctx(const Context* ctx);
+    void set_ctx(shared_ptr<const Context> ctx);
+
+    /// @brief Gets the shared_ptr of the context in which this value was created.
+    /// The context is not meant to be modified this way, so a const qualifier is applied to the context.
+    /// @return The constant shared pointer to the context in which this value was created.
+    shared_ptr<const Context> get_ctx();
 
     /// @brief Gets the name of the type associated with this value.
     /// @return The name of the type.
@@ -71,5 +76,5 @@ class Value {
       throw UndefinedBehaviorException("Cannot print a value of type '" + get_type_name(get_type()) + "'");
     }
 
-    virtual Value* cast(Type output_type) const = 0;
+    virtual unique_ptr<Value> cast(Type output_type) const = 0;
 };

@@ -6,71 +6,58 @@
 #include "../include/miscellaneous.hpp"
 #include "../include/debug/print_tokens.hpp"
 #include "../include/debug/compare_tokens.hpp"
-#include "../include/utils/deallocate_list_of_pointers.hpp"
 #include "../include/exceptions/illegal_char_error.hpp"
 using namespace std;
 
-list<Token*> get_tokens_from(const string& code) {
+list<unique_ptr<const Token>> get_tokens_from(const string& code) {
   Lexer lexer(&code);
-  READ_FILES.insert({ "<stdin>", &code });
+  READ_FILES.insert({ "<stdin>", make_unique<string>(code) });
   return lexer.generate_tokens();
 }
 
-std::vector<Token*> list_to_vector(list<Token*> l) {
-  return std::vector<Token*> { std::make_move_iterator(l.begin()), std::make_move_iterator(l.end()) };
+std::vector<unique_ptr<const Token>> list_to_vector(list<unique_ptr<const Token>> l) {
+  return std::vector<unique_ptr<const Token>> { std::make_move_iterator(l.begin()), std::make_move_iterator(l.end()) };
 }
 
 void test_simple_digit() {
-  const string code = "5";
-  const list<Token*> tokens = get_tokens_from(code);
+  const auto tokens = get_tokens_from("5");
   assert(tokens.size() == 1);
   assert(tokens.front()->ofType(TokenType::NUMBER));
   assert(tokens.front()->getStringValue() == "5");
-
-  delete tokens.front();
 
   print_success_msg("lexer with simple digits", 1);
 }
 
 void test_simple_decimal_number() {
-  const string code = "3.14";
-  const list<Token*> tokens = get_tokens_from(code);
+  const auto tokens = get_tokens_from("3.14");
   assert(tokens.size() == 1);
   assert(tokens.front()->ofType(TokenType::NUMBER));
   assert(tokens.front()->getStringValue() == "3.14");
-
-  delete tokens.front();
 
   print_success_msg("lexer with simple decimal number", 1);
 }
 
 void test_simple_identifier() {
-  const string code = "hello";
-  const list<Token*> tokens = get_tokens_from(code);
+  const auto tokens = get_tokens_from("hello");
   assert(tokens.size() == 1);
   assert(tokens.front()->ofType(TokenType::IDENTIFIER));
   assert(tokens.front()->getStringValue() == "hello");
-
-  delete tokens.front();
 
   print_success_msg("lexer with simple identifier", 1);
 }
 
 void test_simple_keyword() {
-  const string code = KEYWORDS[0];
-  const list<Token*> tokens = get_tokens_from(code);
+  const auto tokens = get_tokens_from(KEYWORDS[0]);
   assert(tokens.size() == 1);
   assert(tokens.front()->ofType(TokenType::KEYWORD));
   assert(tokens.front()->getStringValue() == KEYWORDS[0]);
-
-  delete tokens.front();
 
   print_success_msg("lexer with simple keyword", 1);
 }
 
 void test_simple_maths() {
   const string code = "5+6*(6-4/2)%12**42";
-  const list<Token*> tokens = get_tokens_from(code);
+  const auto tokens = get_tokens_from(code);
   const list<TokenType> expected_tokens_list = {
     TokenType::NUMBER,
     TokenType::PLUS,
@@ -91,14 +78,12 @@ void test_simple_maths() {
 
   assert(compare_tokens(expected_tokens_list, tokens));
 
-  deallocate_const_list_of_pointers<Token>(tokens);
-
   print_success_msg("lexer with simple maths", 1);
 }
 
 void test_increment() {
   const string code = "--5++";
-  const list<Token*> tokens = get_tokens_from(code);
+  const auto tokens = get_tokens_from(code);
   const list<TokenType> expected_tokens_list = {
     TokenType::DEC,
     TokenType::NUMBER,
@@ -107,22 +92,17 @@ void test_increment() {
 
   assert(compare_tokens(expected_tokens_list, tokens));
 
-  deallocate_const_list_of_pointers<Token>(tokens);
-
   print_success_msg("lexer with simple increment", 1);
 }
 
 void test_positions() {
   const string code = "5";
-  const list<Token*> tokens = get_tokens_from(code);
-  const Token* tok = tokens.front();
-  const Position pos_start = tok->getStartingPosition();
-  const Position pos_end = tok->getEndingPosition();
+  const auto tokens = get_tokens_from(code);
+  const Position pos_start = tokens.front()->getStartingPosition();
+  const Position pos_end = tokens.front()->getEndingPosition();
 
   assert(pos_start.get_idx() == 0);
   assert(pos_end.get_idx() == 1);
-
-  delete tok;
 
   print_success_msg("lexer with correct positions", 1);
 }
@@ -132,23 +112,19 @@ void test_operator() {
   const auto tokens = get_tokens_from(code);
   assert(tokens.size() == 1);
 
-  const auto tok = tokens.front();
-  assert(tok->getType() == TokenType::SLASH);
-  assert(tok->getStartingPosition().get_idx() == 0);
-  assert(tok->getEndingPosition().get_idx() == 1);
-
-  delete tok;
+  assert(tokens.front()->getType() == TokenType::SLASH);
+  assert(tokens.front()->getStartingPosition().get_idx() == 0);
+  assert(tokens.front()->getEndingPosition().get_idx() == 1);
 
   print_success_msg("lexer with math operator", 1);
 }
 
 void test_parenthesis() {
-  const string code = "(5)";
-  const auto tokens = get_tokens_from(code);
+  const auto tokens = get_tokens_from("(5)");
   assert(tokens.size() == 3);
 
-  const auto lparen = tokens.front();
-  const auto rparen = tokens.back();
+  const auto& lparen = tokens.front();
+  const auto& rparen = tokens.back();
 
   assert(lparen->getType() == TokenType::LPAREN);
   assert(lparen->getStartingPosition().get_idx() == 0); // "(" starts at idx 0 and ends at idx 1
@@ -157,8 +133,6 @@ void test_parenthesis() {
   assert(rparen->getType() == TokenType::RPAREN);
   assert(rparen->getStartingPosition().get_idx() == 2); // ")" starts at idx 2 and ends at idx 3
   assert(rparen->getEndingPosition().get_idx() == 3);
-
-  deallocate_const_list_of_pointers<Token>(tokens);
 
   print_success_msg("lexer with parenthesis", 1);
 }
@@ -170,8 +144,6 @@ void test_addition_with_whitespace() {
   assert(tokens[1]->getType() == TokenType::PLUS);
   assert(tokens[2]->getType() == TokenType::NUMBER);
 
-  deallocate_const_vector_of_pointers<Token>(tokens);
-
   print_success_msg("addition with whitespace", 1);
 }
 
@@ -181,8 +153,6 @@ void test_addition_without_whitespace() {
   assert(tokens[0]->getType() == TokenType::NUMBER);
   assert(tokens[1]->getType() == TokenType::PLUS);
   assert(tokens[2]->getType() == TokenType::NUMBER);
-
-  deallocate_const_vector_of_pointers<Token>(tokens);
 
   print_success_msg("addition without whitespace", 1);
 }
@@ -194,8 +164,6 @@ void test_substraction_with_whitespace() {
   assert(tokens[1]->getType() == TokenType::MINUS);
   assert(tokens[2]->getType() == TokenType::NUMBER);
 
-  deallocate_const_vector_of_pointers<Token>(tokens);
-
   print_success_msg("substraction with whitespace", 1);
 }
 
@@ -205,8 +173,6 @@ void test_substraction_without_whitespace() {
   assert(tokens[0]->getType() == TokenType::NUMBER);
   assert(tokens[1]->getType() == TokenType::MINUS);
   assert(tokens[2]->getType() == TokenType::NUMBER);
-
-  deallocate_const_vector_of_pointers<Token>(tokens);
 
   print_success_msg("substraction without whitespace", 1);
 }
@@ -221,8 +187,6 @@ void test_variable_assignment() {
   assert(tokens[4]->ofType(TokenType::EQUALS));
   assert(tokens[5]->ofType(TokenType::NUMBER));
 
-  deallocate_const_vector_of_pointers<Token>(tokens);
-
   print_success_msg("variable assignment", 1);
 }
 
@@ -233,8 +197,6 @@ void test_variable_modification() {
   assert(tokens[1]->ofType(TokenType::EQUALS));
   assert(tokens[2]->ofType(TokenType::NUMBER));
 
-  deallocate_const_vector_of_pointers<Token>(tokens);
-
   print_success_msg("variable modification", 1);
 }
 
@@ -244,8 +206,6 @@ void test_expression_with_identifier() {
   assert(tokens[0]->matches(TokenType::IDENTIFIER, "a"));
   assert(tokens[1]->ofType(TokenType::PLUS));
   assert(tokens[2]->ofType(TokenType::NUMBER));
-
-  deallocate_const_vector_of_pointers<Token>(tokens);
 
   print_success_msg("maths expression with identifier", 1);
 }
@@ -265,9 +225,18 @@ void test_string() {
   assert(tokens[2]->ofType(TokenType::STR));
   assert(tokens[2]->getStringValue() == "c'est");
 
-  deallocate_const_vector_of_pointers<Token>(tokens);
-
   print_success_msg("simple strings with single and double quotes, including backslashes", 1);
+}
+
+void test_illegal_char() {
+  try {
+    get_tokens_from("é");
+    assert(false);
+  } catch (IllegalCharError e) {
+    assert(true);
+  }
+
+  print_success_msg("triggers exception with illegal characters");
 }
 
 int main() {
@@ -291,6 +260,7 @@ int main() {
     test_variable_modification();
     test_expression_with_identifier();
     test_string();
+    test_illegal_char();
 
     print_success_msg("All \"Lexer\" tests successfully passed");
   } catch (IllegalCharError e) {

@@ -4,5 +4,5 @@ RuntimeError::RuntimeError(
   const Position& start,
   const Position& end,
   const string& d,
-  const Context* ctx
-): BaseRuntime(start, end, "Runtime Error", d, ctx) {}
+  shared_ptr<const Context> ctx
+): BaseRuntimeError(start, end, "Runtime Error", d, ctx) {}

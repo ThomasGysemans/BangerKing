@@ -26,7 +26,7 @@ class DoubleValue: public Value {
     /// Transforming into the same type will produce an error.
     /// These transformations are possible, from the DoubleValue:
     /// - Type::INT => the actual_value but cast into an `int`
-    Value* cast(Type output_type) const override;
+    unique_ptr<Value> cast(Type output_type) const override;
 
     DoubleValue* operator+(const DoubleValue& other) const;
     DoubleValue* operator+(const IntegerValue& other) const;

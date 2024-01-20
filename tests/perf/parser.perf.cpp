@@ -4,7 +4,6 @@
 #include "../../include/lexer.hpp"
 #include "../../include/parser.hpp"
 #include "../../include/nodes/compositer.hpp"
-#include "../../include/utils/deallocate_list_of_pointers.hpp"
 #include "../../include/debug/print_tokens.hpp"
 using namespace std;
 
@@ -21,11 +20,9 @@ class ParserPerformance: public Performance {
         "(5/5)%5**600000\n"
         "-1+2-(3*4)/5%6**7\n";
       Lexer lexer(&code);
-      list<Token*> tokens = lexer.generate_tokens();
+      list<unique_ptr<const Token>> tokens = lexer.generate_tokens();
       Parser parser(tokens);
-      const ListNode* parsing_result = parser.parse();
-      deallocate_list_of_pointers<Token>(tokens);
-      delete parsing_result;
+      parser.parse();
     }
 };
 

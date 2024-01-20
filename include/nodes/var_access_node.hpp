@@ -12,7 +12,7 @@ class VarAccessNode: public CustomNode {
       const Token& var_tok
     );
 
-    ~VarAccessNode();
+    ~VarAccessNode() = default;
 
     string get_var_name() const;
     string to_string() const override;

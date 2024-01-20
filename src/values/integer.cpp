@@ -18,10 +18,10 @@ bool IntegerValue::is_truthy() const { return get_actual_value() != 0; }
 string IntegerValue::to_string() const { return std::to_string(get_actual_value()); }
 IntegerValue* IntegerValue::copy() const { return new IntegerValue(*this); }
 
-Value* IntegerValue::cast(Type output_type) const {
-  Value* cast_value = nullptr;
+unique_ptr<Value> IntegerValue::cast(Type output_type) const {
+  unique_ptr<Value> cast_value;
   switch (output_type) {
-    case Type::DOUBLE: cast_value = new DoubleValue((double)get_actual_value()); break;
+    case Type::DOUBLE: cast_value = make_unique<DoubleValue>((double)get_actual_value()); break;
     default:
       return nullptr;
   }

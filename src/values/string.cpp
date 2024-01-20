@@ -16,10 +16,10 @@ bool StringValue::is_truthy() const { return get_actual_value().length() != 0; }
 string StringValue::to_string() const { return get_actual_value(); }
 StringValue* StringValue::copy() const { return new StringValue(*this); }
 
-Value* StringValue::cast(Type output_type) const {
-  Value* cast_value = nullptr;
+unique_ptr<Value> StringValue::cast(Type output_type) const {
+  unique_ptr<Value> cast_value = nullptr;
   switch (output_type) {
-    case Type::INT: cast_value = new IntegerValue(get_actual_value().length()); break;
+    case Type::INT: cast_value = make_unique<IntegerValue>(get_actual_value().length()); break;
     default:
       return nullptr;
   }

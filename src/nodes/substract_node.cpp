@@ -1,9 +1,9 @@
 #include "../../include/nodes/substract_node.hpp"
 
 SubstractNode::SubstractNode(
-  const CustomNode* a,
-  const CustomNode* b
-): BinaryOperationNode(a, b) { }
+  unique_ptr<CustomNode>& a,
+  unique_ptr<CustomNode>& b
+): BinaryOperationNode(move(a), move(b)) { }
 
 string SubstractNode::to_string() const {
   return "SubstractNode(" + node_a->to_string() + "-" + node_b->to_string() + ")";

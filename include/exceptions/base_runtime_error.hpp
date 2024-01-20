@@ -5,17 +5,17 @@
 
 using namespace std;
 
-class BaseRuntime: public CustomError {
+class BaseRuntimeError: public CustomError {
   protected:
-    const Context* context;
+    shared_ptr<const Context> context;
 
   public:
-    BaseRuntime(
+    BaseRuntimeError(
       const Position& start,
       const Position& end,
       const string& name,
       const string& d,
-      const Context* ctx
+      shared_ptr<const Context> ctx
     );
     
     string to_string() const;

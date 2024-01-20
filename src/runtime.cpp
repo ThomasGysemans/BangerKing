@@ -1,32 +1,27 @@
 #include "../include/runtime.hpp"
 
-RuntimeResult::~RuntimeResult() {
-  delete value;
-  delete error;
-}
-
 void RuntimeResult::reset() {
-  value = nullptr;
-  error = nullptr;
+  value.reset();
+  error.reset();
 }
 
-CustomError* RuntimeResult::get_error() const { return error; }
-Value* RuntimeResult::get_value() const { return value; }
+shared_ptr<BaseRuntimeError> RuntimeResult::get_error() const { return error; }
+shared_ptr<Value> RuntimeResult::get_value() const { return value; }
 
-Value* RuntimeResult::read(RuntimeResult* res) {
-  error = res->get_error();
+shared_ptr<Value> RuntimeResult::read(unique_ptr<RuntimeResult> res) {
+  if (res->get_error() != nullptr) error = res->get_error();
   return res->get_value();
 }
 
-RuntimeResult* RuntimeResult::success(Value* v) {
+RuntimeResult* RuntimeResult::success(unique_ptr<Value> v) {
   reset();
-  value = v;
+  value = move(v); // transfers ownership of "v" to the shared_ptr "value"
   return this;
-}
+} 
 
-RuntimeResult* RuntimeResult::failure(CustomError* err) {
+RuntimeResult* RuntimeResult::failure(unique_ptr<BaseRuntimeError> err) {
   reset();
-  error = err;
+  error = move(err);
   return this;
 }
 

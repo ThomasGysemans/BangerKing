@@ -3,22 +3,18 @@
 
 VarAssignmentNode::VarAssignmentNode(
   const string& var_name,
-  const CustomNode* value,
+  unique_ptr<CustomNode> value,
   const Token type_tok,
   const Position pos_start,
   const Position pos_end
 )
 : CustomNode(pos_start, pos_end),
   var_name(var_name),
-  value_node(value),
+  value_node(move(value)),
   type(get_type_from_name(type_tok.getStringValue())),
   type_name(type_tok.getStringValue()) {}
 
-VarAssignmentNode::~VarAssignmentNode() {
-  delete value_node;
-}
-
-const CustomNode* VarAssignmentNode::get_value_node() const { return value_node; }
+unique_ptr<CustomNode> VarAssignmentNode::retrieve_value_node() { return move(value_node); }
 string VarAssignmentNode::get_var_name() const { return var_name; }
 bool VarAssignmentNode::has_value() const { return value_node != nullptr; }
 Type VarAssignmentNode::get_type() const { return type; }

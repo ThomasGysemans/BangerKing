@@ -2,7 +2,6 @@
 #include "perf.hpp"
 #include "../../include/token.hpp"
 #include "../../include/lexer.hpp"
-#include "../../include/utils/deallocate_list_of_pointers.hpp"
 #include "../../include/debug/print_tokens.hpp"
 using namespace std;
 
@@ -20,8 +19,7 @@ class LexerPerformance: public Performance {
         "\n ";
       code += KEYWORDS[0];
       Lexer lexer(&code);
-      list<Token*> tokens = lexer.generate_tokens();
-      deallocate_list_of_pointers<Token>(tokens);
+      lexer.generate_tokens();
     }
 };
 

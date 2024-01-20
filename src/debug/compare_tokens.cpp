@@ -17,9 +17,9 @@ bool list_equals(const list<T>& l1, const list<T>& l2) {
   return true;
 }
 
-bool compare_tokens(const list<TokenType>& expected, const list<Token*>& actual) {
+bool compare_tokens(const list<TokenType>& expected, const list<unique_ptr<const Token>>& actual) {
   list<TokenType> actual_tokens_list;
-  list<Token*>::const_iterator iter = actual.begin();
+  list<unique_ptr<const Token>>::const_iterator iter = actual.begin();
   while (iter != actual.end()) {
     actual_tokens_list.push_back((*iter)->getType());
     ++iter;

@@ -1,7 +1,6 @@
 #include <iostream>
 #include <list>
 #include "helper.hpp"
-#include "../include/utils/deallocate_list_of_pointers.hpp"
 #include "../include/lexer.hpp"
 #include "../include/token.hpp"
 #include "../include/parser.hpp"
@@ -13,61 +12,52 @@
 #include "../include/types.hpp"
 using namespace std;
 
-Context* common_ctx = new Context("<tests>");
+shared_ptr<Context> common_ctx = make_shared<Context>("<tests>");
 
 /// @brief Gets the values that the interpreter returns from the given code. Use this for the tests.
 /// @param code The code to interpret.
 /// @param clear_ctx Whether or not the global context should be cleared before interpreting the given source code. Defaults to `true`.
 /// @return The values that the interpreter calculated.
-const list<const Value*> get_values(const string& code, bool clear_ctx = true) {
+list<shared_ptr<const Value>> get_values(const string& code, bool clear_ctx = true) {
   if (clear_ctx) common_ctx->get_symbol_table()->clear();
 
-  try {
-    Lexer lexer(&code);
-    list<Token*> tokens = lexer.generate_tokens();
-    Parser parser(tokens);
-    const ListNode* tree = parser.parse();
-    deallocate_list_of_pointers<Token>(tokens);
+  Lexer lexer(&code);
+  READ_FILES.insert({ "<stdin>", make_unique<string>(code) });
+  list<unique_ptr<const Token>> tokens = lexer.generate_tokens();
+  Parser parser(tokens);
+  unique_ptr<ListNode> tree = parser.parse();
 
-    Interpreter::set_shared_ctx(common_ctx);
-    const RuntimeResult* result = Interpreter::visit(tree);
-    Value* v = result->get_value();
-    if (v == nullptr) {
-      throw "Segmentation fault happened during interpretation of this code : " + code + " because the result is a `nullptr`.";
-    }
-    const ListValue* values = dynamic_cast<ListValue*>(v);
-    if (values == nullptr) {
-      throw "Invalid cast of interpreter result. It did not return a valid instance of ListValue.";
-    }
-    delete tree;
-    return *(values->get_elements());
-  } catch (Exception e) {
-    cerr << "The program crashed due to this error: " << e.to_string() << endl;
-    exit(1);
+  Interpreter::set_shared_ctx(common_ctx);
+  unique_ptr<RuntimeResult> result = Interpreter::visit(move(tree));
+  shared_ptr<Value> v = result->get_value();
+  if (v == nullptr) {
+    throw string("Segmentation fault happened during interpretation of this code : " + code + " because the result is a `nullptr`.");
   }
+  shared_ptr<ListValue> values = cast_value<ListValue>(v);
+  if (values == nullptr) {
+    throw string("Invalid cast of interpreter result. It did not return a valid instance of ListValue.");
+  }
+  return values->get_elements();
 }
 
 void execute(const string& code) {
   Lexer lexer(&code);
-  list<Token*> tokens = lexer.generate_tokens();
+  list<unique_ptr<const Token>> tokens = lexer.generate_tokens();
   Parser parser(tokens);
-  const ListNode* tree = parser.parse();
-  deallocate_list_of_pointers<Token>(tokens);
+  unique_ptr<ListNode> tree = parser.parse();
   
   Interpreter::set_shared_ctx(common_ctx);
-  auto res = Interpreter::visit(tree);
-  delete res;
-  delete tree;
+  Interpreter::visit(move(tree));
 }
 
 template <typename V>
-unique_ptr<const V> get_custom_value_from(const string& code, bool clear_ctx = true) {
-  return make_unique<const V>(*(dynamic_cast<const V*>(get_values(code, clear_ctx).front())));
+shared_ptr<const V> get_custom_value_from(const string& code, bool clear_ctx = true) {
+  return cast_const_value<V>(get_values(code, clear_ctx).front());
 }
 
 template <typename V, typename N>
 N get_actual_value_from(const string& code, bool clear_ctx = true) {
-  return make_unique<const V>(*(dynamic_cast<const V*>(get_values(code, clear_ctx).front())))->get_actual_value();
+  return get_custom_value_from<V>(code, clear_ctx)->get_actual_value();
 }
 
 template <typename V, typename N>
@@ -113,7 +103,7 @@ void test_double() {
   assert(compare_actual_value<DoubleValue>("+3.14", 3.14));
   assert(compare_actual_value<DoubleValue>("-3.14", -3.14));
 
-  // Additions
+  // // Additions
   assert(compare_actual_value<DoubleValue>("1+0.2", 1.2));
   assert(compare_actual_value<DoubleValue>("0.1+1", 1.1));
   assert((get_actual_value_from<DoubleValue, double>("0.1+0.2")) != 0.3); // when using doubles, 0.1+0.2 != 0.3
@@ -174,15 +164,15 @@ void test_mathematical_operation_with_negative_and_double_numbers() {
 void test_variable_assignment_of_an_integer() {
   assert(compare_actual_value<IntegerValue>("store a as int = 5", 5));
   assert(common_ctx->get_symbol_table()->exists("a"));
-  assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("a")));
+  assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("a").get()));
 
   assert(compare_actual_value<IntegerValue>("store b as int", IntegerValue::get_default_value()));
   assert(common_ctx->get_symbol_table()->exists("b"));
-  assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("b")));
+  assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("b").get()));
 
   assert(compare_actual_value<IntegerValue>("store c as int = 5.6", 5));
   assert(common_ctx->get_symbol_table()->exists("c"));
-  assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("c")));
+  assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("c").get()));
 
   print_success_msg("works with the variable assignment of an integer", 1);
 }
@@ -190,15 +180,15 @@ void test_variable_assignment_of_an_integer() {
 void test_variable_assignment_of_a_double() {
   assert(compare_actual_value<DoubleValue>("store a as double = 5", 5));
   assert(common_ctx->get_symbol_table()->exists("a"));
-  assert(instanceof<DoubleValue>(common_ctx->get_symbol_table()->get("a")));
+  assert(instanceof<DoubleValue>(common_ctx->get_symbol_table()->get("a").get()));
 
   assert(compare_actual_value<DoubleValue>("store b as double = 5.5", 5.5));
   assert(common_ctx->get_symbol_table()->exists("b"));
-  assert(instanceof<DoubleValue>(common_ctx->get_symbol_table()->get("b")));
+  assert(instanceof<DoubleValue>(common_ctx->get_symbol_table()->get("b").get()));
 
   assert(compare_actual_value<DoubleValue>("store c as double", DoubleValue::get_default_value()));
   assert(common_ctx->get_symbol_table()->exists("c"));
-  assert(instanceof<DoubleValue>(common_ctx->get_symbol_table()->get("c")));
+  assert(instanceof<DoubleValue>(common_ctx->get_symbol_table()->get("c").get()));
 
   print_success_msg("works with the variable assignment of a double", 1);
 }
@@ -224,7 +214,7 @@ void test_access_to_variable() {
     assert(compare_actual_value<IntegerValue>("a", 5, false)); // "false" because we don't want to clear the context before the interpretation
     assert(common_ctx->get_symbol_table()->exists("a"));
     
-    print_success_msg("works the access to a variable", 1);
+    print_success_msg("works with an access to a variable", 1);
   } catch (RuntimeError e) {
     cout << e.to_string() << endl;
     assert(false);
@@ -235,18 +225,18 @@ void test_access_to_variable_in_maths_expression() {
   try {
     common_ctx->get_symbol_table()->clear();
     execute("store a as int = 5");
-    execute("a"); // use it at least once and then test it
-    const auto values = get_values("a+5", false);
-    const auto result = dynamic_cast<const IntegerValue*>(values.front());
-    assert(result->get_actual_value() == 10);
     assert(common_ctx->get_symbol_table()->exists("a"));
 
-    IntegerValue* value_from_table = dynamic_cast<IntegerValue*>(common_ctx->get_symbol_table()->get("a"));
-    // the program returns a copy of the value set in the table
-    // because it gets deallocated by the garbage collector of 'run()'
-    assert(&value_from_table != &result); 
+    const auto values = get_values("a+5", false);
+    shared_ptr<const Value> front = values.front();
+    shared_ptr<const IntegerValue> result = cast_const_value<IntegerValue>(front);
+    assert(result->get_actual_value() == 10);
 
-    delete result;
+    unique_ptr<IntegerValue> value_from_table = cast_value<IntegerValue>(common_ctx->get_symbol_table()->get("a"));
+
+    // "get()" returns a copy form the actual value stored in the symbol table
+    assert(value_from_table.get() != result.get()); 
+    assert(value_from_table->get_actual_value() == 5);
 
     print_success_msg("works with the access to a variable in maths expression", 1);
   } catch (RuntimeError e) {
@@ -258,15 +248,12 @@ void test_access_to_variable_in_maths_expression() {
 void test_multiline_input() {
   const auto values = get_values("5+5\n6+7\n");
   assert(values.size() == 2);
-  assert(instanceof<IntegerValue>(values.front()));
-  assert(instanceof<IntegerValue>(values.back()));
-  const auto first = dynamic_cast<const IntegerValue*>(values.front());
-  const auto second = dynamic_cast<const IntegerValue*>(values.back());
+  shared_ptr<const Value> front = values.front();
+  shared_ptr<const Value> back = values.back();
+  shared_ptr<const IntegerValue> first = cast_const_value<IntegerValue>(front);
+  shared_ptr<const IntegerValue> second = cast_const_value<IntegerValue>(back);
   assert(first->get_actual_value() == 10);
   assert(second->get_actual_value() == 13);
-
-  delete first;
-  delete second;
 
   print_success_msg("works with multiple lines", 1);
 }
@@ -275,16 +262,13 @@ void test_multiline_input_and_variables() {
   // test using variables
   const auto values = get_values("store a as int = 5\na\n");
   assert(values.size() == 2);
-  assert(instanceof<IntegerValue>(values.front()));
-  assert(instanceof<IntegerValue>(values.back()));
-  const auto first = dynamic_cast<const IntegerValue*>(values.front());
-  const auto second = dynamic_cast<const IntegerValue*>(values.back());
+  auto front = values.front();
+  auto back = values.back();
+  auto first = cast_const_value<IntegerValue>(front);
+  auto second = cast_const_value<IntegerValue>(back);
   assert(first->get_actual_value() == 5);
   assert(second->get_actual_value() == 5);
 
-  delete first;
-  delete second;
-  
   print_success_msg("works with variables on multiple lines", 1);
 }
 
@@ -293,20 +277,19 @@ void test_variable_modification() {
     common_ctx->get_symbol_table()->clear();
     execute("store a as int = 5");
     assert(common_ctx->get_symbol_table()->exists("a"));
-    assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("a")));
+    assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("a").get()));
 
     const auto values = get_values("a = 6", false);
     assert(values.size() == 1);
-    assert(instanceof<IntegerValue>(values.front()));
+    shared_ptr<const Value> front = values.front();
+    assert(instanceof<IntegerValue>(front));
 
-    const auto value = dynamic_cast<const IntegerValue*>(values.front());
+    shared_ptr<const IntegerValue> value = cast_const_value<IntegerValue>(front);
     assert(value->get_actual_value() == 6);
 
-    const auto a = dynamic_cast<IntegerValue*>(common_ctx->get_symbol_table()->get("a"));
-    assert(&value != &a);
+    unique_ptr<IntegerValue> a = cast_value<IntegerValue>(common_ctx->get_symbol_table()->get("a"));
+    assert(value.get() != a.get());
     assert(a->get_actual_value() == 6);
-
-    delete values.front();
 
     print_success_msg("works with variable modification", 1);
   } catch (RuntimeError e) {
@@ -315,21 +298,32 @@ void test_variable_modification() {
   }
 }
 
-void test_variable_cloning() {
+void test_variables_not_sharing_same_memory_address() {
   try {
     common_ctx->get_symbol_table()->clear();
     execute("store a as int = 5");
     execute("store b as int = 10");
     execute("a = b"); // since the VarAccessNode of "b" returns a copy of the value stored in the symbol table, &a != &b
-    const auto a = dynamic_cast<IntegerValue*>(common_ctx->get_symbol_table()->get("a"));
-    const auto b = dynamic_cast<IntegerValue*>(common_ctx->get_symbol_table()->get("b"));
+    auto a = cast_value<IntegerValue>(common_ctx->get_symbol_table()->get("a"));
+    auto b = cast_value<IntegerValue>(common_ctx->get_symbol_table()->get("b"));
     assert(a->get_actual_value() == b->get_actual_value()); // same value
-    assert(&a != &b); // but not the same memory address
+    assert(a.get() != b.get()); // but not the same memory address
     
     print_success_msg("variable cloning works", 1);
   } catch (RuntimeError e) {
     cerr << e.to_string() << endl;
     assert(false);
+  }
+}
+
+void test_variables_type_error() {
+  try {
+    common_ctx->get_symbol_table()->clear();
+    execute("store a as double = 'hello'");
+    assert(false);
+  } catch (TypeError e) {
+    assert(true);
+    print_success_msg("throws type error if type isn't castable", 1);
   }
 }
 
@@ -351,6 +345,11 @@ void test_string() {
   assert((compare_actual_value<StringValue, string>("\"hello\"*2", "hellohello")));
   assert((get_actual_value_from<StringValue, string>("\"hello\"*0")).empty());
   assert((compare_actual_value<StringValue, string>("'c\\'est'*2", "c'estc'est")));
+
+  assert((compare_actual_value<StringValue, string>("store a as string", StringValue::get_default_value())));
+  assert(common_ctx->get_symbol_table()->exists("a"));
+  auto a = cast_value<StringValue>(common_ctx->get_symbol_table()->get("a"));
+  assert(a->get_actual_value() == StringValue::get_default_value());
 
   try {
     execute("+'hello'"); // invalid operation (a "positive string" isn't possible)
@@ -402,7 +401,8 @@ int main() {
     test_multiline_input();
     test_multiline_input_and_variables();
     test_variable_modification();
-    test_variable_cloning();
+    test_variables_not_sharing_same_memory_address();
+    test_variables_type_error();
     test_string();
 
     print_success_msg("All \"Interpreter\" tests successfully passed");

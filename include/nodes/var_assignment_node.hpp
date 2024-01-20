@@ -11,24 +11,24 @@ using namespace std;
 /// its type, and the name of the type (useful if it's a custom type).
 class VarAssignmentNode: public CustomNode {
   const string var_name;
-  const CustomNode* value_node; // can be "nullptr" if the variable doesn't have an initial value
+  unique_ptr<CustomNode> value_node; // can be "nullptr" if the variable doesn't have an initial value
   const Type type;
   const string type_name; // in case the type is the instance of a custom object
 
   public:
     VarAssignmentNode(
       const string& var_name,
-      const CustomNode* value,
+      unique_ptr<CustomNode> value,
       const Token type_tok,
       const Position pos_start,
       const Position pos_end
     );
 
-    ~VarAssignmentNode();
+    ~VarAssignmentNode() = default;
 
     /// @brief Gets the node holding the initial value of this new variable.
     /// @return The pointer to the node holding the initial value of this new variable.
-    const CustomNode* get_value_node() const;
+    unique_ptr<CustomNode> retrieve_value_node();
 
     /// @brief Gets the name of the variable.
     /// @return The name of the variable.

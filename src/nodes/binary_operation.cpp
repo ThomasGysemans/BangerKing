@@ -1,14 +1,9 @@
 #include "../../include/nodes/binary_operation.hpp"
 
 BinaryOperationNode::BinaryOperationNode(
-  const CustomNode* a,
-  const CustomNode* b
-): CustomNode(a->getStartingPosition(), b->getEndingPosition()), node_a(a), node_b(b) { }
+  unique_ptr<CustomNode> a,
+  unique_ptr<CustomNode> b
+): CustomNode(a->getStartingPosition(), b->getEndingPosition()), node_a(move(a)), node_b(move(b)) { }
 
-BinaryOperationNode::~BinaryOperationNode() {
-  delete node_a;
-  delete node_b;
-}
-
-const CustomNode* BinaryOperationNode::get_a() const { return node_a; }
-const CustomNode* BinaryOperationNode::get_b() const { return node_b; }
+unique_ptr<CustomNode> BinaryOperationNode::retrieve_a() { return move(node_a); }
+unique_ptr<CustomNode> BinaryOperationNode::retrieve_b() { return move(node_b); }

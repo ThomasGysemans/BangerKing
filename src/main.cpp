@@ -53,13 +53,11 @@ int main(int argc, char *argv[]) {
   cout << "Executing this code:" << endl;
   cout << content << endl;
 
-  Context* global_ctx = new Context(filename);
-  const RuntimeResult* res = run(content, filename, global_ctx);
+  shared_ptr<Context> global_ctx = make_shared<Context>(filename);
+  
+  run(content, filename, global_ctx);
 
   file.close();
-
-  delete global_ctx;
-  delete res;
 
   return 0;
 }

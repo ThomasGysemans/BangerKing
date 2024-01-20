@@ -25,7 +25,7 @@ class StringValue: public Value {
     /// Transforming into the same type will produce an error.
     /// These transformations are possible, from the StringValue:
     /// - Type::INT => the length of the string
-    Value* cast(Type output_type) const override;
+    unique_ptr<Value> cast(Type output_type) const override;
 
     // Additions (concatenations)
     // The logic will be the same for any type of value,

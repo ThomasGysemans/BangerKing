@@ -5,7 +5,6 @@
 #include "../../include/parser.hpp"
 #include "../../include/interpreter.hpp"
 #include "../../include/nodes/compositer.hpp"
-#include "../../include/utils/deallocate_list_of_pointers.hpp"
 #include "../../include/debug/print_tokens.hpp"
 using namespace std;
 
@@ -22,20 +21,13 @@ class InterpreterPerformance: public Performance {
         "(5/5)%5**600000\n"
         "-1+2-(3*4)/5%6**7\n";
       Lexer lexer(&code);
-      list<Token*> tokens = lexer.generate_tokens();
+      list<unique_ptr<const Token>> tokens = lexer.generate_tokens();
       Parser parser(tokens);
-      const ListNode* tree = parser.parse();
-      deallocate_list_of_pointers<Token>(tokens);
+      unique_ptr<ListNode> tree = parser.parse();
 
-      Context* ctx = new Context("<program>");
+      shared_ptr<Context> ctx = make_shared<Context>("<perf>");
       Interpreter::set_shared_ctx(ctx);
-      const RuntimeResult* result = Interpreter::visit(tree);
-      ListValue* main_value = dynamic_cast<ListValue*>(result->get_value());
-      const list<const Value*>* values = main_value->get_elements();
-
-      delete ctx;
-      delete result;
-      delete tree;
+      unique_ptr<const RuntimeResult> result = Interpreter::visit(move(tree));
     }
 };
 

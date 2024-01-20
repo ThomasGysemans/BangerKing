@@ -8,22 +8,20 @@
 using namespace std;
 
 void test_expression() {
-  Context* ctx = new Context("tests");
+  shared_ptr<Context> ctx = make_shared<Context>("<tests>");
 
   const string input = "5+5";
   const string filename = "tests";
-  const RuntimeResult* res = run(input, filename, ctx);
+  unique_ptr<const RuntimeResult> res = run(input, filename, ctx);
+  assert(res->get_value() != nullptr);
   assert(res->get_error() == nullptr);
-  assert(instanceof<ListValue>(res->get_value()));
+  shared_ptr<Value> res_value = res->get_value();
+  shared_ptr<ListValue> list_value = cast_value<ListValue>(res_value);
 
-  const auto main_value = dynamic_cast<ListValue*>(res->get_value());
-  const auto elements = main_value->get_elements();
-  assert(instanceof<IntegerValue>(elements->front()));
-  auto integer = dynamic_cast<const IntegerValue*>(elements->front());
+  list<shared_ptr<const Value>> elements = list_value->get_elements();
+  shared_ptr<const Value> front = elements.front();
+  shared_ptr<const IntegerValue> integer = cast_const_value<IntegerValue>(front);
   assert(integer->get_actual_value() == 10);
-
-  delete ctx;
-  delete res;
 
   print_success_msg("works with simple maths expression", 1);
 }

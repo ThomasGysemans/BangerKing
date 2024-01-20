@@ -2,15 +2,17 @@
 #include "../../include/exceptions/base_runtime_error.hpp"
 #include "../../include/utils/string_with_arrows.hpp"
 
-BaseRuntime::BaseRuntime(
+#include <iostream>
+
+BaseRuntimeError::BaseRuntimeError(
   const Position& start,
   const Position& end,
   const string& name,
   const string& d,
-  const Context* ctx
+  shared_ptr<const Context> ctx
 ): CustomError(start, end, name, d), context(ctx) {}
 
-string BaseRuntime::to_string() const {
+string BaseRuntimeError::to_string() const {
   string result = generate_traceback();
   result += error_name + ": " + details;
   if (!READ_FILES.contains(pos_start.get_filename())) return result;
@@ -18,9 +20,9 @@ string BaseRuntime::to_string() const {
   return result;
 }
 
-string BaseRuntime::generate_traceback() const {
-  const Position* pos = &pos_start;
-  const Context* ctx = context;
+string BaseRuntimeError::generate_traceback() const {
+  shared_ptr<const Position> pos = make_shared<const Position>(pos_start);
+  shared_ptr<const Context> ctx = context;
   string r = "";
 
   while (ctx != nullptr) {
