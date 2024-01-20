@@ -20,7 +20,7 @@ void test_blank_runtime() {
 void test_success() {
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
   unique_ptr<Value> value = make_unique<IntegerValue>(10);
-  assert(res->success(move(value)) == res.get());
+  res->success(move(value));
   assert(res->get_error() == nullptr);
   assert(res->get_value()->get_type() == Type::INT);
   
@@ -31,7 +31,7 @@ void test_failure() {
   shared_ptr<Context> ctx = make_shared<Context>("<test>");
   unique_ptr<BaseRuntimeError> error = make_unique<RuntimeError>(Position::getDefaultPos(), Position::getDefaultPos(), "test", ctx);
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
-  assert(res->failure(move(error)) == res.get());
+  res->failure(move(error));
   assert(res->get_value() == nullptr);
   assert(res->get_error() != nullptr);
   assert(res->get_error()->get_details() == "test");

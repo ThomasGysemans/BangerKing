@@ -30,7 +30,7 @@ int main() {
       } else {
         cout << main_value->to_string() << endl;
       }
-      // The smart pointer "res" will take care of the memory dellocation.
+      // The smart pointer "res" will take care of the memory deallocation.
       // It's not necessary to manually delete "main_value",
       // as the "res" variable is the actual owner.
       // It acts as an automatic garbage collector.

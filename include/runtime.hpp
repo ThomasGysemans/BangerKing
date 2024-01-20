@@ -39,13 +39,13 @@ class RuntimeResult {
     /// The ownership of `v` is transferred to the `value` member of this class.
     /// @param v The value that has been successfully generated during runtime.
     /// @return The reference to `this`
-    RuntimeResult* success(unique_ptr<Value> v);
+    void success(unique_ptr<Value> v);
 
     /// @brief Registers an unsuccessful action during runtime.
     /// The ownership of `err` is transferred to the `error` member of this class.
     /// @param err The error that's just happened.
     /// @return The reference to `this`
-    RuntimeResult* failure(unique_ptr<BaseRuntimeError> err);
+    void failure(unique_ptr<BaseRuntimeError> err);
 
     /// @brief Stops the program if there is an error, or if we should return, continue or break.
     /// @return A boolean.

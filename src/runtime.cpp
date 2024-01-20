@@ -13,16 +13,14 @@ shared_ptr<Value> RuntimeResult::read(unique_ptr<RuntimeResult> res) {
   return res->get_value();
 }
 
-RuntimeResult* RuntimeResult::success(unique_ptr<Value> v) {
+void RuntimeResult::success(unique_ptr<Value> v) {
   reset();
   value = move(v); // transfers ownership of "v" to the shared_ptr "value"
-  return this;
 } 
 
-RuntimeResult* RuntimeResult::failure(unique_ptr<BaseRuntimeError> err) {
+void RuntimeResult::failure(unique_ptr<BaseRuntimeError> err) {
   reset();
   error = move(err);
-  return this;
 }
 
 bool RuntimeResult::should_return() const {
