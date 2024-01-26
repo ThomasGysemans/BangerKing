@@ -8,6 +8,7 @@
 #include "../include/symbol_table.hpp"
 #include "../include/values/compositer.hpp"
 #include "../include/exceptions/runtime_error.hpp"
+#include "../include/exceptions/arithmetic_error.hpp"
 #include "../include/exceptions/type_error.hpp"
 #include "../include/types.hpp"
 using namespace std;
@@ -400,6 +401,70 @@ void test_boolean() {
   print_success_msg("works with booleans true and false and operations involving booleans", 1);
 }
 
+void test_division_by_zero() {
+  // DIVISION 
+
+  try {
+    execute("5/0");
+    assert(false);
+  } catch (ArithmeticError e) {
+    assert(true);
+  }
+
+  try {
+    execute("5/0.0");
+    assert(false);
+  } catch (ArithmeticError e) {
+    assert(true);
+  }
+
+  try {
+    execute("5.0/0");
+    assert(false);
+  } catch (ArithmeticError e) {
+    assert(true);
+  }
+
+  try {
+    execute("5.0/0.0");
+    assert(false);
+  } catch (ArithmeticError e) {
+    assert(true);
+  }
+
+  // MODULO
+
+  try {
+    execute("5%0");
+    assert(false);
+  } catch (ArithmeticError e) {
+    assert(true);
+  }
+
+  try {
+    execute("5%0.0");
+    assert(false);
+  } catch (ArithmeticError e) {
+    assert(true);
+  }
+
+  try {
+    execute("5.0%0");
+    assert(false);
+  } catch (ArithmeticError e) {
+    assert(true);
+  }
+
+  try {
+    execute("5.0%0.0");
+    assert(false);
+  } catch (ArithmeticError e) {
+    assert(true);
+  }
+
+  print_success_msg("division by zero isn't possible", 1);
+}
+
 int main() {
   print_title("Interpreter tests...");
 
@@ -423,6 +488,7 @@ int main() {
     test_variables_type_error();
     test_string();
     test_boolean();
+    test_division_by_zero();
 
     print_success_msg("All \"Interpreter\" tests successfully passed");
   } catch (TypeError e) {

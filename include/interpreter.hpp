@@ -6,6 +6,7 @@
 #include "context.hpp"
 #include "nodes/compositer.hpp"
 #include "values/compositer.hpp"
+#include "exceptions/arithmetic_error.hpp"
 using namespace std;
 
 class Interpreter {
@@ -100,9 +101,10 @@ class Interpreter {
     /// @param left The left member of the operation.
     /// @param right The right member of the operation.
     /// @param node The binary operation node that the Interpreter is currently interpreting.
+    /// @param is_division_or_modulo If the operation is a division or a modulo and an error occured during the operation, maybe it's a divison-by-zero error (ArithmeticError).
     /// @return An instance of `Value` from the operation.
     template <typename A, typename B, typename Op>
-    static unique_ptr<Value> make_operation(shared_ptr<const Value>& left, shared_ptr<const Value>& right, unique_ptr<const BinaryOperationNode> node, Op operation) {
+    static unique_ptr<Value> make_operation(shared_ptr<const Value>& left, shared_ptr<const Value>& right, unique_ptr<const BinaryOperationNode> node, Op operation, bool is_division_or_modulo = false) {
       const A* a = dynamic_cast<const A*>(left.get());
       const B* b = dynamic_cast<const B*>(right.get());
       auto r = operation(*a, *b);
@@ -110,7 +112,18 @@ class Interpreter {
         // It's possible in some cases that during the operation
         // it fails and needs to throw a RuntimeError.
         // It happens in this example: string * int (if int is negative).
-        // Therefore I delete the values, and the node should get deallocated separately.
+        if (is_division_or_modulo) {
+          if (
+            (instanceof<IntegerValue>(right) && cast_const_value<IntegerValue>(right)->get_actual_value() == 0) ||
+            (instanceof<DoubleValue>(right) && cast_const_value<DoubleValue>(right)->get_actual_value() == 0.0)
+          ) {
+            throw ArithmeticError(
+              node->getStartingPosition(), node->getEndingPosition(),
+              "Division by zero isn't possible",
+              shared_ctx
+            );
+          }
+        }
         illegal_operation(move(node), shared_ctx);
       }
       populate(*r, move(node), shared_ctx);
@@ -145,12 +158,12 @@ class Interpreter {
     /// @brief Applies a division between `left` and `right`.
     template <typename A, typename B>
     static unique_ptr<Value> make_division(shared_ptr<const Value> left, shared_ptr<const Value> right, unique_ptr<const BinaryOperationNode> node) {
-      return make_operation<A, B>(left, right, move(node), [](const A& a, const B& b) { return a / b; });
+      return make_operation<A, B>(left, right, move(node), [](const A& a, const B& b) { return a / b; }, true);
     }
 
     /// @brief Applies a modulo between `left` and `right`.
     template <typename A, typename B>
     static unique_ptr<Value> make_modulo(shared_ptr<const Value> left, shared_ptr<const Value> right, unique_ptr<const BinaryOperationNode> node) {
-      return make_operation<A, B>(left, right, move(node), [](const A& a, const B& b) { return a % b; });
+      return make_operation<A, B>(left, right, move(node), [](const A& a, const B& b) { return a % b; }, true);
     }
 };

@@ -91,12 +91,18 @@ DoubleValue* IntegerValue::operator*(const DoubleValue& other) const {
 */
 
 IntegerValue* IntegerValue::operator/(const IntegerValue& other) const {
+  if (other.get_actual_value() == 0) {
+    return nullptr;
+  }
   return new IntegerValue(
     get_actual_value() / other.get_actual_value()
   );
 }
 
 DoubleValue* IntegerValue::operator/(const DoubleValue& other) const {
+  if (other.get_actual_value() == 0.0) {
+    return nullptr;
+  }
   return new DoubleValue{
     get_actual_value() / other.get_actual_value()
   };
@@ -109,12 +115,18 @@ DoubleValue* IntegerValue::operator/(const DoubleValue& other) const {
 */
 
 IntegerValue* IntegerValue::operator%(const IntegerValue& other) const {
+  if (other.get_actual_value() == 0) {
+    return nullptr;
+  }
   return new IntegerValue(
     get_actual_value() % other.get_actual_value()
   );
 }
 
 DoubleValue* IntegerValue::operator%(const DoubleValue& other) const {
+  if (other.get_actual_value() == 0.0) {
+    return nullptr;
+  }
   return new DoubleValue{
     std::fmod(get_actual_value(), other.get_actual_value())
   };
