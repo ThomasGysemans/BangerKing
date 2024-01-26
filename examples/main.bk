@@ -1,3 +1,2 @@
-store a as int = 5
-a
-a+5
+store a as string = "hello
+world"

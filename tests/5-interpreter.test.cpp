@@ -10,6 +10,7 @@
 #include "../include/exceptions/runtime_error.hpp"
 #include "../include/exceptions/arithmetic_error.hpp"
 #include "../include/exceptions/type_error.hpp"
+#include "../include/exceptions/unclosed_string_error.hpp"
 #include "../include/types.hpp"
 using namespace std;
 
@@ -383,6 +384,45 @@ void test_string() {
   print_success_msg("works with strings", 1);
 }
 
+void test_unclosed_string() {
+  try {
+    execute("'not closed simple quote");
+    assert(false);
+  } catch (UnclosedStringError e) {
+    assert(true);
+  }
+
+  try {
+    execute("\"not closed simple quote");
+    assert(false);
+  } catch (UnclosedStringError e) {
+    assert(true);
+  }
+
+  try {
+    execute("\"not closed simple quote'");
+    assert(false);
+  } catch (UnclosedStringError e) {
+    assert(true);
+  }
+
+  try {
+    execute("'not closed simple quote\\'");
+    assert(false);
+  } catch (UnclosedStringError e) {
+    assert(true);
+  }
+  
+  print_success_msg("Unclosed string are detected", 1);
+}
+
+void test_multiline_string() {
+  assert((compare_actual_value<StringValue, string>("\"hello\nworld\"", "hello\nworld")));
+  assert((compare_actual_value<StringValue, string>("'hello\nworld'", "hello\nworld")));
+
+  print_success_msg("multiline strings work", 1);
+}
+
 void test_boolean() {
   assert((compare_actual_value<BooleanValue, bool>("true", true)));
   assert((compare_actual_value<BooleanValue, bool>("false", false)));
@@ -487,6 +527,8 @@ int main() {
     test_variables_not_sharing_same_memory_address();
     test_variables_type_error();
     test_string();
+    test_unclosed_string();
+    test_multiline_string();
     test_boolean();
     test_division_by_zero();
 

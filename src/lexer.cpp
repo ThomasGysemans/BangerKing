@@ -2,6 +2,8 @@
 #include "../include/miscellaneous.hpp"
 #include "../include/exceptions/type_overflow_error.hpp"
 #include "../include/exceptions/illegal_char_error.hpp"
+#include "../include/exceptions/unclosed_string_error.hpp"
+
 using namespace std;
 
 const string NORMAL_DIGITS = "0123456789";
@@ -225,6 +227,16 @@ unique_ptr<Token> Lexer::make_string() {
       escaped = false;
     }
     advance();
+  }
+
+  // If the program reached the end of the source code,
+  // it means it never encountered the ending quote,
+  // meaning that the string was never closed.
+  if (!hasMoreTokens()) {
+    throw UnclosedStringError(
+      pos_start, pos_start,
+      "Reached the end of the code without closing this string literal"
+    );
   }
 
   advance(); // to skip the ending quote (the lexer must not believe it's the start of a new string).
