@@ -37,6 +37,8 @@ unique_ptr<RuntimeResult> Interpreter::visit(unique_ptr<CustomNode> node) {
     return visit_VarAccessNode(cast_node<VarAccessNode>(move(node)));
   } else if (instanceof<VarModifyNode>(node.get())) {
     return visit_VarModifyNode(cast_node<VarModifyNode>(move(node)));
+  } else if (instanceof<BooleanNode>(node.get())) {
+    return visit_BooleanNode(cast_node<BooleanNode>(move(node)));
   }
   throw UndefinedBehaviorException("Unimplemented visit method for input node '" + node->to_string() + "'");
 }
@@ -271,6 +273,12 @@ unique_ptr<RuntimeResult> Interpreter::visit_BinaryOperationNode(unique_ptr<Bina
   shared_ptr<const Value> right = res->read(visit(node->retrieve_b()));
   if (res->should_return()) return res;
 
+  // A boolean, when used in mathematical operations should be considered as an Integer.
+  // - true = 1
+  // - false = 0
+  if (instanceof<BooleanValue>(left)) left = left->cast(Type::INT);
+  if (instanceof<BooleanValue>(right)) right = right->cast(Type::INT);
+
   if      (instanceof<AddNode>(node))       res->success(interpret_addition(move(left), move(right), move(node)));
   else if (instanceof<SubstractNode>(node)) res->success(interpret_substraction(move(left), move(right), move(node)));
   else if (instanceof<MultiplyNode>(node))  res->success(interpret_multiplication(move(left), move(right), move(node)));
@@ -391,6 +399,13 @@ unique_ptr<RuntimeResult> Interpreter::visit_VarModifyNode(unique_ptr<VarModifyN
 unique_ptr<RuntimeResult> Interpreter::visit_StringNode(unique_ptr<const StringNode> node) {
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
   unique_ptr<StringValue> str = make_unique<StringValue>(node->getValue());
+  make_success(res, move(str), move(node));
+  return res;
+}
+
+unique_ptr<RuntimeResult> Interpreter::visit_BooleanNode(unique_ptr<const BooleanNode> node) {
+  unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
+  unique_ptr<BooleanValue> str = make_unique<BooleanValue>(node->is_true());
   make_success(res, move(str), move(node));
   return res;
 }

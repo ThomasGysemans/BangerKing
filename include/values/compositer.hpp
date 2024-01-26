@@ -5,3 +5,4 @@
 #include "double.hpp"
 #include "list.hpp"
 #include "string.hpp"
+#include "boolean.hpp"

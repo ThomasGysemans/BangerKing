@@ -382,6 +382,24 @@ void test_string() {
   print_success_msg("works with strings", 1);
 }
 
+void test_boolean() {
+  assert((compare_actual_value<BooleanValue, bool>("true", true)));
+  assert((compare_actual_value<BooleanValue, bool>("false", false)));
+  
+  assert((compare_actual_value<IntegerValue, int>("true+true", (true+true))));
+  assert((compare_actual_value<IntegerValue, int>("true+false", (true+false))));
+  assert((compare_actual_value<IntegerValue, int>("false+true", (false+true))));
+  assert((compare_actual_value<IntegerValue, int>("false+false", (false+false))));
+
+  assert((compare_actual_value<IntegerValue, int>("true-false", (true-false))));
+  assert((compare_actual_value<IntegerValue, int>("true*2", 2)));
+  assert((compare_actual_value<IntegerValue, int>("true/2", 0))); // 1 / 2 = 0.5, but as an integer it's 0
+  assert((compare_actual_value<IntegerValue, int>("true%2", 1)));
+  assert((compare_actual_value<IntegerValue, int>("true**2", 1)));
+
+  print_success_msg("works with booleans true and false and operations involving booleans", 1);
+}
+
 int main() {
   print_title("Interpreter tests...");
 
@@ -404,6 +422,7 @@ int main() {
     test_variables_not_sharing_same_memory_address();
     test_variables_type_error();
     test_string();
+    test_boolean();
 
     print_success_msg("All \"Interpreter\" tests successfully passed");
   } catch (TypeError e) {

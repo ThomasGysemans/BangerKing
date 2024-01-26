@@ -107,6 +107,37 @@ void test_string() {
   print_success_msg("string value", 1);
 }
 
+void test_boolean() {
+  const BooleanValue tbool(true);
+  assert(tbool.is_truthy());
+  assert(tbool.get_actual_value());
+  assert(tbool.get_type() == Type::BOOLEAN);
+
+  const BooleanValue fbool(false);
+  assert(!fbool.is_truthy());
+  assert(!fbool.get_actual_value());
+  assert(fbool.get_type() == Type::BOOLEAN);
+
+  const BooleanValue default_bool;
+  assert(!default_bool.is_truthy());
+  assert(!default_bool.get_actual_value());
+  assert(default_bool.get_type() == Type::BOOLEAN);
+
+  assert(cast_value<IntegerValue>(tbool.cast(Type::INT))->get_actual_value() == 1);
+  assert(cast_value<IntegerValue>(fbool.cast(Type::INT))->get_actual_value() == 0);
+  assert(cast_value<IntegerValue>(default_bool.cast(Type::INT))->get_actual_value() == 0);
+
+  assert(cast_value<DoubleValue>(tbool.cast(Type::DOUBLE))->get_actual_value() == 1);
+  assert(cast_value<DoubleValue>(fbool.cast(Type::DOUBLE))->get_actual_value() == 0);
+  assert(cast_value<DoubleValue>(default_bool.cast(Type::DOUBLE))->get_actual_value() == 0);
+
+  assert(cast_value<StringValue>(tbool.cast(Type::STRING))->get_actual_value() == "1");
+  assert(cast_value<StringValue>(fbool.cast(Type::STRING))->get_actual_value() == "0");
+  assert(cast_value<StringValue>(default_bool.cast(Type::STRING))->get_actual_value() == "0");
+
+  print_success_msg("boolean value", 1);
+}
+
 int main() {
   print_title("Values tests...");
 
@@ -114,6 +145,7 @@ int main() {
   test_integer();
   test_double();
   test_string();
+  test_boolean();
 
   print_success_msg("All \"Values\" tests successfully passed");
 

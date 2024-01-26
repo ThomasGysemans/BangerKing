@@ -379,6 +379,21 @@ void test_string() {
   print_success_msg("strings with simple, double quotes and backslashes", 1);
 }
 
+void test_boolean() {
+  const auto t = cast_node<BooleanNode>(move(get_element_nodes_from("true")->front()));
+  const auto f = cast_node<BooleanNode>(move(get_element_nodes_from("false")->front()));
+  
+  assert(!t->getToken()->canConcatenate());
+  assert(t->getToken()->ofType(TokenType::KEYWORD));
+  assert(t->getToken()->is_keyword("true"));
+
+  assert(!f->getToken()->canConcatenate());
+  assert(f->getToken()->ofType(TokenType::KEYWORD));
+  assert(f->getToken()->is_keyword("false"));
+
+  print_success_msg("booleans true and false", 1);
+}
+
 int main() {
   print_title("Parser tests...");
 
@@ -406,6 +421,7 @@ int main() {
     test_access_node();
     test_access_node_in_expression();
     test_string();
+    test_boolean();
   } catch (CustomError custom_error) {
     cerr << "Oops, the program unexpectedly thrown an error :" << endl;
     cerr << custom_error.get_details() << endl;

@@ -236,7 +236,18 @@ void test_illegal_char() {
     assert(true);
   }
 
-  print_success_msg("triggers exception with illegal characters");
+  print_success_msg("triggers exception with illegal characters", 1);
+}
+
+void test_true_and_false_keywords() {
+  const auto tokens = list_to_vector(get_tokens_from("true false"));
+  assert(tokens.size() == 2);
+  assert(tokens[0]->ofType(TokenType::KEYWORD));
+  assert(tokens[0]->is_keyword("true"));
+  assert(tokens[1]->ofType(TokenType::KEYWORD));
+  assert(tokens[1]->is_keyword("false"));
+
+  print_success_msg("true and false are keywords", 1);
 }
 
 int main() {
@@ -261,6 +272,7 @@ int main() {
     test_expression_with_identifier();
     test_string();
     test_illegal_char();
+    test_true_and_false_keywords();
 
     print_success_msg("All \"Lexer\" tests successfully passed");
   } catch (IllegalCharError e) {

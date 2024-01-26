@@ -85,7 +85,11 @@ shared_ptr<T> cast_value(shared_ptr<Value>& base) {
 /// @return The cast from Value to `T`
 template <typename T>
 shared_ptr<const T> cast_const_value(shared_ptr<const Value>& base) {
-  return dynamic_pointer_cast<const T>(base);
+  if (auto c = dynamic_pointer_cast<const T>(base)) {
+    return c;
+  } else {
+    throw string("Invalid cast of value");
+  }
 }
 
 /// @brief Replaces all occurrences of a substring from a string. Note that `str` gets modified.

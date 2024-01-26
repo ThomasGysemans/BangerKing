@@ -247,6 +247,9 @@ unique_ptr<CustomNode> Parser::atom() {
   } else if (first_token.ofType(TokenType::STR)) {
     advance();
     return make_unique<StringNode>(first_token);
+  } else if (first_token.is_keyword("true") || first_token.is_keyword("false")) {
+    advance();
+    return make_unique<BooleanNode>(first_token);
   } else {
     throw InvalidSyntaxError(
       first_token.getStartingPosition(), first_token.getEndingPosition(),

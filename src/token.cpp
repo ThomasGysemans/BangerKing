@@ -5,6 +5,8 @@ using namespace std;
 
 const vector<string> KEYWORDS = {
   "store",
+  "true",
+  "false",
   "as",
   "and",
   "or",

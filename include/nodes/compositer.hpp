@@ -19,3 +19,4 @@
 #include "var_access_node.hpp"
 #include "var_modify_node.hpp"
 #include "string_node.hpp"
+#include "boolean_node.hpp"
