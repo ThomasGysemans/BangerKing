@@ -72,7 +72,6 @@ void test_cast_node() {
   assert(integer->to_string() == "IntegerNode(5)");
 
   unique_ptr<IntegerNode> real_integer = cast_node<IntegerNode>(move(integer));
-  assert(real_integer->getValue() == 5);
   assert(real_integer->to_string() == "IntegerNode(5)");
 
   print_success_msg("cast_node", 1);

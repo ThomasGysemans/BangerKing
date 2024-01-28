@@ -4,6 +4,7 @@
 #include "../include/exceptions/undefined_behavior.hpp"
 #include "../include/exceptions/runtime_error.hpp"
 #include "../include/exceptions/type_error.hpp"
+#include "../include/exceptions/type_overflow_error.hpp"
 
 // Since `shared_ctx` is static,
 // it must be redeclared here so that the compiler knows it exists.
@@ -104,14 +105,34 @@ unique_ptr<RuntimeResult> Interpreter::visit_ListNode(unique_ptr<ListNode> node)
 
 unique_ptr<RuntimeResult> Interpreter::visit_IntegerNode(unique_ptr<const IntegerNode> node) {
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
-  unique_ptr<IntegerValue> i = make_unique<IntegerValue>(node->getValue());
+  int actual_integer;
+  try {
+    actual_integer = stoi(node->get_token().getStringValue());
+  } catch (std::out_of_range e) {
+    throw TypeOverflowError(
+      node->getStartingPosition(), node->getEndingPosition(),
+      "Cannot store such a big integer",
+      shared_ctx
+    );
+  }
+  unique_ptr<IntegerValue> i = make_unique<IntegerValue>(actual_integer);
   make_success(res, move(i), move(node));
   return res;
 }
 
 unique_ptr<RuntimeResult> Interpreter::visit_DoubleNode(unique_ptr<const DoubleNode> node) {
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
-  unique_ptr<DoubleValue> d = make_unique<DoubleValue>(node->getValue());
+  double actual_double;
+  try {
+    actual_double = stod(node->get_token().getStringValue());
+  } catch (std::out_of_range e) {
+    throw TypeOverflowError(
+      node->getStartingPosition(), node->getEndingPosition(),
+      "Cannot store such a big double",
+      shared_ctx
+    );
+  }
+  unique_ptr<DoubleValue> d = make_unique<DoubleValue>(actual_double);
   make_success(res, move(d), move(node));
   return res;
 }
@@ -121,7 +142,7 @@ unique_ptr<RuntimeResult> Interpreter::visit_MinusNode(unique_ptr<MinusNode> nod
   shared_ptr<const Value> value = res->read(visit(node->get_node()));
   if (res->should_return()) return res;
 
-  if (instanceof<IntegerValue>(value.get())) {
+  if (instanceof<IntegerValue>(value)) {
     shared_ptr<const IntegerValue> integer = cast_const_value<IntegerValue>(value);
     unique_ptr<IntegerValue> negative_integer = make_unique<IntegerValue>(-1 * integer->get_actual_value());
     make_success(res, move(negative_integer), move(node));
@@ -142,12 +163,12 @@ unique_ptr<RuntimeResult> Interpreter::visit_PlusNode(unique_ptr<PlusNode> node)
   shared_ptr<const Value> value = res->read(visit(node->get_node()));
   if (res->should_return()) return res;
 
-  if (instanceof<IntegerValue>(value.get())) {
+  if (instanceof<IntegerValue>(value)) {
     shared_ptr<const IntegerValue> integer = cast_const_value<IntegerValue>(value);
     unique_ptr<IntegerValue> positive_integer = make_unique<IntegerValue>(abs(integer->get_actual_value()));
     make_success(res, move(positive_integer), move(node));
     return res;
-  } else if (instanceof<DoubleValue>(value.get())) {
+  } else if (instanceof<DoubleValue>(value)) {
     shared_ptr<const DoubleValue> d = cast_const_value<DoubleValue>(value);
     unique_ptr<DoubleValue> positive_double = make_unique<DoubleValue>(abs(d->get_actual_value()));
     make_success(res, move(positive_double), move(node));

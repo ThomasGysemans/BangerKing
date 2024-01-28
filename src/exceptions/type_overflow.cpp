@@ -3,5 +3,6 @@
 TypeOverflowError::TypeOverflowError(
   const Position& start,
   const Position& end,
-  const string& d
-): CustomError(start, end, "Type Overflow", d) {}
+  const string& d,
+  shared_ptr<const Context> ctx
+): BaseRuntimeError(start, end, "Type Overflow", d, ctx) {}

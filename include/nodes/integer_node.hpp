@@ -5,11 +5,11 @@
 using namespace std;
 
 class IntegerNode: public CustomNode {
-  const int value;
+  const Token token;
 
   public:
     IntegerNode(const Token& token);
 
-    int getValue() const;
+    const Token get_token() const;
     string to_string() const override;
 };

@@ -31,7 +31,7 @@ void test_simple_number() {
   const auto number_node = cast_node<IntegerNode>(move(element_nodes->front()));
 
   assert(element_nodes->size() == 1);
-  assert(number_node->getValue() == 5);
+  assert(number_node->get_token().getStringValue() == "5");
 
   print_success_msg("parser with simple number", 1);
 }
@@ -41,7 +41,7 @@ void test_simple_decimal_number() {
   const auto number_node = cast_node<DoubleNode>(move(element_nodes->front()));
 
   assert(element_nodes->size() == 1);
-  assert(number_node->getValue() == 3.14);
+  assert(number_node->get_token().getStringValue() == "3.14");
   assert(number_node->to_string() == "DoubleNode(3.14)"); // to make sure the double is printed out correctly
 
   print_success_msg("parser with simple decimal number", 1);
@@ -52,7 +52,7 @@ void test_simple_negative_number() {
   const auto minus_node = cast_node<MinusNode>(move(nodes->front()));
   const auto number_node = cast_node<IntegerNode>(minus_node->get_node());
   assert(nodes->size() == 1);
-  assert(number_node->getValue() == 5);
+  assert(number_node->get_token().getStringValue() == "5");
   
   print_success_msg("parser with simple negative number", 1);
 }
@@ -62,7 +62,7 @@ void test_simple_positive_number() {
   const auto plus_node = cast_node<PlusNode>(move(nodes->front()));
   const auto number_node = cast_node<IntegerNode>(plus_node->get_node());
   assert(nodes->size() == 1);
-  assert(number_node->getValue() == 670);
+  assert(number_node->get_token().getStringValue() == "670");
 
   print_success_msg("parser with simple positive number", 1);
 }
@@ -73,8 +73,8 @@ void test_simple_addition() {
   const auto a = cast_node<IntegerNode>(add_node->retrieve_a());
   const auto b = cast_node<IntegerNode>(add_node->retrieve_b());
   assert(nodes->size() == 1);
-  assert(a->getValue() == 5);
-  assert(b->getValue() == 6);
+  assert(a->get_token().getStringValue() == "5");
+  assert(b->get_token().getStringValue() == "6");
 
   print_success_msg("parser with simple addition", 1);
 }
@@ -85,8 +85,8 @@ void test_simple_addition_with_whitespace() {
   const auto a = cast_node<IntegerNode>(add_node->retrieve_a());
   const auto b = cast_node<IntegerNode>(add_node->retrieve_b());
   assert(nodes->size() == 1);
-  assert(a->getValue() == 5);
-  assert(b->getValue() == 6);
+  assert(a->get_token().getStringValue() == "5");
+  assert(b->get_token().getStringValue() == "6");
 
   print_success_msg("parser with simple addition and whitespace", 1);
 }
@@ -97,8 +97,8 @@ void test_simple_substraction() {
   const auto a = cast_node<IntegerNode>(sub_node->retrieve_a());
   const auto b = cast_node<IntegerNode>(sub_node->retrieve_b());
   assert(nodes->size() == 1);
-  assert(a->getValue() == 0);
-  assert(b->getValue() == 6);
+  assert(a->get_token().getStringValue() == "0");
+  assert(b->get_token().getStringValue() == "6");
 
   print_success_msg("parser with simple substraction", 1);
 }
@@ -109,8 +109,8 @@ void test_simple_substraction_with_whitespace() {
   const auto a = cast_node<IntegerNode>(sub_node->retrieve_a());
   const auto b = cast_node<IntegerNode>(sub_node->retrieve_b());
   assert(nodes->size() == 1);
-  assert(a->getValue() == 0);
-  assert(b->getValue() == 6);
+  assert(a->get_token().getStringValue() == "0");
+  assert(b->get_token().getStringValue() == "6");
 
   print_success_msg("parser with simple substraction and whitespace", 1);
 }
@@ -121,8 +121,8 @@ void test_simple_multiplication() {
   const auto a = cast_node<IntegerNode>(mul_node->retrieve_a());
   const auto b = cast_node<IntegerNode>(mul_node->retrieve_b());
   assert(nodes->size() == 1);
-  assert(a->getValue() == 0);
-  assert(b->getValue() == 6);
+  assert(a->get_token().getStringValue() == "0");
+  assert(b->get_token().getStringValue() == "6");
 
   print_success_msg("parser with simple multiplication", 1);
 }
@@ -133,8 +133,8 @@ void test_simple_divison() {
   const auto a = cast_node<IntegerNode>(div_node->retrieve_a());
   const auto b = cast_node<IntegerNode>(div_node->retrieve_b());
   assert(nodes->size() == 1);
-  assert(a->getValue() == 10);
-  assert(b->getValue() == 2);
+  assert(a->get_token().getStringValue() == "10");
+  assert(b->get_token().getStringValue() == "2");
 
   print_success_msg("parser with simple divison", 1);
 }
@@ -145,8 +145,8 @@ void test_simple_modulo() {
   const auto a = cast_node<IntegerNode>(modulo_node->retrieve_a());
   const auto b = cast_node<IntegerNode>(modulo_node->retrieve_b());
   assert(nodes->size() == 1);
-  assert(a->getValue() == 13);
-  assert(b->getValue() == 12);
+  assert(a->get_token().getStringValue() == "13");
+  assert(b->get_token().getStringValue() == "12");
 
   print_success_msg("parser with simple modulo", 1);
 }
@@ -157,8 +157,8 @@ void test_simple_power() {
   const auto a = cast_node<IntegerNode>(power_node->retrieve_a());
   const auto b = cast_node<IntegerNode>(power_node->retrieve_b());
   assert(nodes->size() == 1);
-  assert(a->getValue() == 10);
-  assert(b->getValue() == 2);
+  assert(a->get_token().getStringValue() == "10");
+  assert(b->get_token().getStringValue() == "2");
 
   print_success_msg("parser with simple power", 1);
 }
@@ -170,16 +170,16 @@ void test_complex_maths_expression_with_parenthesis() {
   const auto add_node = cast_node<AddNode>(move(nodes->front()));
   const auto add_a = cast_node<IntegerNode>(add_node->retrieve_a()); // 10
   const auto add_b = cast_node<DivideNode>(add_node->retrieve_b()); // DivideNode( SubstractNode(), IntegerNode(10) )
-  assert(add_a->getValue() == 10);
+  assert(add_a->get_token().getStringValue() == "10");
 
   const auto sub_node = cast_node<SubstractNode>(add_b->retrieve_a());
   const auto sub_a = cast_node<IntegerNode>(sub_node->retrieve_a());
   const auto sub_b = cast_node<IntegerNode>(sub_node->retrieve_b());
-  assert(sub_a->getValue() == 5);
-  assert(sub_b->getValue() == 2);
+  assert(sub_a->get_token().getStringValue() == "5");
+  assert(sub_b->get_token().getStringValue() == "2");
 
   const auto den = cast_node<IntegerNode>(add_b->retrieve_b());
-  assert(den->getValue() == 6);
+  assert(den->get_token().getStringValue() == "6");
 
   print_success_msg("parser with complex maths expression with parenthesis", 1);
 }
@@ -194,13 +194,13 @@ void test_complex_maths_expression_without_parenthesis() {
 
   const auto add_a = cast_node<IntegerNode>(add_node->retrieve_a());
   const auto add_b = cast_node<IntegerNode>(add_node->retrieve_b());
-  assert(add_a->getValue() == 10);
-  assert(add_b->getValue() == 5);
+  assert(add_a->get_token().getStringValue() == "10");
+  assert(add_b->get_token().getStringValue() == "5");
 
   const auto div_a = cast_node<IntegerNode>(div_node->retrieve_a());
   const auto div_b = cast_node<IntegerNode>(div_node->retrieve_b());
-  assert(div_a->getValue() == 2);
-  assert(div_b->getValue() == 6);
+  assert(div_a->get_token().getStringValue() == "2");
+  assert(div_b->get_token().getStringValue() == "6");
 
   print_success_msg("parser with complex maths expression without parenthesis", 1);
 }
@@ -215,10 +215,10 @@ void test_mutiple_lines() {
   const auto first_node = cast_node<AddNode>(move(nodes->front()));
   const auto second_node = cast_node<SubstractNode>(move(nodes->back()));
 
-  assert(cast_node<IntegerNode>(first_node->retrieve_a())->getValue() == 1);
-  assert(cast_node<IntegerNode>(first_node->retrieve_b())->getValue() == 2);
-  assert(cast_node<IntegerNode>(second_node->retrieve_a())->getValue() == 3);
-  assert(cast_node<IntegerNode>(second_node->retrieve_b())->getValue() == 4);
+  assert(cast_node<IntegerNode>(first_node->retrieve_a())->get_token().getStringValue() == "1");
+  assert(cast_node<IntegerNode>(first_node->retrieve_b())->get_token().getStringValue() == "2");
+  assert(cast_node<IntegerNode>(second_node->retrieve_a())->get_token().getStringValue() == "3");
+  assert(cast_node<IntegerNode>(second_node->retrieve_b())->get_token().getStringValue() == "4");
 
   print_success_msg("parser with multiple lines", 1);
 }
@@ -253,9 +253,9 @@ void test_positions_on_math_expression() {
   const auto five = cast_node<IntegerNode>(add_node->retrieve_a());
   const auto six = cast_node<IntegerNode>(add_node->retrieve_b());
 
-  assert(five->getValue() == 5);
-  assert(six->getValue() == 6);
-  assert(two->getValue() == 2);
+  assert(five->get_token().getStringValue() == "5");
+  assert(six->get_token().getStringValue() == "6");
+  assert(two->get_token().getStringValue() == "2");
 
   assert(five->getStartingPosition().get_idx() == 0);
   assert(five->getEndingPosition().get_idx() == 1);
@@ -319,7 +319,7 @@ void test_variable_modification() {
   assert(var_modify_node->get_var_name() == "a");
 
   const auto integer = cast_node<IntegerNode>(var_modify_node->get_value_node());
-  assert(integer->getValue() == 5);
+  assert(integer->get_token().getStringValue() == "5");
 
   assert(var_modify_node->getStartingPosition().get_idx() == 0);
   assert(var_modify_node->getEndingPosition().get_idx() == code.size());

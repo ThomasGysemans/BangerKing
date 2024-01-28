@@ -2,10 +2,12 @@
 
 IntegerNode::IntegerNode(
   const Token& token
-): CustomNode(token.getStartingPosition(), token.getEndingPosition()), value(stoi(token.getStringValue())) {}
+): CustomNode(token.getStartingPosition(), token.getEndingPosition()), token(token) {}
 
-int IntegerNode::getValue() const { return value; }
+const Token IntegerNode::get_token() const {
+  return token;
+}
 
 string IntegerNode::to_string() const {
-  return "IntegerNode(" + std::to_string(value) + ")";
+  return "IntegerNode(" + token.getStringValue() + ")";
 }

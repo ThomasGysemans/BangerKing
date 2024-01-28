@@ -1,6 +1,6 @@
 #include "../include/lexer.hpp"
 #include "../include/miscellaneous.hpp"
-#include "../include/exceptions/type_overflow_error.hpp"
+#include "../include/exceptions/illegal_string_error.hpp"
 #include "../include/exceptions/illegal_char_error.hpp"
 #include "../include/exceptions/unclosed_string_error.hpp"
 
@@ -210,7 +210,7 @@ unique_ptr<Token> Lexer::make_string() {
     (escaped || *iter != opening_quote)
   ) {
     if (value.length() == UINT_MAX) {
-      throw TypeOverflowError(
+      throw IllegalStringError(
         pos_start, pos,
         "The maximum length of a string has been reached: " + std::to_string(value.length())
       );

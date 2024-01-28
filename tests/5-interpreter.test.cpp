@@ -1,5 +1,6 @@
 #include <iostream>
 #include <list>
+#include <limits.h>
 #include "helper.hpp"
 #include "../include/lexer.hpp"
 #include "../include/token.hpp"
@@ -11,6 +12,7 @@
 #include "../include/exceptions/arithmetic_error.hpp"
 #include "../include/exceptions/type_error.hpp"
 #include "../include/exceptions/unclosed_string_error.hpp"
+#include "../include/exceptions/type_overflow_error.hpp"
 #include "../include/types.hpp"
 using namespace std;
 
@@ -447,62 +449,84 @@ void test_division_by_zero() {
   try {
     execute("5/0");
     assert(false);
-  } catch (ArithmeticError e) {
-    assert(true);
-  }
+  } catch (ArithmeticError e) {}
 
   try {
     execute("5/0.0");
     assert(false);
-  } catch (ArithmeticError e) {
-    assert(true);
-  }
+  } catch (ArithmeticError e) {}
 
   try {
     execute("5.0/0");
     assert(false);
-  } catch (ArithmeticError e) {
-    assert(true);
-  }
+  } catch (ArithmeticError e) {}
 
   try {
     execute("5.0/0.0");
     assert(false);
-  } catch (ArithmeticError e) {
-    assert(true);
-  }
+  } catch (ArithmeticError e) {}
 
   // MODULO
 
   try {
     execute("5%0");
     assert(false);
-  } catch (ArithmeticError e) {
-    assert(true);
-  }
+  } catch (ArithmeticError e) {}
 
   try {
     execute("5%0.0");
     assert(false);
-  } catch (ArithmeticError e) {
-    assert(true);
-  }
+  } catch (ArithmeticError e) {}
 
   try {
     execute("5.0%0");
     assert(false);
-  } catch (ArithmeticError e) {
-    assert(true);
-  }
+  } catch (ArithmeticError e) {}
 
   try {
     execute("5.0%0.0");
     assert(false);
-  } catch (ArithmeticError e) {
-    assert(true);
-  }
+  } catch (ArithmeticError e) {}
 
   print_success_msg("division by zero isn't possible", 1);
+}
+
+void test_max_integer_in_variable() {
+  common_ctx->get_symbol_table()->clear();
+  
+  try {
+    execute("store a as int = " + std::to_string(INT_MAX));
+    assert(common_ctx->get_symbol_table()->exists("a"));
+    assert(cast_value<IntegerValue>(common_ctx->get_symbol_table()->get("a"))->get_actual_value() == INT_MAX);
+  } catch (CustomError e) {
+    assert(false);
+  }
+
+  try {
+    execute("store b as double = " + std::to_string(numeric_limits<double>::max()));
+    assert(common_ctx->get_symbol_table()->exists("b"));
+    assert(cast_value<DoubleValue>(common_ctx->get_symbol_table()->get("b"))->get_actual_value() == numeric_limits<double>::max());
+  } catch (CustomError e) {
+    assert(false);
+  }
+  
+  try {
+    const string code = "store c as int = " + std::to_string(LONG_MAX);
+    execute(code);
+    assert(false);
+  } catch (TypeOverflowError e) {
+    assert(!common_ctx->get_symbol_table()->exists("c"));
+  }
+
+  try {
+    const string code = "store d as double = 179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368555555555.000000";
+    execute(code);
+    assert(false);
+  } catch (TypeOverflowError e) {
+    assert(!common_ctx->get_symbol_table()->exists("d"));
+  }
+
+  print_success_msg("stores MAX_INT and max double in variables and throws error if exceeding", 1);
 }
 
 int main() {
@@ -531,6 +555,7 @@ int main() {
     test_multiline_string();
     test_boolean();
     test_division_by_zero();
+    test_max_integer_in_variable();
 
     print_success_msg("All \"Interpreter\" tests successfully passed");
   } catch (TypeError e) {
