@@ -36,28 +36,29 @@ class Interpreter {
     // so as to deallocate the memory used by the Parser progressively.
     // They become the owners because the parameter is a unique_ptr.
 
-    static unique_ptr<RuntimeResult> visit_IntegerNode(unique_ptr<const IntegerNode> node);
-    static unique_ptr<RuntimeResult> visit_DoubleNode(unique_ptr<const DoubleNode> node);
-    static unique_ptr<RuntimeResult> visit_ListNode(unique_ptr<ListNode> node);
-    static unique_ptr<RuntimeResult> visit_MinusNode(unique_ptr<MinusNode> node);
-    static unique_ptr<RuntimeResult> visit_PlusNode(unique_ptr<PlusNode> node);
-    static unique_ptr<RuntimeResult> visit_VarAssignmentNode(unique_ptr<VarAssignmentNode> node);
-    static unique_ptr<RuntimeResult> visit_VarAccessNode(unique_ptr<VarAccessNode> node);
-    static unique_ptr<RuntimeResult> visit_VarModifyNode(unique_ptr<VarModifyNode> node);
-    static unique_ptr<RuntimeResult> visit_StringNode(unique_ptr<const StringNode> node);
-    static unique_ptr<RuntimeResult> visit_BooleanNode(unique_ptr<const BooleanNode> node);
+    static unique_ptr<RuntimeResult> visit_IntegerNode(unique_ptr<const IntegerNode>);
+    static unique_ptr<RuntimeResult> visit_DoubleNode(unique_ptr<const DoubleNode>);
+    static unique_ptr<RuntimeResult> visit_ListNode(unique_ptr<ListNode>);
+    static unique_ptr<RuntimeResult> visit_MinusNode(unique_ptr<MinusNode>);
+    static unique_ptr<RuntimeResult> visit_PlusNode(unique_ptr<PlusNode>);
+    static unique_ptr<RuntimeResult> visit_VarAssignmentNode(unique_ptr<VarAssignmentNode>);
+    static unique_ptr<RuntimeResult> visit_DefineConstantNode(unique_ptr<DefineConstantNode>);
+    static unique_ptr<RuntimeResult> visit_VarAccessNode(unique_ptr<VarAccessNode>);
+    static unique_ptr<RuntimeResult> visit_VarModifyNode(unique_ptr<VarModifyNode>);
+    static unique_ptr<RuntimeResult> visit_StringNode(unique_ptr<const StringNode>);
+    static unique_ptr<RuntimeResult> visit_BooleanNode(unique_ptr<const BooleanNode>);
 
     /// @brief Explores a binary operation node (addition, substraction, division, power, multiplication, modulo, etc.)
     /// @param node A binary operation node.
     /// @return The intepretation of this operation as a RuntimeResult.
     static unique_ptr<RuntimeResult> visit_BinaryOperationNode(unique_ptr<BinaryOperationNode> node);
 
-    static unique_ptr<Value> interpret_addition(shared_ptr<const Value> left, shared_ptr<const Value> right, unique_ptr<const BinaryOperationNode> node);
-    static unique_ptr<Value> interpret_substraction(shared_ptr<const Value> left, shared_ptr<const Value> right, unique_ptr<const BinaryOperationNode> node);
-    static unique_ptr<Value> interpret_multiplication(shared_ptr<const Value> left, shared_ptr<const Value> right, unique_ptr<const BinaryOperationNode> node);
-    static unique_ptr<Value> interpret_power(shared_ptr<const Value> left, shared_ptr<const Value> right, unique_ptr<const BinaryOperationNode> node);
-    static unique_ptr<Value> interpret_division(shared_ptr<const Value> left, shared_ptr<const Value> right, unique_ptr<const BinaryOperationNode> node);
-    static unique_ptr<Value> interpret_modulo(shared_ptr<const Value> left, shared_ptr<const Value> right, unique_ptr<const BinaryOperationNode> node);
+    static unique_ptr<Value> interpret_addition(shared_ptr<const Value>, shared_ptr<const Value>, unique_ptr<const BinaryOperationNode>);
+    static unique_ptr<Value> interpret_substraction(shared_ptr<const Value>, shared_ptr<const Value>, unique_ptr<const BinaryOperationNode>);
+    static unique_ptr<Value> interpret_multiplication(shared_ptr<const Value>, shared_ptr<const Value>, unique_ptr<const BinaryOperationNode>);
+    static unique_ptr<Value> interpret_power(shared_ptr<const Value>, shared_ptr<const Value>, unique_ptr<const BinaryOperationNode>);
+    static unique_ptr<Value> interpret_division(shared_ptr<const Value>, shared_ptr<const Value>, unique_ptr<const BinaryOperationNode>);
+    static unique_ptr<Value> interpret_modulo(shared_ptr<const Value>, shared_ptr<const Value>, unique_ptr<const BinaryOperationNode>);
 
     // helper methods:
 

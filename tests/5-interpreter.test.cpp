@@ -529,6 +529,25 @@ void test_max_integer_in_variable() {
   print_success_msg("stores MAX_INT and max double in variables and throws error if exceeding", 1);
 }
 
+void test_constants() {
+  assert(compare_actual_value<IntegerValue>("define a as int = 5", 5));
+  assert(common_ctx->get_symbol_table()->exists("a"));
+  assert(common_ctx->get_symbol_table()->is_constant("a"));
+  assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("a").get()));
+
+  assert(compare_actual_value<IntegerValue>("define b as int = 5.5", 5));
+  assert(common_ctx->get_symbol_table()->exists("b"));
+  assert(common_ctx->get_symbol_table()->is_constant("b"));
+  assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("b").get()));
+
+  try {
+    execute("b = 8");
+    assert(false);
+  } catch (TypeError e) { }
+
+  print_success_msg("stores constants and it cannot get modified", 1);
+}
+
 int main() {
   print_title("Interpreter tests...");
 
@@ -556,6 +575,7 @@ int main() {
     test_boolean();
     test_division_by_zero();
     test_max_integer_in_variable();
+    test_constants();
 
     print_success_msg("All \"Interpreter\" tests successfully passed");
   } catch (TypeError e) {

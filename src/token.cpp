@@ -11,6 +11,7 @@ const vector<string> KEYWORDS = {
   "and",
   "or",
   "not",
+  "define",
   "feature",
   "return",
   "creating",
@@ -36,6 +37,10 @@ bool Token::matches(const TokenType& type, const string& value) const {
 
 bool Token::is_keyword(const string& expected_value) const {
   return matches(TokenType::KEYWORD, expected_value);
+}
+
+bool Token::is(const string& string_value) const {
+  return this->value == string_value;
 }
 
 TokenType Token::getType() const { return type; }

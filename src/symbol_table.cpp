@@ -20,7 +20,7 @@ bool SymbolTable::has_parent() const {
 }
 
 unique_ptr<Value> SymbolTable::get(const string& name) {
-  unique_ptr<Value> value = exists(name) ? unique_ptr<Value>(symbols[name]->copy()) : nullptr;
+  unique_ptr<Value> value = exists(name) ? unique_ptr<Value>(symbols[name]->get_copy()) : nullptr;
   if (value == nullptr && has_parent()) {
     return parent->get(name);
   }
@@ -29,15 +29,25 @@ unique_ptr<Value> SymbolTable::get(const string& name) {
 
 void SymbolTable::modify(const string& name, unique_ptr<Value> new_value) {
   if (exists(name)) {
-    symbols[name] = move(new_value);
+    symbols[name]->overwrite_value(move(new_value));
   } else {
     if (!has_parent()) return;
     parent->modify(name, move(new_value));
   }
 }
 
-void SymbolTable::set(const string& name, unique_ptr<Value> value) {
-  symbols[name] = move(value);
+void SymbolTable::set(const string& name, unique_ptr<Value> value, bool constant) {
+  symbols[name] = make_unique<SymbolTableEntry>(
+    move(value),
+    constant
+  );
+}
+
+bool SymbolTable::is_constant(const string& name) const {
+  if (exists(name)) {
+    return symbols.at(name)->is_constant();
+  }
+  return false;
 }
 
 void SymbolTable::remove(const string& name) {
@@ -63,4 +73,22 @@ bool SymbolTable::does_constant_exist(const string& name) const {
 
 void SymbolTable::clear() {
   symbols.clear();
+}
+
+SymbolTableEntry::SymbolTableEntry(
+  unique_ptr<Value> value,
+  bool constant
+): value(move(value)), constant(constant) {}
+
+bool SymbolTableEntry::is_constant() const {
+  return constant;
+}
+
+Value* SymbolTableEntry::get_copy() const {
+  return value->copy();
+}
+
+void SymbolTableEntry::overwrite_value(unique_ptr<Value> new_value) {
+  value.reset();
+  value = move(new_value);
 }

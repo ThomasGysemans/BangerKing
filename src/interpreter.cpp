@@ -34,6 +34,8 @@ unique_ptr<RuntimeResult> Interpreter::visit(unique_ptr<CustomNode> node) {
     return visit_StringNode(cast_node<StringNode>(move(node)));
   } else if (instanceof<VarAssignmentNode>(node.get())) {
     return visit_VarAssignmentNode(cast_node<VarAssignmentNode>(move(node)));
+  } else if (instanceof<DefineConstantNode>(node.get())) {
+    return visit_DefineConstantNode(cast_node<DefineConstantNode>(move(node)));
   } else if (instanceof<VarAccessNode>(node.get())) {
     return visit_VarAccessNode(cast_node<VarAccessNode>(move(node)));
   } else if (instanceof<VarModifyNode>(node.get())) {
@@ -356,9 +358,44 @@ unique_ptr<RuntimeResult> Interpreter::visit_VarAssignmentNode(unique_ptr<VarAss
   }
 
   populate(*initial_value, move(node), shared_ctx);
-  shared_ctx->get_symbol_table()->set(variable_name, unique_ptr<Value>(initial_value->copy())); // copy's important because the garbage collector deallocates the returning value
+  shared_ctx->get_symbol_table()->set(variable_name, unique_ptr<Value>(initial_value->copy()), false); // copy's important because the garbage collector deallocates the returning value
 
   res->success(unique_ptr<Value>(initial_value->copy()));
+  return res;
+}
+
+unique_ptr<RuntimeResult> Interpreter::visit_DefineConstantNode(unique_ptr<DefineConstantNode> node) {
+  // TODO: a constant cannot be created in a nested context
+
+  const string& variable_name = node->get_var_name();
+  if (shared_ctx->get_symbol_table()->exists(variable_name)) {
+    throw RuntimeError(
+      node->getStartingPosition(), node->getEndingPosition(),
+      "The constant named '" + variable_name + "' already defined.",
+      shared_ctx
+    );
+  }
+
+  unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
+  shared_ptr<Value> value = res->read(visit(node->retrieve_value_node()));
+  if (res->should_return()) return res;
+
+  if (node->get_type() != value->get_type()) {
+    shared_ptr<Value> cast_value = value->cast(node->get_type());
+    if (cast_value == nullptr) {
+      type_error(
+        value,
+        node->get_type(),
+        shared_ctx
+      );
+    }
+    value = cast_value;
+  }
+
+  populate(*value, move(node), shared_ctx);
+  shared_ctx->get_symbol_table()->set(variable_name, unique_ptr<Value>(value->copy()), true);
+
+  res->success(unique_ptr<Value>(value->copy()));
   return res;
 }
 
@@ -387,7 +424,15 @@ unique_ptr<RuntimeResult> Interpreter::visit_VarModifyNode(unique_ptr<VarModifyN
       shared_ctx
     );
   }
-  
+
+  if (shared_ctx->get_symbol_table()->is_constant(variable_name)) {
+    throw TypeError(
+      node->getStartingPosition(), node->getEndingPosition(),
+      "Assignment to constant variable",
+      shared_ctx
+    );
+  }
+
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
   shared_ptr<Value> new_value = res->read(visit(node->get_value_node()));
   if (res->should_return()) return res;

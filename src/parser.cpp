@@ -81,56 +81,118 @@ unique_ptr<ListNode> Parser::statements() {
 unique_ptr<CustomNode> Parser::statement() { return expr(); }
 
 unique_ptr<CustomNode> Parser::expr() {
-  if (getTok()->is_keyword("store")) {
-    const Position pos_start = getTok()->getStartingPosition();
-    advance();
-    if (!has_more_tokens()) {
-      throw InvalidSyntaxError(
-        pos_start, pos_start,
-        "Expected identifier for variable assignment"
-      );
-    }
-    const string var_name = getTok()->getStringValue();
-    advance();
-    if (!has_more_tokens()) {
-      throw InvalidSyntaxError(
-        pos_start, pos_start,
-        "Expected type of variable"
-      );
-    }
-    if (!getTok()->is_keyword("as")) {
-      throw InvalidSyntaxError(
-        pos_start, getTok()->getEndingPosition(),
-        "Expected 'as' keyword to declare the type in variable assignment"
-      );
-    }
-    advance();
-    const Token type_name = getTok()->copy();
-    advance();
-    if (has_more_tokens() && getTok()->ofType(TokenType::EQUALS)) {
+  if (getTok()->ofType(TokenType::KEYWORD)) {
+    if (getTok()->is("store")) {
+      const Position pos_start = getTok()->getStartingPosition();
+      advance();
+      if (!has_more_tokens() || getTok()->notOfType(TokenType::IDENTIFIER)) {
+        throw InvalidSyntaxError(
+          pos_start, pos_start,
+          "Expected identifier for variable assignment"
+        );
+      }
+      const string var_name = getTok()->getStringValue();
       advance();
       if (!has_more_tokens()) {
         throw InvalidSyntaxError(
-          pos_start, type_name.getEndingPosition(),
-          "Expected an expression after '=' for variable assignment"
+          pos_start, pos_start,
+          "Expected type of variable"
+        );
+      }
+      if (!getTok()->is_keyword("as")) {
+        throw InvalidSyntaxError(
+          pos_start, getTok()->getEndingPosition(),
+          "Expected 'as' keyword to declare the type in variable assignment"
+        );
+      }
+      advance();
+      const Token type_name = getTok()->copy();
+      advance();
+      if (has_more_tokens() && getTok()->ofType(TokenType::EQUALS)) {
+        advance();
+        if (!has_more_tokens()) {
+          throw InvalidSyntaxError(
+            pos_start, type_name.getEndingPosition(),
+            "Expected an expression after '=' for variable assignment"
+          );
+        }
+        unique_ptr<CustomNode> value_node = cond_expr();
+        const Position ending_pos = value_node->getEndingPosition();
+        return make_unique<VarAssignmentNode>(
+          var_name,
+          move(value_node),
+          type_name,
+          pos_start,
+          ending_pos
+        );
+      } else {
+        return make_unique<VarAssignmentNode>(
+          var_name,
+          nullptr,
+          type_name,
+          pos_start,
+          type_name.getEndingPosition()
+        );
+      }
+    } else if (getTok()->is("define")) {
+      const Position pos_start = getTok()->getStartingPosition();
+      advance();
+      if (!has_more_tokens() || getTok()->notOfType(TokenType::IDENTIFIER)) {
+        throw InvalidSyntaxError(
+          pos_start, pos_start,
+          "Expected identifier for constant assignment"
+        );
+      }
+      const string var_name = getTok()->getStringValue();
+      advance();
+      if (!has_more_tokens()) {
+        throw InvalidSyntaxError(
+          pos_start, pos_start,
+          "Expected type of variable"
+        );
+      }
+      if (!getTok()->is_keyword("as")) {
+        throw InvalidSyntaxError(
+          pos_start, getTok()->getEndingPosition(),
+          "Expected 'as' keyword to declare the type in variable assignment"
+        );
+      }
+      advance();
+      if (!has_more_tokens()) {
+        throw InvalidSyntaxError(
+          pos_start, pos_start,
+          "Expected type after 'as' keyword"
+        );
+      }
+      const Type constant_type = get_type_from_name(getTok()->getStringValue());
+      if (constant_type == Type::ERROR_TYPE) {
+        throw InvalidSyntaxError(
+          pos_start, getTok()->getEndingPosition(),
+          "Expected a valid native type for this constant"
+        );
+      }
+      advance();
+      if (!has_more_tokens() || getTok()->notOfType(TokenType::EQUALS)) {
+        throw InvalidSyntaxError(
+          pos_start, pos_start,
+          "Expected value for this constant"
+        );
+      }
+      advance();
+      if (!has_more_tokens()) {
+        throw InvalidSyntaxError(
+          pos_start, pos_start,
+          "Expected an expression after '=' for constant assignment"
         );
       }
       unique_ptr<CustomNode> value_node = cond_expr();
       const Position ending_pos = value_node->getEndingPosition();
-      return make_unique<VarAssignmentNode>(
+      return make_unique<DefineConstantNode>(
         var_name,
         move(value_node),
-        type_name,
+        constant_type,
         pos_start,
         ending_pos
-      );
-    } else {
-      return make_unique<VarAssignmentNode>(
-        var_name,
-        nullptr,
-        type_name,
-        pos_start,
-        type_name.getEndingPosition()
       );
     }
   }

@@ -250,6 +250,19 @@ void test_true_and_false_keywords() {
   print_success_msg("true and false are keywords", 1);
 }
 
+void test_define() {
+  const auto tokens = list_to_vector(get_tokens_from("define PI as double = 3.14"));
+  assert(tokens.size() == 6);
+  assert(tokens[0]->ofType(TokenType::KEYWORD));
+  assert(tokens[1]->ofType(TokenType::IDENTIFIER));
+  assert(tokens[2]->ofType(TokenType::KEYWORD));
+  assert(tokens[3]->ofType(TokenType::IDENTIFIER));
+  assert(tokens[4]->ofType(TokenType::EQUALS));
+  assert(tokens[5]->ofType(TokenType::NUMBER));
+  
+  print_success_msg("define keyword", 1);
+}
+
 int main() {
   print_title("Lexer tests...");
 
@@ -273,6 +286,7 @@ int main() {
     test_string();
     test_illegal_char();
     test_true_and_false_keywords();
+    test_define();
 
     print_success_msg("All \"Lexer\" tests successfully passed");
   } catch (IllegalCharError e) {

@@ -394,6 +394,46 @@ void test_boolean() {
   print_success_msg("booleans true and false", 1);
 }
 
+void test_define_constant() {
+  const auto constant = cast_node<DefineConstantNode>(move(get_element_nodes_from("define PI as double = 3.14")->front()));
+  assert(constant->get_type() == Type::DOUBLE);
+  assert(constant->get_var_name() == "PI");
+  unique_ptr<DoubleNode> value = cast_node<DoubleNode>(constant->retrieve_value_node());
+  assert(value->get_token().getStringValue() == "3.14");
+
+  try {
+    get_element_nodes_from("define PI as double = store");
+    assert(false);
+  } catch (InvalidSyntaxError e) {}
+
+  try {
+    get_element_nodes_from("define PI as double");
+    assert(false);
+  } catch (InvalidSyntaxError e) {}
+  
+  try {
+    get_element_nodes_from("define PI as");
+    assert(false);
+  } catch (InvalidSyntaxError e) {}
+
+  try {
+    get_element_nodes_from("define PI");
+    assert(false);
+  } catch (InvalidSyntaxError e) {}
+
+  try {
+    get_element_nodes_from("define as");
+    assert(false);
+  } catch (InvalidSyntaxError e) {}
+
+  try {
+    get_element_nodes_from("define");
+    assert(false);
+  } catch (InvalidSyntaxError e) {}
+
+  print_success_msg("defines constants", 1);
+}
+
 int main() {
   print_title("Parser tests...");
 
@@ -422,6 +462,7 @@ int main() {
     test_access_node_in_expression();
     test_string();
     test_boolean();
+    test_define_constant();
   } catch (CustomError custom_error) {
     cerr << "Oops, the program unexpectedly thrown an error :" << endl;
     cerr << custom_error.get_details() << endl;

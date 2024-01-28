@@ -20,3 +20,4 @@
 #include "var_modify_node.hpp"
 #include "string_node.hpp"
 #include "boolean_node.hpp"
+#include "define_constant_node.hpp"

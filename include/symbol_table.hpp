@@ -7,9 +7,30 @@
 #include "values/value.hpp"
 using namespace std;
 
+class SymbolTableEntry {
+  unique_ptr<Value> value;
+  bool constant;
+
+  public:
+    SymbolTableEntry(
+      unique_ptr<Value>, // move the owernship of the value to this class
+      bool // whether it's a constant or not
+    );
+
+    /// @brief Gets a copy of the value this entry is holding.
+    Value* get_copy() const;
+
+    /// @brief Is the stored value a constant?
+    bool is_constant() const;
+
+    /// @brief Releases the current value so as to replace it with the new one.
+    /// @param new_value The new value to hold.
+    void overwrite_value(unique_ptr<Value> new_value);
+};
+
 class SymbolTable: public enable_shared_from_this<SymbolTable> {
   shared_ptr<SymbolTable> parent;
-  map<string, unique_ptr<Value>> symbols;
+  map<string, unique_ptr<SymbolTableEntry>> symbols;
 
   public:
     SymbolTable(shared_ptr<SymbolTable> p = nullptr);
@@ -43,7 +64,14 @@ class SymbolTable: public enable_shared_from_this<SymbolTable> {
     /// @brief Sets the variable `name` to `value`. It doesn't check if the variable already exists, and only creates the variable in this context.
     /// @param name The name of the variable to create in this current context.
     /// @param value The value to give to this variable.
-    void set(const string& name, unique_ptr<Value> value);
+    /// @param constant Whether this value is a constant (created with the "define" keyword).
+    void set(const string& name, unique_ptr<Value> value, bool constant);
+
+    /// @brief Checks if the given variable is a constant.
+    /// If this value doesn't exist, it will return `false`.
+    /// @param name The name of the variable.
+    /// @return `true` if the variable exists and is a constant.
+    bool is_constant(const string& name) const;
 
     /// @brief Removes a variable from this context or a parent context and deallocates the memory.
     /// @param name The name of the variable to remove.

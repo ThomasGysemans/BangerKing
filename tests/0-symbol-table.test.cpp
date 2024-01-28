@@ -8,9 +8,21 @@ using namespace std;
 void test_set() {
   unique_ptr<SymbolTable> table = make_unique<SymbolTable>();
   unique_ptr<IntegerValue> integer = make_unique<IntegerValue>(5);
-  table->set("a", move(integer));
+  table->set("a", move(integer), false);
 
   assert(table->exists("a"));
+  assert(!table->is_constant("a"));
+
+  print_success_msg("defines variables", 1);
+}
+
+void test_set_constant() {
+  unique_ptr<SymbolTable> table = make_unique<SymbolTable>();
+  unique_ptr<IntegerValue> integer = make_unique<IntegerValue>(5);
+  table->set("a", move(integer), true);
+
+  assert(table->exists("a"));
+  assert(table->is_constant("a"));
 
   print_success_msg("defines variables", 1);
 }
@@ -18,7 +30,7 @@ void test_set() {
 void test_get() {
   unique_ptr<SymbolTable> table = make_unique<SymbolTable>();
   unique_ptr<IntegerValue> integer = make_unique<IntegerValue>(5);
-  table->set("a", move(integer));
+  table->set("a", move(integer), false);
 
   assert(table->exists("a"));
 
@@ -38,7 +50,7 @@ void test_get() {
 void test_remove() {
   unique_ptr<SymbolTable> table = make_unique<SymbolTable>();
   unique_ptr<IntegerValue> integer = make_unique<IntegerValue>(5);
-  table->set("a", move(integer));
+  table->set("a", move(integer), false);
 
   assert(table->exists("a"));
 
@@ -52,7 +64,7 @@ void test_remove() {
 void test_modify() {
   unique_ptr<SymbolTable> table = make_unique<SymbolTable>();
   unique_ptr<IntegerValue> integer = make_unique<IntegerValue>(5);
-  table->set("a", move(integer));
+  table->set("a", move(integer), false);
 
   assert(table->exists("a"));
 
@@ -72,7 +84,7 @@ void test_modify() {
 void test_clear() {
   unique_ptr<SymbolTable> table = make_unique<SymbolTable>();
   unique_ptr<IntegerValue> integer = make_unique<IntegerValue>(5);
-  table->set("a", move(integer));
+  table->set("a", move(integer), false);
 
   assert(table->exists("a"));
 
@@ -88,10 +100,10 @@ void test_nested_tables() {
   unique_ptr<SymbolTable> nested = make_unique<SymbolTable>(global); // expects a shared_ptr to another table as parent
 
   unique_ptr<IntegerValue> a = make_unique<IntegerValue>(5);
-  nested->set("a", move(a));
+  nested->set("a", move(a), false);
 
   unique_ptr<IntegerValue> constant = make_unique<IntegerValue>(10);
-  global->set("constant", move(constant));
+  global->set("constant", move(constant), false);
   
   assert(nested->has_parent());
   assert(!global->has_parent());
@@ -111,6 +123,7 @@ int main() {
   print_title("SymbolTable tests...");
 
   test_set();
+  test_set_constant();
   test_get();
   test_remove();
   test_modify();

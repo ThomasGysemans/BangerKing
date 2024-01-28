@@ -70,11 +70,14 @@ class Token {
     /// @return `true` if this token is a keyword and matches the expected value.
     bool is_keyword(const string& expected_value) const;
 
+    /// @brief Checks if this token's string value is the same as the given string value.
+    /// @param string_value The string value with which to compare this token.
+    /// @return `true` if the string value of this token is equal to the given string value.
+    bool is(const string& string_value) const;
+
     /// @brief Gets the type of the token.
     /// @return An instance of the `TokenType` enum
     TokenType getType() const;
-
-    // TODO: these getters should return a reference instead of a copy
 
     /// @brief Gets the starting position of the token.
     /// @return The copy of the starting position of the token.
