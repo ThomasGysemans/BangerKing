@@ -20,17 +20,21 @@ expr          : KEYWORD:store IDENTIFIER KEYWORD:as Types (EQUALS cond-expr)?
 
 cond-expr     : comp-expr ((KEYWORD:AND|KEYWORD:OR) comp-expr)*
 
-comp-expr     : NOT comp-expr
+# "NOT" is "!"
+comp-expr     : (KEYWORD:NOT|NOT) comp-expr
               : bin-op ((DOUBLE_EQUALS|NOT_EQUAL|LT|GT|LTE|GTE) bin-op)*
 
-bin-op        : arith-expr ((BINARY_LEFT|BINARY_RIGHT|BINARY_UNSIGNED_RIGHT|LOGICAL_AND|LOGICAL_XOR|LOGICAL_OR) ((EQUALS expr)?|bin-op))*
+# not useful yet: arith-expr (((LOGICAL_OR etc.) (EQUALS expr)?|bin-op))*
+# will add: arith-expr (KEYWORD:instanceof IDENTIFIER) (IDENTIFIER)?
+bin-op        : arith-expr
 
 # `term + something_else` is an arithmetic expression
 # we also have `term++` or `term--`
 # note that `term+++++` is possible, as long as the number of tokens (PLUS|MINUS) is even
 # We can also do `term += term`
-arith-expr    : term ((PLUS|MINUS) ((EQUALS expr)?|term))*
+arith-expr    : term ((PLUS|MINUS) EQUALS expr)*
               : term (INC|DEC)*
+              : term
 
 term          : factor (((MUL|DIV|POWER|MODULO) factor)*)|((MUL|DIV|POWER|MODULO)EQUALS expr)?
 

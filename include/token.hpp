@@ -7,38 +7,37 @@
 using namespace std;
 
 enum TokenType {
-  NUMBER,
-  PLUS,
-  MINUS,
-  INC,
-  DEC,
-  MULTIPLY,
-  SLASH,
-  POWER,
-  MODULO,
-  LPAREN,
-  RPAREN,
-  IDENTIFIER,
-  KEYWORD,
-  EQUALS,
-  DOUBLE_EQUALS,
-  NOT_EQUAL,
-  LT,
-  GT,
-  LTE,
-  GTE,
-  COLON,
-  NEWLINE,
-  LSQUARE,
-  RSQUARE,
-  LBRACK,
-  RBRACK,
-  COMMA,
-  STR,
-  DOT,
-  LCHEVRON,
-  RCHEVRON,
-  HASH
+  NUMBER, // integer or double
+  PLUS, // +
+  MINUS, // -
+  INC, // ++
+  DEC, // --
+  MULTIPLY, // *
+  SLASH, // /
+  POWER, // **
+  MODULO, // %
+  LPAREN, // (
+  RPAREN, // )
+  IDENTIFIER, // a simple word
+  KEYWORD, // a simple word contained in "KEYWORDS"
+  EQUALS, // =
+  DOUBLE_EQUALS, // =
+  NOT_EQUAL, // !=
+  LT, // <
+  GT, // >
+  LTE, // <=
+  GTE, // >=
+  NOT, // !
+  COLON, // :
+  NEWLINE, // \n
+  LSQUARE, // [
+  RSQUARE, // ]
+  LBRACK, // {
+  RBRACK, // }
+  COMMA, // ,
+  STR, // a string
+  DOT, // .
+  HASH // #
 };
 
 extern const vector<string> KEYWORDS;

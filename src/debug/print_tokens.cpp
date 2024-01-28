@@ -20,6 +20,7 @@ string get_token_name(TokenType type) {
     case TokenType::GT: return "GT";
     case TokenType::LTE: return "LTE";
     case TokenType::GTE: return "GTE";
+    case TokenType::NOT: return "!";
     case TokenType::COLON: return "COLON";
     case TokenType::NEWLINE: return "NEWLINE";
     case TokenType::LSQUARE: return "LSQUARE";
@@ -29,8 +30,6 @@ string get_token_name(TokenType type) {
     case TokenType::COMMA: return "COMMA";
     case TokenType::STR: return "STRING";
     case TokenType::DOT: return "DOT";
-    case TokenType::LCHEVRON: return "LCHEVRON";
-    case TokenType::RCHEVRON: return "RCHEVRON";
     case TokenType::HASH: return "HASH";
     case TokenType::INC: return "INC";
     case TokenType::DEC: return "DEC";

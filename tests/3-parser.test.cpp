@@ -26,6 +26,16 @@ unique_ptr<list<unique_ptr<CustomNode>>> get_element_nodes_from(const string& co
   return parsing_result->get_element_nodes();
 }
 
+template <typename E>
+bool should_throw(const string& code) {
+  try {
+    get_element_nodes_from(code);
+    return false;
+  } catch (E e) {
+    return true;
+  }
+}
+
 void test_simple_number() {
   const auto element_nodes = get_element_nodes_from("5");
   const auto number_node = cast_node<IntegerNode>(move(element_nodes->front()));
@@ -461,6 +471,56 @@ void test_define_constant() {
   print_success_msg("defines constants", 1);
 }
 
+void test_simple_boolean_operators_AND_OR_NOT() {
+  const auto and_node = cast_node<AndNode>(move(get_element_nodes_from("true and false")->front()));
+  assert(cast_node<BooleanNode>(and_node->retrieve_a())->is_true());
+  assert(!cast_node<BooleanNode>(and_node->retrieve_b())->is_true());
+
+  const auto or_node = cast_node<OrNode>(move(get_element_nodes_from("true or false")->front()));
+  assert(cast_node<BooleanNode>(or_node->retrieve_a())->is_true());
+  assert(!cast_node<BooleanNode>(or_node->retrieve_b())->is_true());
+
+  const auto right_expr = cast_node<OrNode>(move(get_element_nodes_from("true or (store b as int = 5)")->front()));
+  assert(cast_node<BooleanNode>(right_expr->retrieve_a())->is_true());
+  assert(cast_node<VarAssignmentNode>(right_expr->retrieve_b())->get_var_name() == "b");
+
+  const auto full_expr = cast_node<OrNode>(move(get_element_nodes_from("(store a as int = 0) or (store b as int = 5)")->front()));
+  assert(cast_node<VarAssignmentNode>(full_expr->retrieve_a())->get_var_name() == "a");
+  assert(cast_node<VarAssignmentNode>(full_expr->retrieve_b())->get_var_name() == "b");
+
+  const auto assigning_boolean_operator = cast_node<VarAssignmentNode>(move(get_element_nodes_from("store a as int = 0 or 5")->front()));
+  assert(assigning_boolean_operator->get_var_name() == "a");
+  unique_ptr<OrNode> assigned_or_node = cast_node<OrNode>(assigning_boolean_operator->retrieve_value_node());
+  assert(cast_node<IntegerNode>(assigned_or_node->retrieve_a())->to_string() == "IntegerNode(0)");
+  assert(cast_node<IntegerNode>(assigned_or_node->retrieve_b())->to_string() == "IntegerNode(5)");
+
+  const auto assigning_assignment = cast_node<VarAssignmentNode>(move(get_element_nodes_from("store a as int = (store b as int = 0) or (store c as int = 5)")->front()));
+  assert(assigning_assignment->get_var_name() == "a");
+  assert(instanceof<OrNode>(assigning_assignment->retrieve_value_node().get()));
+
+  const auto not_node = cast_node<NotNode>(move(get_element_nodes_from("not true")->front()));
+  assert(cast_node<BooleanNode>(not_node->retrieve_node())->is_true());
+
+  const auto exclamation_mark_node = cast_node<NotNode>(move(get_element_nodes_from("!true")->front()));
+  assert(cast_node<BooleanNode>(exclamation_mark_node->retrieve_node())->is_true());
+
+  const auto exclamation_mark_node_paren = cast_node<NotNode>(move(get_element_nodes_from("!(true)")->front()));
+  assert(cast_node<BooleanNode>(exclamation_mark_node_paren->retrieve_node())->is_true());
+
+  // Test invalid syntaxes
+
+  assert(should_throw<InvalidSyntaxError>("!"));
+  assert(should_throw<InvalidSyntaxError>("not"));
+  assert(should_throw<InvalidSyntaxError>("true or"));
+  assert(should_throw<InvalidSyntaxError>("true and"));
+  assert(should_throw<InvalidSyntaxError>("true or !"));
+  assert(should_throw<InvalidSyntaxError>("not or"));
+  assert(should_throw<InvalidSyntaxError>("not not"));
+  assert(should_throw<InvalidSyntaxError>("!!"));
+
+  print_success_msg("simple boolean operators (and, or, not)", 1);
+}
+
 int main() {
   print_title("Parser tests...");
 
@@ -490,6 +550,7 @@ int main() {
     test_string();
     test_boolean();
     test_define_constant();
+    test_simple_boolean_operators_AND_OR_NOT();
   } catch (CustomError custom_error) {
     cerr << "Oops, the program unexpectedly thrown an error :" << endl;
     cerr << custom_error.get_details() << endl;

@@ -28,6 +28,12 @@ unique_ptr<RuntimeResult> Interpreter::visit(unique_ptr<CustomNode> node) {
     return visit_MinusNode(cast_node<MinusNode>(move(node)));
   } else if (instanceof<PlusNode>(node.get())) {
     return visit_PlusNode(cast_node<PlusNode>(move(node)));
+  } else if (instanceof<NotNode>(node.get())) {
+    return visit_NotNode(cast_node<NotNode>(move(node)));
+  } else if (instanceof<AndNode>(node.get())) { // this is a binary operation node, it must be checked before the "instanceof<BinaryOperationNode>"
+    return visit_AndNode(cast_node<AndNode>(move(node)));
+  } else if (instanceof<OrNode>(node.get())) { // this is a binary operation node, it must be checked before the "instanceof<BinaryOperationNode>"
+    return visit_OrNode(cast_node<OrNode>(move(node)));
   } else if (instanceof<BinaryOperationNode>(node.get())) {
     return visit_BinaryOperationNode(cast_node<BinaryOperationNode>(move(node)));
   } else if (instanceof<StringNode>(node.get())) {
@@ -483,5 +489,57 @@ unique_ptr<RuntimeResult> Interpreter::visit_BooleanNode(unique_ptr<const Boolea
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
   unique_ptr<BooleanValue> str = make_unique<BooleanValue>(node->is_true());
   make_success(res, move(str), move(node));
+  return res;
+}
+
+// This node doesn't simply return a boolean,
+// it returns a copy of the truthy operand,
+// allowing us to do this:
+// ```
+// store a as int = function_that_might_return_0() or 5
+// ```
+// In this code a = 5 only if the left operand returned a falsy value.
+unique_ptr<RuntimeResult> Interpreter::visit_OrNode(unique_ptr<OrNode> node) {
+  unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
+  shared_ptr<const Value> left = res->read(visit(node->retrieve_a()));
+  if (res->should_return()) return res;
+
+  if (left->is_truthy()) {
+    unique_ptr<Value> left_copy = unique_ptr<Value>(left->copy());
+    make_success(res, move(left_copy), move(node));
+  } else {
+    shared_ptr<const Value> right = res->read(visit(node->retrieve_b()));
+    if (res->should_return()) return res;
+    unique_ptr<Value> right_copy = unique_ptr<Value>(right->copy());
+    make_success(res, move(right_copy), move(node));
+  }
+
+  return res;
+}
+
+unique_ptr<RuntimeResult> Interpreter::visit_AndNode(unique_ptr<AndNode> node) {
+  unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
+  shared_ptr<const Value> left = res->read(visit(node->retrieve_a()));
+  if (res->should_return()) return res;
+
+  if (!left->is_truthy()) { // do not interpret the right operand if the left one is false
+    unique_ptr<BooleanValue> bool_false = make_unique<BooleanValue>(false);
+    make_success(res, move(bool_false), move(node));
+  } else {
+    shared_ptr<const Value> left = res->read(visit(node->retrieve_b()));
+    if (res->should_return()) return res;
+    unique_ptr<BooleanValue> answer = make_unique<BooleanValue>(left->is_truthy());
+    make_success(res, move(answer), move(node));
+  }
+
+  return res;
+}
+
+unique_ptr<RuntimeResult> Interpreter::visit_NotNode(unique_ptr<NotNode> node) {
+  unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
+  shared_ptr<const Value> value = res->read(visit(node->retrieve_node()));
+  if (res->should_return()) return res;
+  unique_ptr<BooleanValue> return_value = make_unique<BooleanValue>(!value->is_truthy());
+  make_success(res, move(return_value), move(node));
   return res;
 }

@@ -79,6 +79,10 @@ list<unique_ptr<const Token>> Lexer::generate_tokens() {
       const Position pos_start = pos.copy();
       advance();
       tokens.push_back(make_unique<Token>(TokenType::EQUALS, "=", pos_start, &pos));
+    } else if (*iter == '!') {
+      const Position pos_start = pos.copy();
+      advance();
+      tokens.push_back(make_unique<Token>(TokenType::NOT, "!", pos_start, &pos)); // TODO: is the string value that necessary?
     } else if (*iter == DOUBLE_QUOTE || *iter == SIMPLE_QUOTE) {
       tokens.push_back(make_string());
     } else {

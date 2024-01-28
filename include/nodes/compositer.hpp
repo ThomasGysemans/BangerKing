@@ -21,3 +21,6 @@
 #include "string_node.hpp"
 #include "boolean_node.hpp"
 #include "define_constant_node.hpp"
+#include "and_node.hpp"
+#include "or_node.hpp"
+#include "not_node.hpp"

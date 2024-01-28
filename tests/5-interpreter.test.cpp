@@ -561,6 +561,55 @@ void test_constants() {
   print_success_msg("stores constants and it cannot get modified", 1);
 }
 
+void test_simple_boolean_operators_AND_OR_NOT() {
+  assert(compare_actual_value<BooleanValue>("true and true", true));
+  assert(compare_actual_value<BooleanValue>("true and false", false));
+  assert(compare_actual_value<BooleanValue>("false and true", false));
+  assert(compare_actual_value<BooleanValue>("false and false", false));
+  assert(compare_actual_value<BooleanValue>("false and (false)", false));
+  assert(compare_actual_value<BooleanValue>("(false) and (false)", false));
+  assert(compare_actual_value<BooleanValue>("((false) and (false))", false));
+
+  assert(compare_actual_value<BooleanValue>("true or true", true));
+  assert(compare_actual_value<BooleanValue>("true or false", true));
+  assert(compare_actual_value<BooleanValue>("false or true", true));
+  assert(compare_actual_value<BooleanValue>("false or false", false));
+
+  // OR returns the truthy expression
+  // instead of a simple boolean value
+  assert(compare_actual_value<IntegerValue>("0 or 5", 5));
+
+  // In the case of an AND operation,
+  // the right operand is ignored
+  // if the left one is false
+  assert(compare_actual_value<BooleanValue>("0 and (store a as int = 5)", false));
+  assert(!common_ctx->get_symbol_table()->exists("a"));
+
+  assert(compare_actual_value<BooleanValue>("not true", false));
+  assert(compare_actual_value<BooleanValue>("not false", true));
+  assert(compare_actual_value<BooleanValue>("! true", false));
+  assert(compare_actual_value<BooleanValue>("! false", true));
+  assert(compare_actual_value<BooleanValue>("!true", false));
+  assert(compare_actual_value<BooleanValue>("!false", true));
+  assert(compare_actual_value<BooleanValue>("!(true)", false));
+  assert(compare_actual_value<BooleanValue>("!(false)", true));
+  assert(compare_actual_value<BooleanValue>("!!(false)", false));
+
+  print_success_msg("works with simple boolean operators (and, or, not)", 1);
+}
+
+void test_or_node_with_variable_assignments() {
+  // In this code,
+  // we assign a copy of the variable "b"
+  // to the variable "a", created after "b",
+  // but "c" should not get created, because "b" is truthy.
+  // The return value should be 2.
+  const string code = "store a as int = (store b as int = 2) or (store c as int = 3)";
+  assert(compare_actual_value<IntegerValue>(code, 2));
+
+  print_success_msg("works with variable assignments in OR node", 1);
+}
+
 int main() {
   print_title("Interpreter tests...");
 
@@ -590,6 +639,8 @@ int main() {
     test_division_by_zero();
     test_max_integer_in_variable();
     test_constants();
+    test_simple_boolean_operators_AND_OR_NOT();
+    test_or_node_with_variable_assignments();
 
     print_success_msg("All \"Interpreter\" tests successfully passed");
   } catch (TypeError e) {
@@ -597,6 +648,9 @@ int main() {
     cerr << e.to_string() << endl;
   } catch (RuntimeError e) {
     cerr << "ABORT. A runtime error was caught during one of the tests: " << endl;
+    cerr << e.to_string() << endl;
+  } catch (InvalidSyntaxError e) {
+    cerr << "ABORT. A lexer/parser error was caught during one of the tests: " << endl;
     cerr << e.to_string() << endl;
   } catch (string cast_error) {
     cerr << "ABORT. The tests crashed due to this error :" << endl;

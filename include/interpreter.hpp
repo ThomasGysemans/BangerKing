@@ -47,6 +47,9 @@ class Interpreter {
     static unique_ptr<RuntimeResult> visit_VarModifyNode(unique_ptr<VarModifyNode>);
     static unique_ptr<RuntimeResult> visit_StringNode(unique_ptr<const StringNode>);
     static unique_ptr<RuntimeResult> visit_BooleanNode(unique_ptr<const BooleanNode>);
+    static unique_ptr<RuntimeResult> visit_OrNode(unique_ptr<OrNode>);
+    static unique_ptr<RuntimeResult> visit_AndNode(unique_ptr<AndNode>);
+    static unique_ptr<RuntimeResult> visit_NotNode(unique_ptr<NotNode>);
 
     /// @brief Explores a binary operation node (addition, substraction, division, power, multiplication, modulo, etc.)
     /// @param node A binary operation node.

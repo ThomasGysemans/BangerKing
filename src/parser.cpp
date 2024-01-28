@@ -206,9 +206,46 @@ unique_ptr<CustomNode> Parser::expr() {
   return cond_expr();
 }
 
-unique_ptr<CustomNode> Parser::cond_expr() { return comp_expr(); }
+unique_ptr<CustomNode> Parser::cond_expr() {
+  unique_ptr<CustomNode> result = comp_expr();
 
-unique_ptr<CustomNode> Parser::comp_expr() { return bin_op(); }
+  while (has_more_tokens() && (getTok()->is_keyword("and") || getTok()->is_keyword("or"))) {
+    auto& tok = getTok();
+    auto tok_pos = tok->getStartingPosition();
+    advance();
+    if (!has_more_tokens()) {
+      throw InvalidSyntaxError(
+        result->getStartingPosition(), tok_pos,
+        "Unexpected end of boolean expression"
+      );
+    }
+    auto b = comp_expr();
+    if (tok->is_keyword("and")) {
+      result = make_unique<AndNode>(result, b);
+    } else {
+      result = make_unique<OrNode>(result, b);
+    }
+  }
+
+  return result;
+}
+
+unique_ptr<CustomNode> Parser::comp_expr() {
+  if (getTok()->ofType(TokenType::NOT) || getTok()->is_keyword("not")) { // "!" or "not"
+    const Position pos_start = getTok()->getStartingPosition();
+    advance();
+    if (!has_more_tokens()) {
+      throw InvalidSyntaxError(
+        pos_start, pos_start,
+        "Unexpected end of negation"
+      );
+    }
+    unique_ptr<CustomNode> negation = comp_expr();
+    return make_unique<NotNode>(move(negation));
+  }
+
+  return bin_op();
+}
 
 unique_ptr<CustomNode> Parser::bin_op() { return arith_expr(); }
 
@@ -220,7 +257,14 @@ unique_ptr<CustomNode> Parser::arith_expr() {
     getTok()->ofType(TokenType::MINUS)
   )) {
     auto& tok = getTok();
+    auto tok_pos = tok->getStartingPosition();
     advance();
+    if (!has_more_tokens()) {
+      throw InvalidSyntaxError(
+        result->getStartingPosition(), tok_pos,
+        "Unexpected end of arithmetic expression"
+      );
+    }
     auto ter = term();
     if (tok->ofType(TokenType::PLUS)) {
       result = make_unique<AddNode>(result, ter);
@@ -242,7 +286,14 @@ unique_ptr<CustomNode> Parser::term() {
     getTok()->ofType(TokenType::MODULO)
   )) {
     auto& tok = getTok();
+    auto tok_pos = tok->getStartingPosition();
     advance();
+    if (!has_more_tokens()) {
+      throw InvalidSyntaxError(
+        result->getStartingPosition(), tok_pos,
+        "Unexpected end of term"
+      );
+    }
     auto fac = factor();
     if (tok->ofType(TokenType::MULTIPLY)) {
       result = make_unique<MultiplyNode>(result, fac);

@@ -263,6 +263,17 @@ void test_define() {
   print_success_msg("define keyword", 1);
 }
 
+void test_boolean_operators() {
+  const auto tokens = list_to_vector(get_tokens_from("and or not !"));
+  assert(tokens.size() == 4);
+  assert(tokens[0]->is_keyword("and"));
+  assert(tokens[1]->is_keyword("or"));
+  assert(tokens[2]->is_keyword("not"));
+  assert(tokens[3]->ofType(TokenType::NOT));
+
+  print_success_msg("boolean operators (and, or, not)", 1);
+}
+
 int main() {
   print_title("Lexer tests...");
 
@@ -287,6 +298,7 @@ int main() {
     test_illegal_char();
     test_true_and_false_keywords();
     test_define();
+    test_boolean_operators();
 
     print_success_msg("All \"Lexer\" tests successfully passed");
   } catch (IllegalCharError e) {
