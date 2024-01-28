@@ -12,7 +12,6 @@ using namespace std;
 class VarAssignmentNode: public CustomNode {
   const string var_name;
   unique_ptr<CustomNode> value_node; // can be "nullptr" if the variable doesn't have an initial value
-  const Type type;
   const string type_name; // in case the type is the instance of a custom object
 
   public:
@@ -37,10 +36,6 @@ class VarAssignmentNode: public CustomNode {
     /// @brief Whether or not this variable assignment has an initial value.
     /// @return `true` if this new variable has an initial value.
     bool has_value() const;
-
-    /// @brief Gets the native type of this variable from the `Type` enum.
-    /// @return The native type of this variable.
-    Type get_type() const;
 
     /// @brief Gets the name of the type of this new variable.
     /// @return The type name of this variable.

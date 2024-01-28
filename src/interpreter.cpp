@@ -323,6 +323,16 @@ unique_ptr<RuntimeResult> Interpreter::visit_VarAssignmentNode(unique_ptr<VarAss
     );
   }
 
+  // TODO: this will need to change when custom types will be possible
+  Type node_var_type = get_type_from_name(node->get_type_name());
+  if (node_var_type == Type::ERROR_TYPE) {
+    throw TypeError(
+      node->getStartingPosition(), node->getEndingPosition(),
+      "Unknown type for variable assignment",
+      shared_ctx
+    );
+  }
+
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
   bool has_initial_value = node->has_value(); // because "retrieve_value_node()" will change the result of this method
   shared_ptr<Value> initial_value = has_initial_value ? res->read(visit(node->retrieve_value_node())) : nullptr;
@@ -332,7 +342,7 @@ unique_ptr<RuntimeResult> Interpreter::visit_VarAssignmentNode(unique_ptr<VarAss
   // if the developer didn't set an initial value.
   // This default value will depend on the given type.
   if (!has_initial_value) {
-    switch (node->get_type()) {
+    switch (node_var_type) {
       case Type::INT: initial_value = make_shared<IntegerValue>(); break;
       case Type::DOUBLE: initial_value = make_shared<DoubleValue>(); break;
       case Type::STRING: initial_value = make_shared<StringValue>(); break;
@@ -344,12 +354,12 @@ unique_ptr<RuntimeResult> Interpreter::visit_VarAssignmentNode(unique_ptr<VarAss
         );
     }
   } else {
-    if (node->get_type() != initial_value->get_type()) {
-      shared_ptr<Value> cast_value = initial_value->cast(node->get_type());
+    if (node_var_type != initial_value->get_type()) {
+      shared_ptr<Value> cast_value = initial_value->cast(node_var_type);
       if (cast_value == nullptr) {
         type_error(
           initial_value,
-          node->get_type(),
+          node_var_type,
           shared_ctx
         );
       }

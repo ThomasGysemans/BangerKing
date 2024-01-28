@@ -278,7 +278,6 @@ void test_variable_assignment_with_initial_value() {
   assert(nodes->size() == 1);
 
   const auto node = cast_node<VarAssignmentNode>(move(nodes->front()));
-  assert(node->get_type() == Type::INT);
   assert(node->get_type_name() == "int");
   assert(node->get_var_name() == "a");
   assert(node->has_value());
@@ -299,7 +298,6 @@ void test_variable_assignment_without_initial_value() {
   assert(nodes->size() == 1);
 
   const auto node = cast_node<VarAssignmentNode>(move(nodes->front()));
-  assert(node->get_type() == Type::INT);
   assert(node->get_type_name() == "int");
   assert(node->get_var_name() == "a");
   assert(!node->has_value());
@@ -308,6 +306,35 @@ void test_variable_assignment_without_initial_value() {
   assert(node->getEndingPosition().get_idx() == code.size());
 
   print_success_msg("variable assignment of an integer without initial value", 1);
+}
+
+void test_variable_assignment_invalid_syntax() {
+  try {
+    get_element_nodes_from("store a as int = store");
+    assert(false);
+  } catch (InvalidSyntaxError e) {}
+
+  try {
+    get_element_nodes_from("store a as int 8");
+    assert(false);
+  } catch (InvalidSyntaxError e) {}
+
+  try {
+    get_element_nodes_from("store as int");
+    assert(false);
+  } catch (InvalidSyntaxError e) {}
+
+  try {
+    get_element_nodes_from("store a");
+    assert(false);
+  } catch (InvalidSyntaxError e) {}
+
+  try {
+    get_element_nodes_from("store");
+    assert(false);
+  } catch (InvalidSyntaxError e) {}
+  
+  print_success_msg("throws an error if the syntax of a variable assignment isn't right");
 }
 
 void test_variable_modification() {

@@ -106,6 +106,12 @@ unique_ptr<CustomNode> Parser::expr() {
         );
       }
       advance();
+      if (!has_more_tokens()) {
+        throw InvalidSyntaxError(
+          pos_start, pos_start,
+          "Expected type after 'as' keyword"
+        );
+      }
       const Token type_name = getTok()->copy();
       advance();
       if (has_more_tokens() && getTok()->ofType(TokenType::EQUALS)) {

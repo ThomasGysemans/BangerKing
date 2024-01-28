@@ -197,6 +197,19 @@ void test_variable_assignment_of_a_double() {
   print_success_msg("works with the variable assignment of a double", 1);
 }
 
+void test_variable_assignment_with_unknown_type() {
+  common_ctx->get_symbol_table()->clear();
+
+  try {
+    execute("store a as zzz");
+    assert(false);
+  } catch (TypeError e) {
+    assert(!common_ctx->get_symbol_table()->exists("a"));
+  }
+
+  print_success_msg("throws an error if the type of a variable is unknown", 1);
+}
+
 void test_redefinition_of_existing_variable() {
   common_ctx->get_symbol_table()->clear();
   try {
@@ -561,6 +574,7 @@ int main() {
     test_mathematical_operation_with_negative_and_double_numbers();
     test_variable_assignment_of_an_integer();
     test_variable_assignment_of_a_double();
+    test_variable_assignment_with_unknown_type();
     test_redefinition_of_existing_variable();
     test_access_to_variable();
     test_access_to_variable_in_maths_expression();

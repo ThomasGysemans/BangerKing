@@ -11,13 +11,11 @@ VarAssignmentNode::VarAssignmentNode(
 : CustomNode(pos_start, pos_end),
   var_name(var_name),
   value_node(move(value)),
-  type(get_type_from_name(type_tok.getStringValue())),
   type_name(type_tok.getStringValue()) {}
 
 unique_ptr<CustomNode> VarAssignmentNode::retrieve_value_node() { return move(value_node); }
 string VarAssignmentNode::get_var_name() const { return var_name; }
 bool VarAssignmentNode::has_value() const { return value_node != nullptr; }
-Type VarAssignmentNode::get_type() const { return type; }
 string VarAssignmentNode::get_type_name() const { return type_name; }
 
 string VarAssignmentNode::to_string() const {
