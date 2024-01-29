@@ -1,4 +1,5 @@
 #include "../../include/exceptions/exception.hpp"
+using namespace std;
 
 Exception::Exception(
   const string& t,

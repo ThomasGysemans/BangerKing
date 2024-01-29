@@ -1,4 +1,5 @@
 #include "../../include/exceptions/expected_char_error.hpp"
+using namespace std;
 
 ExpectedCharError::ExpectedCharError(
   const Position& start,

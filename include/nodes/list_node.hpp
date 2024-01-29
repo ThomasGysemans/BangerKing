@@ -3,7 +3,8 @@
 #include <list>
 #include "../position.hpp"
 #include "custom_node.hpp"
-using namespace std;
+
+using list_of_nodes_ptr = std::unique_ptr<std::list<std::unique_ptr<CustomNode>>>;
 
 /// @brief A list of nodes. It can also contain the whole program, as it is just a list of nodes too.
 class ListNode: public CustomNode {
@@ -11,20 +12,20 @@ class ListNode: public CustomNode {
   // cannot be constant, because during interpretation
   // the nodes get progressively deallocated hence
   // modifying some nodes that would contain smart pointers to others.
-  unique_ptr<list<unique_ptr<CustomNode>>> element_nodes;
+  list_of_nodes_ptr element_nodes;
 
   public:
     ListNode(
-      unique_ptr<list<unique_ptr<CustomNode>>> nodes,
+      list_of_nodes_ptr nodes,
       const Position& start,
       const Position& end
     );
     
-    ListNode(unique_ptr<list<unique_ptr<CustomNode>>> nodes);
+    ListNode(list_of_nodes_ptr nodes);
 
     ~ListNode() = default;
 
-    unique_ptr<list<unique_ptr<CustomNode>>> get_element_nodes();
+    list_of_nodes_ptr get_element_nodes();
     int get_number_of_nodes() const;
-    string to_string() const override;
+    std::string to_string() const override;
 };

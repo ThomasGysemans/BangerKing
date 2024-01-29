@@ -1,5 +1,6 @@
 #include "../../include/nodes/define_constant_node.hpp"
 #include "../../include/position.hpp"
+using namespace std;
 
 DefineConstantNode::DefineConstantNode(
   const string& var_name,

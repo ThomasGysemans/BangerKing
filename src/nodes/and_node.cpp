@@ -1,4 +1,5 @@
 #include "../../include/nodes/and_node.hpp"
+using namespace std;
 
 AndNode::AndNode(
   unique_ptr<CustomNode>& a,

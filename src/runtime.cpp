@@ -1,4 +1,5 @@
 #include "../include/runtime.hpp"
+using namespace std;
 
 void RuntimeResult::reset() {
   value.reset();

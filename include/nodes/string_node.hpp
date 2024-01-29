@@ -2,7 +2,6 @@
 
 #include "custom_node.hpp"
 #include "../token.hpp"
-using namespace std;
 
 class StringNode: public CustomNode {
   const Token token;
@@ -16,6 +15,6 @@ class StringNode: public CustomNode {
     bool canConcatenate() const;
 
     const Token* getToken() const;
-    const string getValue() const;
-    string to_string() const override;
+    const std::string getValue() const;
+    std::string to_string() const override;
 };

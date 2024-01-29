@@ -3,23 +3,21 @@
 #include "custom_error.hpp"
 #include "../context.hpp"
 
-using namespace std;
-
 class BaseRuntimeError: public CustomError {
   protected:
-    shared_ptr<const Context> context;
+    std::shared_ptr<const Context> context;
 
   public:
     BaseRuntimeError(
       const Position& start,
       const Position& end,
-      const string& name,
-      const string& d,
-      shared_ptr<const Context> ctx
+      const std::string& name,
+      const std::string& d,
+      std::shared_ptr<const Context> ctx
     );
     
-    string to_string() const;
+    std::string to_string() const;
 
   private:
-    string generate_traceback() const;
+    std::string generate_traceback() const;
 };

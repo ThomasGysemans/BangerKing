@@ -1,4 +1,5 @@
 #include "../../include/nodes/modulo_node.hpp"
+using namespace std;
 
 ModuloNode::ModuloNode(
   unique_ptr<CustomNode>& a,

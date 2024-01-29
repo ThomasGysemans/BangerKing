@@ -1,4 +1,5 @@
 #include "../../include/exceptions/arithmetic_error.hpp"
+using namespace std;
 
 ArithmeticError::ArithmeticError(
   const Position& start,

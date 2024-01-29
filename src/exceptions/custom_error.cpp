@@ -1,5 +1,6 @@
 #include "../../include/exceptions/custom_error.hpp"
 #include "../../include/utils/string_with_arrows.hpp"
+using namespace std;
 
 CustomError::CustomError(
   const Position& start,

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-using namespace std;
 
 class Position {
   unsigned int idx;
@@ -9,7 +8,7 @@ class Position {
   unsigned int col;
   // cannot be set as "const" to ensure that the implicit copy assignment operator is created by the compiler.
   // indeed, when assigning an instance of Position to another one, a field cannot be set as "const".
-  string fn;
+  std::string fn;
 
   public:
     /// @brief Gets the default position that an instance can have. It's just 0, 0, 0 and a filename of "<hidden>".
@@ -21,7 +20,7 @@ class Position {
     // so that `dynamic_cast` can do its magic (used in `instanceof` method).
     virtual ~Position();
 
-    string get_filename() const;
+    std::string get_filename() const;
     unsigned int get_ln() const;
     unsigned int get_col() const;
     unsigned int get_idx() const;
@@ -30,7 +29,7 @@ class Position {
       const unsigned int i,
       const unsigned int l,
       const unsigned int c,
-      const string& filename
+      const std::string& filename
     );
 
     /// @brief Compares two instances of Position.
@@ -48,5 +47,5 @@ class Position {
     /// @return A deep copy.
     Position copy() const;
 
-    string to_string() const;
+    std::string to_string() const;
 };

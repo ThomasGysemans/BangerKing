@@ -1,4 +1,5 @@
 #include "../../include/debug/print_tokens.hpp"
+using namespace std;
 
 string get_token_name(TokenType type) {
   switch (type) {

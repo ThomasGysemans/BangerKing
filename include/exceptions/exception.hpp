@@ -1,16 +1,15 @@
 #pragma once
 
 #include <string>
-using namespace std;
 
 class Exception {
   protected:
-    string type;
-    string message;
+    std::string type;
+    std::string message;
 
   public:
-    Exception(const string& t, const string& mess);
+    Exception(const std::string& t, const std::string& mess);
 
-    string get_type() const;
-    string to_string() const;
+    std::string get_type() const;
+    std::string to_string() const;
 };

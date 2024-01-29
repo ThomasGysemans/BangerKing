@@ -1,4 +1,5 @@
 #include "../../include/nodes/var_access_node.hpp"
+using namespace std;
 
 VarAccessNode::VarAccessNode(
   const Token& tok

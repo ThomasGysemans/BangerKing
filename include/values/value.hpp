@@ -5,7 +5,6 @@
 #include "../position.hpp"
 #include "../types.hpp"
 #include "../context.hpp"
-using namespace std;
 
 // Reference of "std::any"
 // https://en.cppreference.com/w/cpp/utility/any
@@ -13,14 +12,14 @@ using namespace std;
 class Value {
   protected:
     const Type type;
-    shared_ptr<const Context> context = nullptr; // TODO: is having the context in the Value that necessary?
+    std::shared_ptr<const Context> context = nullptr; // TODO: is having the context in the Value that necessary?
     Position pos_start;
     Position pos_end;
-    any actual_value = nullptr;
+    std::any actual_value = nullptr;
 
     /// @brief Gets the actual value in C++.
     /// @return The reference to this value of type "any".
-    const any* get_model() const;
+    const std::any* get_model() const;
 
   public:
     /// @brief Creates an instance of a computed value from the program.
@@ -43,12 +42,12 @@ class Value {
 
     /// @brief Sets the context in which this value was created
     /// @param ctx The context that created this value.
-    void set_ctx(shared_ptr<const Context> ctx);
+    void set_ctx(std::shared_ptr<const Context> ctx);
 
     /// @brief Gets the shared_ptr of the context in which this value was created.
     /// The context is not meant to be modified this way, so a const qualifier is applied to the context.
     /// @return The constant shared pointer to the context in which this value was created.
-    shared_ptr<const Context> get_ctx();
+    std::shared_ptr<const Context> get_ctx();
 
     /// @brief Gets the name of the type associated with this value.
     /// @return The name of the type.
@@ -69,12 +68,12 @@ class Value {
     /// @brief Transforms the value into a string.
     /// @throw UndefinedBehaviorException if "to_string()" is called on an instance of "Value"
     /// @return The string representation of this value.
-    virtual string to_string() const {
+    virtual std::string to_string() const {
       if (!actual_value.has_value()) {
         return "null";
       }
       throw UndefinedBehaviorException("Cannot print a value of type '" + get_type_name(get_type()) + "'");
     }
 
-    virtual unique_ptr<Value> cast(Type output_type) const = 0;
+    virtual std::unique_ptr<Value> cast(Type output_type) const = 0;
 };

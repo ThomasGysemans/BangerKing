@@ -1,4 +1,5 @@
 #include "../../include/nodes/power_node.hpp"
+using namespace std;
 
 PowerNode::PowerNode(
   unique_ptr<CustomNode>& a,

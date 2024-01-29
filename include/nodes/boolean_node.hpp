@@ -2,7 +2,6 @@
 
 #include "custom_node.hpp"
 #include "../token.hpp"
-using namespace std;
 
 class BooleanNode: public CustomNode {
   const Token token;
@@ -14,5 +13,5 @@ class BooleanNode: public CustomNode {
 
     bool is_true() const;
     const Token* getToken() const;
-    string to_string() const override;
+    std::string to_string() const override;
 };

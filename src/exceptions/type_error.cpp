@@ -1,4 +1,5 @@
 #include "../../include/exceptions/type_error.hpp"
+using namespace std;
 
 TypeError::TypeError(
   const Position& start,

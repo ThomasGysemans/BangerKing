@@ -1,8 +1,6 @@
 #pragma once
 
-#include <list>
 #include <string>
-using namespace std;
 
 // Forward declarations are enough for the few functions using these
 class CustomNode;
@@ -26,7 +24,7 @@ bool instanceof(const T* ptr) {
 /// @param ptr A pointer to the variable to test
 /// @return `true` if `ptr` points to a variable that is an instance of `Base`
 template <typename Base, typename T>
-bool instanceof(unique_ptr<T>& ptr) {
+bool instanceof(std::unique_ptr<T>& ptr) {
   return dynamic_cast<const Base*>(ptr.get()) != nullptr;
 }
 
@@ -36,7 +34,7 @@ bool instanceof(unique_ptr<T>& ptr) {
 /// @param ptr A pointer to the variable to test
 /// @return `true` if `ptr` points to a variable that is an instance of `Base`
 template <typename Base, typename T>
-bool instanceof(shared_ptr<T>& ptr) {
+bool instanceof(std::shared_ptr<T>& ptr) {
   return instanceof<Base>(ptr.get());
 }
 
@@ -45,12 +43,12 @@ bool instanceof(shared_ptr<T>& ptr) {
 /// @param b The instance of CustomNode.
 /// @return The instance of the derived class `T` from `b`
 template <typename T>
-unique_ptr<T> cast_node(unique_ptr<CustomNode> b) {
+std::unique_ptr<T> cast_node(std::unique_ptr<CustomNode> b) {
   if (auto cast = dynamic_cast<T*>(b.get())) {
     b.release();
-    return unique_ptr<T>(cast);
+    return std::unique_ptr<T>(cast);
   } else {
-    throw string("incorrect cast of CustomNode");
+    throw std::string("incorrect cast of CustomNode");
   }
 }
 
@@ -61,12 +59,12 @@ unique_ptr<T> cast_node(unique_ptr<CustomNode> b) {
 /// @param ptr The instance of Value as a unique pointer.
 /// @return  The instance of the derived class `T` from `ptr` in a unique pointer.
 template <typename T>
-unique_ptr<T> cast_value(unique_ptr<Value> ptr) {
+std::unique_ptr<T> cast_value(std::unique_ptr<Value> ptr) {
   if (auto cast = dynamic_cast<T*>(ptr.get())) {
     ptr.release();
-    return unique_ptr<T>(cast);
+    return std::unique_ptr<T>(cast);
   } else {
-    throw string("incorrect cast of Value");
+    throw std::string("incorrect cast of Value");
   }
 }
 
@@ -75,8 +73,8 @@ unique_ptr<T> cast_value(unique_ptr<Value> ptr) {
 /// @param base The instance of Value in a shared pointer.
 /// @return The cast from Value to `T`
 template <typename T>
-shared_ptr<T> cast_value(shared_ptr<Value>& base) {
-  return dynamic_pointer_cast<T>(base);
+std::shared_ptr<T> cast_value(std::shared_ptr<Value>& base) {
+  return std::dynamic_pointer_cast<T>(base);
 }
 
 /// @brief Casts a shared pointer of a constant instance of Value to a derived class.
@@ -84,11 +82,11 @@ shared_ptr<T> cast_value(shared_ptr<Value>& base) {
 /// @param base The instance of Value in a shared pointer.
 /// @return The cast from Value to `T`
 template <typename T>
-shared_ptr<const T> cast_const_value(shared_ptr<const Value>& base) {
-  if (auto c = dynamic_pointer_cast<const T>(base)) {
+std::shared_ptr<const T> cast_const_value(std::shared_ptr<const Value>& base) {
+  if (auto c = std::dynamic_pointer_cast<const T>(base)) {
     return c;
   } else {
-    throw string("Invalid cast of value");
+    throw std::string("Invalid cast of value");
   }
 }
 
@@ -96,20 +94,20 @@ shared_ptr<const T> cast_const_value(shared_ptr<const Value>& base) {
 /// @param str The string
 /// @param sub_str The substring to remove
 /// @param replacement The replacement of the substring in the original string.
-void replace_substring(string& str, const string& sub_str, const string& replacement);
+void replace_substring(std::string& str, const std::string& sub_str, const std::string& replacement);
 
 /// @brief Removes all occurrences of a pattern from a string.
 /// @param str The string
 /// @param pattern The pattern to remove.
-void remove_substring(string& str, const string& pattern);
+void remove_substring(std::string& str, const std::string& pattern);
 
 /// @brief Removes all occurrences of a single character from a string.
 /// @param str The string
 /// @param character The character to remove
-void remove_character(string& str, const char& character);
+void remove_character(std::string& str, const char& character);
 
 /// @brief Checks if a string contains a particular character.
 /// @param str The main string.
 /// @param substr The character to look for.
 /// @return `true` if character is contained within `str`
-bool string_contains(const string& str, const char substr);
+bool string_contains(const std::string& str, const char substr);

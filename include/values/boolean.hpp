@@ -16,7 +16,7 @@ class BooleanValue: public Value {
     static bool get_default_value();
     
     bool is_truthy() const override;
-    string to_string() const override;
+    std::string to_string() const override;
     BooleanValue* copy() const override;
 
     /// @brief Transforms this value into another type.
@@ -25,5 +25,5 @@ class BooleanValue: public Value {
     /// - Type::INT => if true, then 1, if false then 0
     /// - Type::DOUBLE => if true, then 1.0, if false then 0.0
     /// - Type::STRING => "1" or "0"
-    unique_ptr<Value> cast(Type output_type) const override;
+    std::unique_ptr<Value> cast(Type output_type) const override;
 };

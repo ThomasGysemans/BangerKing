@@ -2,6 +2,5 @@
 
 #include <map>
 #include <string>
-using namespace std;
 
-extern map<string, unique_ptr<const string>> READ_FILES;
+extern std::map<std::string, std::unique_ptr<const std::string>> READ_FILES;

@@ -1,6 +1,7 @@
 #include "../include/types.hpp"
+using namespace std;
 
-std::string get_type_name(const Type& type) {
+string get_type_name(const Type& type) {
   switch (type) {
     case Type::INT: return "int";
     case Type::DOUBLE: return "double";
@@ -12,7 +13,7 @@ std::string get_type_name(const Type& type) {
   }
 }
 
-Type get_type_from_name(const std::string& type) {
+Type get_type_from_name(const string& type) {
   if (type == "int") return Type::INT;
   if (type == "double") return Type::DOUBLE;
   if (type == "string") return Type::STRING;

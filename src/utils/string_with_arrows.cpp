@@ -1,4 +1,5 @@
 #include "../../include/utils/string_with_arrows.hpp"
+using namespace std;
 
 string string_with_arrows(const string& text, const Position& pos_start, const Position& pos_end) {
   string result = "";

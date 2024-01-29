@@ -1,4 +1,5 @@
 #include "../../include/exceptions/illegal_string_error.hpp"
+using namespace std;
 
 IllegalStringError::IllegalStringError(
   const Position& start,

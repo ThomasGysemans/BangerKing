@@ -60,7 +60,7 @@ void test_simple_decimal_number() {
 void test_simple_negative_number() {
   const auto nodes = get_element_nodes_from("-5");
   const auto minus_node = cast_node<MinusNode>(move(nodes->front()));
-  const auto number_node = cast_node<IntegerNode>(minus_node->get_node());
+  const auto number_node = cast_node<IntegerNode>(minus_node->retrieve_node());
   assert(nodes->size() == 1);
   assert(number_node->get_token().getStringValue() == "5");
   
@@ -70,7 +70,7 @@ void test_simple_negative_number() {
 void test_simple_positive_number() {
   const auto nodes = get_element_nodes_from("+670");
   const auto plus_node = cast_node<PlusNode>(move(nodes->front()));
-  const auto number_node = cast_node<IntegerNode>(plus_node->get_node());
+  const auto number_node = cast_node<IntegerNode>(plus_node->retrieve_node());
   assert(nodes->size() == 1);
   assert(number_node->get_token().getStringValue() == "670");
 
@@ -355,7 +355,7 @@ void test_variable_modification() {
   const auto var_modify_node = cast_node<VarModifyNode>(move(nodes->front()));
   assert(var_modify_node->get_var_name() == "a");
 
-  const auto integer = cast_node<IntegerNode>(var_modify_node->get_value_node());
+  const auto integer = cast_node<IntegerNode>(var_modify_node->retrieve_value_node());
   assert(integer->get_token().getStringValue() == "5");
 
   assert(var_modify_node->getStartingPosition().get_idx() == 0);

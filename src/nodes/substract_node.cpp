@@ -1,4 +1,5 @@
 #include "../../include/nodes/substract_node.hpp"
+using namespace std;
 
 SubstractNode::SubstractNode(
   unique_ptr<CustomNode>& a,

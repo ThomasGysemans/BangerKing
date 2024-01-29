@@ -1,4 +1,5 @@
 #include "../../include/exceptions/runtime_error.hpp"
+using namespace std;
 
 RuntimeError::RuntimeError(
   const Position& start,

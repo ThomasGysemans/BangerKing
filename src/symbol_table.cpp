@@ -1,4 +1,5 @@
 #include "../include/symbol_table.hpp"
+using namespace std;
 
 SymbolTable::SymbolTable(shared_ptr<SymbolTable> p): parent(p) {}
 

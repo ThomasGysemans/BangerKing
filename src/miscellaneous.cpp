@@ -1,4 +1,5 @@
 #include "../include/miscellaneous.hpp"
+using namespace std;
 
 void replace_substring(string& str, const string& sub_str, const string& replacement) {
   // "string::size_type" is `size_t` for strings

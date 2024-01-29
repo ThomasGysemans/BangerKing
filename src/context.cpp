@@ -1,5 +1,6 @@
 #include "../include/context.hpp"
 #include "../include/symbol_table.hpp"
+using namespace std;
 
 const string Context::get_display_name() const { return display_name; }
 shared_ptr<const Context> Context::get_parent() const { return parent; }

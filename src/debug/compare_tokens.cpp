@@ -1,4 +1,5 @@
 #include "../../include/debug/compare_tokens.hpp"
+using namespace std;
 
 template<typename T>
 bool list_equals(const list<T>& l1, const list<T>& l2) {

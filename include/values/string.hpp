@@ -6,26 +6,26 @@ class IntegerValue;
 
 class StringValue: public Value {
   public:
-    StringValue(string v);
+    StringValue(std::string v);
     StringValue();
 
     /// @brief Gets the actual C++ value that this class contains.
     /// @return The integer that this value holds.
-    string get_actual_value() const;
+    std::string get_actual_value() const;
 
     /// @brief Gets the default C++ value that this class should give to variables without initial value.
     /// @return The default value for a string (an empty string).
-    static string get_default_value();
+    static std::string get_default_value();
     
     bool is_truthy() const override;
-    string to_string() const override;
+    std::string to_string() const override;
     StringValue* copy() const override;
 
     /// @brief Transforms this value into another type.
     /// Transforming into the same type will produce an error.
     /// These transformations are possible, from the StringValue:
     /// - Type::INT => the length of the string
-    unique_ptr<Value> cast(Type output_type) const override;
+    std::unique_ptr<Value> cast(Type output_type) const override;
 
     // Additions (concatenations)
     // The logic will be the same for any type of value,

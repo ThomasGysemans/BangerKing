@@ -1,4 +1,5 @@
 #include "../../include/nodes/or_node.hpp"
+using namespace std;
 
 OrNode::OrNode(
   unique_ptr<CustomNode>& a,

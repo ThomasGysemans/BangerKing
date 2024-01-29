@@ -1,4 +1,5 @@
 #include "../../include/nodes/double_node.hpp"
+using namespace std;
 
 DoubleNode::DoubleNode(
   const Token& token

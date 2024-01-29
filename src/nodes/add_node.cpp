@@ -1,4 +1,5 @@
 #include "../../include/nodes/add_node.hpp"
+using namespace std;
 
 AddNode::AddNode(
   unique_ptr<CustomNode>& a,

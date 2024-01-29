@@ -19,14 +19,14 @@ class DoubleValue: public Value {
     static double get_default_value();
     
     bool is_truthy() const override;
-    string to_string() const override;
+    std::string to_string() const override;
     DoubleValue* copy() const override;
 
     /// @brief Transforms this value into another type.
     /// Transforming into the same type will produce an error.
     /// These transformations are possible, from the DoubleValue:
     /// - Type::INT => the actual_value but cast into an `int`
-    unique_ptr<Value> cast(Type output_type) const override;
+    std::unique_ptr<Value> cast(Type output_type) const override;
 
     DoubleValue* operator+(const DoubleValue& other) const;
     DoubleValue* operator+(const IntegerValue& other) const;

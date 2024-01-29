@@ -2,24 +2,23 @@
 
 #include "../position.hpp"
 #include "../files.hpp"
-using namespace std;
 
 class CustomError {
   protected:
     const Position pos_start;
     const Position pos_end;
-    const string error_name;
-    const string details;
+    const std::string error_name;
+    const std::string details;
 
   public:
     CustomError(
       const Position& start,
       const Position& end,
-      const string& error,
-      const string& d
+      const std::string& error,
+      const std::string& d
     );
 
-    string get_error_name() const;
-    string get_details() const;
-    string to_string() const;
+    std::string get_error_name() const;
+    std::string get_details() const;
+    std::string to_string() const;
 };

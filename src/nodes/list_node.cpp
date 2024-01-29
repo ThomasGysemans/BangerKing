@@ -1,21 +1,22 @@
 #include "../../include/nodes/list_node.hpp"
+using namespace std;
 
 // Implement the constructor
 ListNode::ListNode(
-  unique_ptr<list<unique_ptr<CustomNode>>> nodes,
+  list_of_nodes_ptr nodes,
   const Position& start,
   const Position& end
 ): CustomNode(start, end), element_nodes(move(nodes)) { }
 
 ListNode::ListNode(
-  unique_ptr<list<unique_ptr<CustomNode>>> nodes
+  list_of_nodes_ptr nodes
 ):
   CustomNode(
     nodes->front()->getStartingPosition(),
     nodes->back()->getEndingPosition()
   ), element_nodes(move(nodes)) {}
 
-unique_ptr<list<unique_ptr<CustomNode>>> ListNode::get_element_nodes() {
+list_of_nodes_ptr ListNode::get_element_nodes() {
   return move(element_nodes);
 }
 

@@ -1,4 +1,5 @@
 #include "../../include/exceptions/type_overflow_error.hpp"
+using namespace std;
 
 TypeOverflowError::TypeOverflowError(
   const Position& start,

@@ -1,4 +1,5 @@
 #include "../../include/utils/double_to_string.hpp"
+using namespace std;
 
 string double_to_string(double value) {
   string str = to_string(value);

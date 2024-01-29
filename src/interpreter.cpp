@@ -5,6 +5,7 @@
 #include "../include/exceptions/runtime_error.hpp"
 #include "../include/exceptions/type_error.hpp"
 #include "../include/exceptions/type_overflow_error.hpp"
+using namespace std;
 
 // Since `shared_ctx` is static,
 // it must be redeclared here so that the compiler knows it exists.
@@ -147,7 +148,7 @@ unique_ptr<RuntimeResult> Interpreter::visit_DoubleNode(unique_ptr<const DoubleN
 
 unique_ptr<RuntimeResult> Interpreter::visit_MinusNode(unique_ptr<MinusNode> node) {
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
-  shared_ptr<const Value> value = res->read(visit(node->get_node()));
+  shared_ptr<const Value> value = res->read(visit(node->retrieve_node()));
   if (res->should_return()) return res;
 
   if (instanceof<IntegerValue>(value)) {
@@ -168,7 +169,7 @@ unique_ptr<RuntimeResult> Interpreter::visit_MinusNode(unique_ptr<MinusNode> nod
 
 unique_ptr<RuntimeResult> Interpreter::visit_PlusNode(unique_ptr<PlusNode> node) {
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
-  shared_ptr<const Value> value = res->read(visit(node->get_node()));
+  shared_ptr<const Value> value = res->read(visit(node->retrieve_node()));
   if (res->should_return()) return res;
 
   if (instanceof<IntegerValue>(value)) {
@@ -450,7 +451,7 @@ unique_ptr<RuntimeResult> Interpreter::visit_VarModifyNode(unique_ptr<VarModifyN
   }
 
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
-  shared_ptr<Value> new_value = res->read(visit(node->get_value_node()));
+  shared_ptr<Value> new_value = res->read(visit(node->retrieve_value_node()));
   if (res->should_return()) return res;
 
   // If the type isn't exactly the same,

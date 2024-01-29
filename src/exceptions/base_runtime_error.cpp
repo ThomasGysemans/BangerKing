@@ -1,8 +1,7 @@
 #include "../../include/files.hpp"
 #include "../../include/exceptions/base_runtime_error.hpp"
 #include "../../include/utils/string_with_arrows.hpp"
-
-#include <iostream>
+using namespace std;
 
 BaseRuntimeError::BaseRuntimeError(
   const Position& start,

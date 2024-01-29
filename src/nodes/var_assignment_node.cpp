@@ -1,5 +1,6 @@
 #include "../../include/nodes/var_assignment_node.hpp"
 #include "../../include/position.hpp"
+using namespace std;
 
 VarAssignmentNode::VarAssignmentNode(
   const string& var_name,

@@ -3,7 +3,6 @@
 #include "../include/exceptions/illegal_string_error.hpp"
 #include "../include/exceptions/illegal_char_error.hpp"
 #include "../include/exceptions/unclosed_string_error.hpp"
-
 using namespace std;
 
 const string NORMAL_DIGITS = "0123456789";

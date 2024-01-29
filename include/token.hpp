@@ -1,10 +1,9 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include "position.hpp"
 #include "miscellaneous.hpp"
-
-using namespace std;
 
 enum TokenType {
   NUMBER, // integer or double
@@ -40,11 +39,11 @@ enum TokenType {
   HASH // #
 };
 
-extern const vector<string> KEYWORDS;
+extern const std::vector<std::string> KEYWORDS;
 
 class Token {
   const TokenType type;
-  const string value;
+  const std::string value;
   const bool allow_concatenation;
   const Position pos_start;
   const Position pos_end;
@@ -52,7 +51,7 @@ class Token {
   public:
     Token(
       const TokenType& t,
-      const string& v,
+      const std::string& v,
       const Position& start,
       const Position* end = nullptr,
       const bool concatenation = false
@@ -62,17 +61,17 @@ class Token {
     /// @param type The type of token (`TokenType.KEYWORD` for example).
     /// @param value The value that has to correspond.
     /// @return `true` if the type & value of a token correspond with `type` and `value`.
-    bool matches(const TokenType& type, const string& value) const;
+    bool matches(const TokenType& type, const std::string& value) const;
 
     /// @brief Tests if this token is a keyword and if it corresponds to the expected value.
     /// @param expected_value The value that the token should have, if it's indeed a keyword.
     /// @return `true` if this token is a keyword and matches the expected value.
-    bool is_keyword(const string& expected_value) const;
+    bool is_keyword(const std::string& expected_value) const;
 
     /// @brief Checks if this token's string value is the same as the given string value.
     /// @param string_value The string value with which to compare this token.
     /// @return `true` if the string value of this token is equal to the given string value.
-    bool is(const string& string_value) const;
+    bool is(const std::string& string_value) const;
 
     /// @brief Gets the type of the token.
     /// @return An instance of the `TokenType` enum
@@ -88,7 +87,7 @@ class Token {
 
     /// @brief Gets the value of the token as a string.
     /// @return A string that represents the value that this token holds.
-    string getStringValue() const;
+    std::string getStringValue() const;
 
     /// @brief Checks if the type of this token matches the given type.
     /// @param type The TokenType to test.

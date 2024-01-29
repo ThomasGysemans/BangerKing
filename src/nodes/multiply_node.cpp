@@ -1,4 +1,5 @@
 #include "../../include/nodes/multiply_node.hpp"
+using namespace std;
 
 MultiplyNode::MultiplyNode(
   unique_ptr<CustomNode>& a,

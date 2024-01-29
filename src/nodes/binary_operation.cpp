@@ -1,4 +1,5 @@
 #include "../../include/nodes/binary_operation.hpp"
+using namespace std;
 
 BinaryOperationNode::BinaryOperationNode(
   unique_ptr<CustomNode> a,

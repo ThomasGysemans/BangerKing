@@ -1,6 +1,4 @@
 #include "../include/token.hpp"
-#include <vector>
-
 using namespace std;
 
 const vector<string> KEYWORDS = {
