@@ -3,6 +3,7 @@
 #include <cmath>
 #include "../include/context.hpp"
 #include "../include/runtime.hpp"
+#include "../include/cli.hpp"
 #include "../include/run.hpp"
 using namespace std;
 
@@ -14,9 +15,12 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  // If there is no input file,
+  // then just start the CLI
+  // instead of returning an error.
   if (argc == 1) {
-    cerr << "Missing input file." << endl;
-    return 1;
+    cli();
+    return 0;
   }
 
   string source_code = "";

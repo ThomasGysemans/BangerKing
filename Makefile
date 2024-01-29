@@ -1,4 +1,4 @@
-.PHONY: cli file execute clean objects perf single_test tests
+.PHONY: file execute clean objects perf single_test tests
 
 EXECUTABLE_DIRECTORY = build
 EXECUTABLE_BASENAME = bangerking
@@ -10,22 +10,12 @@ GPP = g++ -std=${CPP_VERSION} -Wall -Wextra
 source_files = $(shell find src -type f -name '*.cpp')
 
 # This function gets all the source files
-# of the project, but removes "cli.cpp" and "main.cpp"
-# because they both contain a main function,
-# and we don't want that when testing or measuring the performance.
-define filter_main_functions
+# of the project, but removes "main.cpp"
+# because it contains a main function,
+# and we don't want that when testing
+# or measuring the performance.
+define filter_main_function
 	main_file="src/main.cpp"; \
-	cli_file="src/cli.cpp"; \
-	files="$(call source_files)"; \
-	files="$${files//$$main_file/}"; \
-	files="$${files//$$cli_file/}"
-endef
-
-# Gets the source files and removes one file from the list.
-# Useful because the CLI has its own main function,
-# and "main.cpp" too
-define filter_one_main_function
-	main_file="$(1)"; \
 	files="$(call source_files)"; \
 	files="$${files//$$main_file/}"
 endef
@@ -36,23 +26,6 @@ define get_object_files
 	all_objects_files=$$(find "${OBJECTS_OUTPUT_DIR}" -type f -name "*.o")
 endef
 
-# This will compile the project and create
-# an executable that would run the CLI for BangerKing.
-# Note that this target also executes the executable.
-cli:
-	@mkdir -p ${EXECUTABLE_DIRECTORY}
-	@$(call filter_one_main_function, src/main.cpp); \
-	${GPP} $$files -o ${EXECUTABLE_FULL_PATH}
-	@$(MAKE) execute
-
-# Runs the CLI but uses the "-fsanitize=address" option of gpp.
-# It's useful to locate memory issues more easily.
-debug:
-	@mkdir -p ${EXECUTABLE_DIRECTORY}
-	@$(call filter_one_main_function, src/main.cpp); \
-	${GPP} $$files -o ${EXECUTABLE_FULL_PATH} -fsanitize=address
-	@$(MAKE) execute
-
 # Usage:
 # ```
 # make file entrypoint=examples/main.bk
@@ -61,13 +34,12 @@ debug:
 # an executable that will interpret a BangerKing file.
 entrypoint :=
 file:
-	@$(call filter_one_main_function, src/cli.cpp); \
-	${GPP} $$files -o ${EXECUTABLE_FULL_PATH}
+	@${GPP} $(call source_files) -o ${EXECUTABLE_FULL_PATH}
 	@$(MAKE) execute
 
 # This target executes the compiled executable, if there is one.
-# If the project was compiled using `make file`
-# then make sure to call this target like this:
+# And if you want to execute a file,
+# make sure to call this target like this:
 # ```
 # make execute entrypoint=examples/main.bk
 # ```
@@ -89,7 +61,7 @@ objects:
 	@mkdir -p ${OBJECTS_OUTPUT_DIR}
 	@tput_support=0; \
 	if command -v tput >/dev/null 2>&1; then tput_support=1; fi; \
-	$(filter_main_functions); \
+	$(filter_main_function); \
 	echo "Compiling project..."; \
 	if [[ $$tput_support -eq 1 ]] ; then tput sc else echo -ne "\033[s" ; fi ; \
 	for file in $$files ; do \
@@ -143,7 +115,7 @@ single_test:
 	@mkdir -p build_tests
 	@target=./tests/$(test).test.cpp; \
 	echo "Testing $$target"; \
-	$(filter_main_functions); \
+	$(filter_main_function); \
 	g++ $$files "$$target" -o build_tests/compiled_test -std=${CPP_VERSION} -fsanitize=address; \
 	./build_tests/compiled_test; \
 	rm -fr build_tests

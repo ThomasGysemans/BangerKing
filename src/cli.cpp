@@ -1,12 +1,13 @@
 #include <iostream>
 #include <list>
+#include "../include/cli.hpp"
 #include "../include/run.hpp"
 #include "../include/context.hpp"
 #include "../include/values/compositer.hpp"
 #include "../include/runtime.hpp"
 using namespace std;
 
-int main() {
+void cli() {
   cout << "Welcome to Banger King !" << endl;
   cout << "Write your first program below." << endl;
   cout << "Type \\q to quit at any time." << endl;
@@ -36,6 +37,4 @@ int main() {
       // It acts as an automatic garbage collector.
     }
   }
-
-  return 0;
 }
