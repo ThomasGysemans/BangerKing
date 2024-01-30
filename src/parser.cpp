@@ -133,6 +133,13 @@ unique_ptr<CustomNode> Parser::expr() {
           ending_pos
         );
       } else {
+        // There should not be anything after a variable assignment
+        if (has_more_tokens() && !is_newline()) {
+          throw InvalidSyntaxError(
+            getTok()->getStartingPosition(), getTok()->getEndingPosition(),
+            "Unexpected token after variable assignment"
+          );
+        }
         return make_unique<VarAssignmentNode>(
           var_name,
           nullptr,

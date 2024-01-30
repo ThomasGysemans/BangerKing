@@ -1,7 +1,7 @@
 #include <iostream>
 #include <list>
 #include <limits.h>
-#include "helper.hpp"
+#include "doctest.h"
 #include "../include/lexer.hpp"
 #include "../include/token.hpp"
 #include "../include/parser.hpp"
@@ -69,593 +69,365 @@ bool compare_actual_value(const string& code, const N& expected, bool clear_ctx 
   return get_actual_value_from<V, N>(code, clear_ctx) == expected;
 }
 
-void test_empty_input() {
-  const auto values = get_values("\n\n");
-  assert(values.empty());
-
-  print_success_msg("works with empty input", 1);
-}
-
-void test_integer() {
-  assert(compare_actual_value<IntegerValue>("5", 5));
-  assert(compare_actual_value<IntegerValue>("+5", 5));
-  assert(compare_actual_value<IntegerValue>("-5", -5));
-
-  assert(compare_actual_value<IntegerValue>("5+2", 7));
-  assert(compare_actual_value<IntegerValue>("10-5", 5));
-  assert(compare_actual_value<IntegerValue>("2*2", 4));
-  assert(compare_actual_value<IntegerValue>("10**2", 100));
-  assert(compare_actual_value<IntegerValue>("10**2", 100));
-  assert(compare_actual_value<IntegerValue>("10/3", 3));
-  assert(compare_actual_value<IntegerValue>("10%2", 0));
-
-  assert(compare_actual_value<IntegerValue>("5+-2", 3));
-  assert(compare_actual_value<IntegerValue>("-10-5", -15));
-  assert(compare_actual_value<IntegerValue>("-2*2", -4));
-  assert(compare_actual_value<IntegerValue>("-10**2", 100));
-  assert(compare_actual_value<IntegerValue>("-10/3", -3));
-  assert(compare_actual_value<IntegerValue>("-10%2", 0));
-  assert(compare_actual_value<IntegerValue>("10%-3", 1));
-  assert(compare_actual_value<IntegerValue>("-10%-3", -1));
-  assert(compare_actual_value<IntegerValue>("-10%3", -1)); // the first operand defines the sign of the result
-
-  print_success_msg("works with positive and negative integers, and works with operations between integers", 1);
-}
-
-void test_double() {
-  assert(compare_actual_value<DoubleValue>("3.14", 3.14));
-  assert(compare_actual_value<DoubleValue>("+3.14", 3.14));
-  assert(compare_actual_value<DoubleValue>("-3.14", -3.14));
-
-  // // Additions
-  assert(compare_actual_value<DoubleValue>("1+0.2", 1.2));
-  assert(compare_actual_value<DoubleValue>("0.1+1", 1.1));
-  assert((get_actual_value_from<DoubleValue, double>("0.1+0.2")) != 0.3); // when using doubles, 0.1+0.2 != 0.3
-  assert(get_custom_value_from<DoubleValue>("0.1+0.2")->to_string() == "0.3"); // however it should still print the right value
-  assert(compare_actual_value<DoubleValue>("5.0+-1", 4.0));
-  // Substraction
-  assert(compare_actual_value<DoubleValue>("1-0.5", 0.5));
-  assert(compare_actual_value<DoubleValue>("1.5-0.5", 1.0));
-  assert(compare_actual_value<DoubleValue>("0.5-0.5", 0.0));
-  assert(compare_actual_value<DoubleValue>("0.5- -0.5", 1.0)); // a whitespace is needed because '--' is the decrement operator
-  // Multiplications
-  assert(compare_actual_value<DoubleValue>("2.2*2", 4.4));
-  assert(compare_actual_value<DoubleValue>("2*2.5", 5.0));
-  assert(compare_actual_value<DoubleValue>("2.5*0.1", 0.25));
-  assert(compare_actual_value<DoubleValue>("2.5*-0.1", -0.25));
-  // Power
-  assert(compare_actual_value<DoubleValue>("10**2.0", 100.0));
-  assert(compare_actual_value<DoubleValue>("10.0**2", 100.0));
-  assert(compare_actual_value<DoubleValue>("10.0**2.0", 100.0));
-  assert(compare_actual_value<DoubleValue>("10.0**-2.0", 0.01));
-  // Divisions
-  assert(compare_actual_value<DoubleValue>("10/2.0", 5.0));
-  assert(compare_actual_value<DoubleValue>("2.0/2", 1.0));
-  assert(compare_actual_value<DoubleValue>("5.0/2.0", 2.5));
-  assert(compare_actual_value<DoubleValue>("5.0/-2.0", -2.5));
-  // Modulo
-  assert(compare_actual_value<DoubleValue>("10%2.0", 0.0));
-  assert(compare_actual_value<DoubleValue>("2.0%2", 0.0));
-  assert(compare_actual_value<DoubleValue>("5.0%2.0", 1.0));
-  assert(compare_actual_value<DoubleValue>("5.0%-2.0", 1));
-  assert(compare_actual_value<DoubleValue>("-5.0%-2.0", -1));
-  assert(compare_actual_value<DoubleValue>("-5.0%2.0", -1)); // the first operand defines the sign of the result
-
-  print_success_msg("works with positive and negative doubles, and works with operations involving doubles", 1);
-}
-
-void test_addition_of_two_max_integers() {
-  const string half = std::to_string(INT_MAX / 2);
-  assert(compare_actual_value<IntegerValue>(half + " + " + half, (INT_MAX - 1))); // (-1 because INT_MAX is not even, and so is rounded down)
-  print_success_msg("works with addition between two max integers", 1);
-}
-
-void test_mathematical_operation_without_parenthesis() {
-  assert(compare_actual_value<IntegerValue>("5 * 2 -2 / 2", 9));
-  print_success_msg("works with a mathematical operation without parenthesis", 1);
-}
-
-void test_mathematical_operation_with_parenthesis() {
-  assert(compare_actual_value<IntegerValue>("5 * (2 - 2) / 2", 0));
-  print_success_msg("works with a mathematical operation with parenthesis", 1);
-}
-
-void test_mathematical_operation_with_negative_and_double_numbers() {
-  assert(compare_actual_value<DoubleValue>("(-2.5 * 2 / -5.0) * 10 ** 2", 100));
-  print_success_msg("works with a complex mathematical operation with negative numbers and doubles", 1);
-}
-
-void test_variable_assignment_of_an_integer() {
-  assert(compare_actual_value<IntegerValue>("store a as int = 5", 5));
-  assert(common_ctx->get_symbol_table()->exists("a"));
-  assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("a").get()));
-
-  assert(compare_actual_value<IntegerValue>("store b as int", IntegerValue::get_default_value()));
-  assert(common_ctx->get_symbol_table()->exists("b"));
-  assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("b").get()));
-
-  assert(compare_actual_value<IntegerValue>("store c as int = 5.6", 5));
-  assert(common_ctx->get_symbol_table()->exists("c"));
-  assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("c").get()));
-
-  print_success_msg("works with the variable assignment of an integer", 1);
-}
-
-void test_variable_assignment_of_a_double() {
-  assert(compare_actual_value<DoubleValue>("store a as double = 5", 5));
-  assert(common_ctx->get_symbol_table()->exists("a"));
-  assert(instanceof<DoubleValue>(common_ctx->get_symbol_table()->get("a").get()));
-
-  assert(compare_actual_value<DoubleValue>("store b as double = 5.5", 5.5));
-  assert(common_ctx->get_symbol_table()->exists("b"));
-  assert(instanceof<DoubleValue>(common_ctx->get_symbol_table()->get("b").get()));
-
-  assert(compare_actual_value<DoubleValue>("store c as double", DoubleValue::get_default_value()));
-  assert(common_ctx->get_symbol_table()->exists("c"));
-  assert(instanceof<DoubleValue>(common_ctx->get_symbol_table()->get("c").get()));
-
-  print_success_msg("works with the variable assignment of a double", 1);
-}
-
-void test_variable_assignment_with_unknown_type() {
-  common_ctx->get_symbol_table()->clear();
-
-  try {
-    execute("store a as zzz");
-    assert(false);
-  } catch (TypeError e) {
-    assert(!common_ctx->get_symbol_table()->exists("a"));
+DOCTEST_TEST_SUITE("Interpreter") {
+  SCENARIO("empty input") {
+    const auto values = get_values("\n\n");
+    CHECK(values.empty());
   }
 
-  print_success_msg("throws an error if the type of a variable is unknown", 1);
-}
+  SCENARIO("integer") {
+    CHECK(compare_actual_value<IntegerValue>("5", 5));
+    CHECK(compare_actual_value<IntegerValue>("+5", 5));
+    CHECK(compare_actual_value<IntegerValue>("-5", -5));
 
-void test_redefinition_of_existing_variable() {
-  common_ctx->get_symbol_table()->clear();
-  try {
-    execute("store a as int = 4");
-    execute("store a as int = 1");
-    assert(false);
-  } catch (RuntimeError error) {
-    assert(true);
-    print_success_msg("throws an error when declaring multiple times the same variable", 1);
-  } catch (...) {
-    assert(false);
+    CHECK(compare_actual_value<IntegerValue>("5+2", 7));
+    CHECK(compare_actual_value<IntegerValue>("10-5", 5));
+    CHECK(compare_actual_value<IntegerValue>("2*2", 4));
+    CHECK(compare_actual_value<IntegerValue>("10**2", 100));
+    CHECK(compare_actual_value<IntegerValue>("10**2", 100));
+    CHECK(compare_actual_value<IntegerValue>("10/3", 3));
+    CHECK(compare_actual_value<IntegerValue>("10%2", 0));
+
+    CHECK(compare_actual_value<IntegerValue>("5+-2", 3));
+    CHECK(compare_actual_value<IntegerValue>("-10-5", -15));
+    CHECK(compare_actual_value<IntegerValue>("-2*2", -4));
+    CHECK(compare_actual_value<IntegerValue>("-10**2", 100));
+    CHECK(compare_actual_value<IntegerValue>("-10/3", -3));
+    CHECK(compare_actual_value<IntegerValue>("-10%2", 0));
+    CHECK(compare_actual_value<IntegerValue>("10%-3", 1));
+    CHECK(compare_actual_value<IntegerValue>("-10%-3", -1));
+    CHECK(compare_actual_value<IntegerValue>("-10%3", -1)); // the first operand defines the sign of the result
   }
-}
 
-void test_access_to_variable() {
-  try {
+  SCENARIO("double") {
+    CHECK(compare_actual_value<DoubleValue>("3.14", 3.14));
+    CHECK(compare_actual_value<DoubleValue>("+3.14", 3.14));
+    CHECK(compare_actual_value<DoubleValue>("-3.14", -3.14));
+
+    // // Additions
+    CHECK(compare_actual_value<DoubleValue>("1+0.2", 1.2));
+    CHECK(compare_actual_value<DoubleValue>("0.1+1", 1.1));
+    CHECK((get_actual_value_from<DoubleValue, double>("0.1+0.2")) != 0.3); // when using doubles, 0.1+0.2 != 0.3
+    CHECK(get_custom_value_from<DoubleValue>("0.1+0.2")->to_string() == "0.3"); // however it should still print the right value
+    CHECK(compare_actual_value<DoubleValue>("5.0+-1", 4.0));
+    // Substraction
+    CHECK(compare_actual_value<DoubleValue>("1-0.5", 0.5));
+    CHECK(compare_actual_value<DoubleValue>("1.5-0.5", 1.0));
+    CHECK(compare_actual_value<DoubleValue>("0.5-0.5", 0.0));
+    CHECK(compare_actual_value<DoubleValue>("0.5- -0.5", 1.0)); // a whitespace is needed because '--' is the decrement operator
+    // Multiplications
+    CHECK(compare_actual_value<DoubleValue>("2.2*2", 4.4));
+    CHECK(compare_actual_value<DoubleValue>("2*2.5", 5.0));
+    CHECK(compare_actual_value<DoubleValue>("2.5*0.1", 0.25));
+    CHECK(compare_actual_value<DoubleValue>("2.5*-0.1", -0.25));
+    // Power
+    CHECK(compare_actual_value<DoubleValue>("10**2.0", 100.0));
+    CHECK(compare_actual_value<DoubleValue>("10.0**2", 100.0));
+    CHECK(compare_actual_value<DoubleValue>("10.0**2.0", 100.0));
+    CHECK(compare_actual_value<DoubleValue>("10.0**-2.0", 0.01));
+    // Divisions
+    CHECK(compare_actual_value<DoubleValue>("10/2.0", 5.0));
+    CHECK(compare_actual_value<DoubleValue>("2.0/2", 1.0));
+    CHECK(compare_actual_value<DoubleValue>("5.0/2.0", 2.5));
+    CHECK(compare_actual_value<DoubleValue>("5.0/-2.0", -2.5));
+    // Modulo
+    CHECK(compare_actual_value<DoubleValue>("10%2.0", 0.0));
+    CHECK(compare_actual_value<DoubleValue>("2.0%2", 0.0));
+    CHECK(compare_actual_value<DoubleValue>("5.0%2.0", 1.0));
+    CHECK(compare_actual_value<DoubleValue>("5.0%-2.0", 1));
+    CHECK(compare_actual_value<DoubleValue>("-5.0%-2.0", -1));
+    CHECK(compare_actual_value<DoubleValue>("-5.0%2.0", -1)); // the first operand defines the sign of the result
+  }
+
+  SCENARIO("addition of two max integers") {
+    const string half = std::to_string(INT_MAX / 2);
+    CHECK(compare_actual_value<IntegerValue>(half + " + " + half, (INT_MAX - 1))); // (-1 because INT_MAX is not even, and so is rounded down)
+  }
+
+  SCENARIO("mathematical operation without parenthesis") {
+    CHECK(compare_actual_value<IntegerValue>("5 * 2 -2 / 2", 9));
+  }
+
+  SCENARIO("mathematical operation with parenthesis") {
+    CHECK(compare_actual_value<IntegerValue>("5 * (2 - 2) / 2", 0));
+  }
+
+  SCENARIO("mathematical operation with negative and double numbers") {
+    CHECK(compare_actual_value<DoubleValue>("(-2.5 * 2 / -5.0) * 10 ** 2", 100));
+  }
+
+  SCENARIO("variable assignment of an integer") {
+    CHECK(compare_actual_value<IntegerValue>("store a as int = 5", 5));
+    CHECK(common_ctx->get_symbol_table()->exists("a"));
+    CHECK(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("a").get()));
+
+    CHECK(compare_actual_value<IntegerValue>("store b as int", IntegerValue::get_default_value()));
+    CHECK(common_ctx->get_symbol_table()->exists("b"));
+    CHECK(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("b").get()));
+
+    CHECK(compare_actual_value<IntegerValue>("store c as int = 5.6", 5));
+    CHECK(common_ctx->get_symbol_table()->exists("c"));
+    CHECK(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("c").get()));
+  }
+
+  SCENARIO("variable assignment of a double") {
+    CHECK(compare_actual_value<DoubleValue>("store a as double = 5", 5));
+    CHECK(common_ctx->get_symbol_table()->exists("a"));
+    CHECK(instanceof<DoubleValue>(common_ctx->get_symbol_table()->get("a").get()));
+
+    CHECK(compare_actual_value<DoubleValue>("store b as double = 5.5", 5.5));
+    CHECK(common_ctx->get_symbol_table()->exists("b"));
+    CHECK(instanceof<DoubleValue>(common_ctx->get_symbol_table()->get("b").get()));
+
+    CHECK(compare_actual_value<DoubleValue>("store c as double", DoubleValue::get_default_value()));
+    CHECK(common_ctx->get_symbol_table()->exists("c"));
+    CHECK(instanceof<DoubleValue>(common_ctx->get_symbol_table()->get("c").get()));
+  }
+
+  SCENARIO("variable assignment with unknown type") {
     common_ctx->get_symbol_table()->clear();
-    execute("store a as int = 5");
-    assert(compare_actual_value<IntegerValue>("a", 5, false)); // "false" because we don't want to clear the context before the interpretation
-    assert(common_ctx->get_symbol_table()->exists("a"));
-    
-    print_success_msg("works with an access to a variable", 1);
-  } catch (RuntimeError e) {
-    cout << e.to_string() << endl;
-    assert(false);
+    CHECK_THROWS_AS(execute("store a as zzz"), TypeError);
+    CHECK(!common_ctx->get_symbol_table()->exists("a"));
   }
-}
 
-void test_access_to_variable_in_maths_expression() {
-  try {
+  SCENARIO("redefinition of existing variable") {
     common_ctx->get_symbol_table()->clear();
-    execute("store a as int = 5");
-    assert(common_ctx->get_symbol_table()->exists("a"));
+    CHECK_NOTHROW(execute("store a as int = 4"));
+    CHECK_THROWS_AS(execute("store a as int = 1"), RuntimeError);
+  }
+
+  SCENARIO("access to variable") {
+    common_ctx->get_symbol_table()->clear();
+    CHECK_NOTHROW(execute("store a as int = 5"));
+    CHECK(compare_actual_value<IntegerValue>("a", 5, false)); // "false" because we don't want to clear the context before the interpretation
+    CHECK(common_ctx->get_symbol_table()->exists("a"));
+  }
+
+  SCENARIO("access to variable in maths expression") {
+    common_ctx->get_symbol_table()->clear();
+    CHECK_NOTHROW(execute("store a as int = 5"));
+    CHECK(common_ctx->get_symbol_table()->exists("a"));
 
     const auto values = get_values("a+5", false);
     shared_ptr<const Value> front = values.front();
     shared_ptr<const IntegerValue> result = cast_const_value<IntegerValue>(front);
-    assert(result->get_actual_value() == 10);
+    CHECK(result->get_actual_value() == 10);
 
     unique_ptr<IntegerValue> value_from_table = cast_value<IntegerValue>(common_ctx->get_symbol_table()->get("a"));
 
     // "get()" returns a copy form the actual value stored in the symbol table
-    assert(value_from_table.get() != result.get()); 
-    assert(value_from_table->get_actual_value() == 5);
-
-    print_success_msg("works with the access to a variable in maths expression", 1);
-  } catch (RuntimeError e) {
-    cout << e.to_string() << endl;
-    assert(false);
+    CHECK(value_from_table.get() != result.get()); 
+    CHECK(value_from_table->get_actual_value() == 5);
   }
-}
 
-void test_multiline_input() {
-  const auto values = get_values("5+5\n6+7\n");
-  assert(values.size() == 2);
-  shared_ptr<const Value> front = values.front();
-  shared_ptr<const Value> back = values.back();
-  shared_ptr<const IntegerValue> first = cast_const_value<IntegerValue>(front);
-  shared_ptr<const IntegerValue> second = cast_const_value<IntegerValue>(back);
-  assert(first->get_actual_value() == 10);
-  assert(second->get_actual_value() == 13);
+  SCENARIO("multiline input") {
+    const auto values = get_values("5+5\n6+7\n");
+    CHECK(values.size() == 2);
+    shared_ptr<const Value> front = values.front();
+    shared_ptr<const Value> back = values.back();
+    shared_ptr<const IntegerValue> first = cast_const_value<IntegerValue>(front);
+    shared_ptr<const IntegerValue> second = cast_const_value<IntegerValue>(back);
+    CHECK(first->get_actual_value() == 10);
+    CHECK(second->get_actual_value() == 13);
+  }
 
-  print_success_msg("works with multiple lines", 1);
-}
+  SCENARIO("multiline input and variables") {
+    // test using variables
+    const auto values = get_values("store a as int = 5\na\n");
+    CHECK(values.size() == 2);
+    auto front = values.front();
+    auto back = values.back();
+    auto first = cast_const_value<IntegerValue>(front);
+    auto second = cast_const_value<IntegerValue>(back);
+    CHECK(first->get_actual_value() == 5);
+    CHECK(second->get_actual_value() == 5);
+  }
 
-void test_multiline_input_and_variables() {
-  // test using variables
-  const auto values = get_values("store a as int = 5\na\n");
-  assert(values.size() == 2);
-  auto front = values.front();
-  auto back = values.back();
-  auto first = cast_const_value<IntegerValue>(front);
-  auto second = cast_const_value<IntegerValue>(back);
-  assert(first->get_actual_value() == 5);
-  assert(second->get_actual_value() == 5);
-
-  print_success_msg("works with variables on multiple lines", 1);
-}
-
-void test_variable_modification() {
-  try {
+  SCENARIO("variable modification") {
     common_ctx->get_symbol_table()->clear();
-    execute("store a as int = 5");
-    assert(common_ctx->get_symbol_table()->exists("a"));
-    assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("a").get()));
+    CHECK_NOTHROW(execute("store a as int = 5"));
+    CHECK(common_ctx->get_symbol_table()->exists("a"));
+    CHECK(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("a").get()));
 
     const auto values = get_values("a = 6", false);
-    assert(values.size() == 1);
+    CHECK(values.size() == 1);
     shared_ptr<const Value> front = values.front();
-    assert(instanceof<IntegerValue>(front));
+    CHECK(instanceof<IntegerValue>(front));
 
     shared_ptr<const IntegerValue> value = cast_const_value<IntegerValue>(front);
-    assert(value->get_actual_value() == 6);
+    CHECK(value->get_actual_value() == 6);
 
     unique_ptr<IntegerValue> a = cast_value<IntegerValue>(common_ctx->get_symbol_table()->get("a"));
-    assert(value.get() != a.get());
-    assert(a->get_actual_value() == 6);
-
-    print_success_msg("works with variable modification", 1);
-  } catch (RuntimeError e) {
-    cerr << e.to_string() << endl;
-    assert(false);
+    CHECK(value.get() != a.get());
+    CHECK(a->get_actual_value() == 6);
   }
-}
 
-void test_variables_not_sharing_same_memory_address() {
-  try {
+  SCENARIO("variables not sharing same memory address") {
     common_ctx->get_symbol_table()->clear();
-    execute("store a as int = 5");
-    execute("store b as int = 10");
-    execute("a = b"); // since the VarAccessNode of "b" returns a copy of the value stored in the symbol table, &a != &b
+    CHECK_NOTHROW(execute("store a as int = 5"));
+    CHECK_NOTHROW(execute("store b as int = 10"));
+    CHECK_NOTHROW(execute("a = b")); // since the VarAccessNode of "b" returns a copy of the value stored in the symbol table, &a != &b
     auto a = cast_value<IntegerValue>(common_ctx->get_symbol_table()->get("a"));
     auto b = cast_value<IntegerValue>(common_ctx->get_symbol_table()->get("b"));
-    assert(a->get_actual_value() == b->get_actual_value()); // same value
-    assert(a.get() != b.get()); // but not the same memory address
-    
-    print_success_msg("variable cloning works", 1);
-  } catch (RuntimeError e) {
-    cerr << e.to_string() << endl;
-    assert(false);
+    CHECK(a->get_actual_value() == b->get_actual_value()); // same value
+    CHECK(a.get() != b.get()); // but not the same memory address
   }
-}
 
-void test_variables_type_error() {
-  try {
+  SCENARIO("variables type error") {
     common_ctx->get_symbol_table()->clear();
-    execute("store a as double = 'hello'");
-    assert(false);
-  } catch (TypeError e) {
-    assert(true);
-    print_success_msg("throws type error if type isn't castable", 1);
-  }
-}
-
-void test_string() {
-  assert((compare_actual_value<StringValue, string>("\"hello\"", "hello")));
-  assert((compare_actual_value<StringValue, string>("'world'", "world")));
-  assert((compare_actual_value<StringValue, string>("'c\\'est'", "c'est")));
-
-  assert((compare_actual_value<StringValue, string>("'a'+'b'", "ab")));
-  assert((compare_actual_value<StringValue, string>("\"hello\"+'world'", "helloworld")));
-  assert((compare_actual_value<StringValue, string>("\"hello\"+' '", "hello ")));
-  assert((compare_actual_value<StringValue, string>("'hello'+3", "hello3")));
-  assert((compare_actual_value<StringValue, string>("3+'hello'", "3hello")));
-  assert((compare_actual_value<StringValue, string>("'hello'+3.14", "hello3.14")));
-  assert((compare_actual_value<StringValue, string>("'c\\'est'+' \\'ouf\\''", "c'est 'ouf'")));
-
-  assert((compare_actual_value<StringValue, string>("'hello'*2", "hellohello")));
-  assert((compare_actual_value<StringValue, string>("2*'hello'", "hellohello")));
-  assert((compare_actual_value<StringValue, string>("\"hello\"*2", "hellohello")));
-  assert((get_actual_value_from<StringValue, string>("\"hello\"*0")).empty());
-  assert((compare_actual_value<StringValue, string>("'c\\'est'*2", "c'estc'est")));
-
-  assert((compare_actual_value<StringValue, string>("store a as string", StringValue::get_default_value())));
-  assert(common_ctx->get_symbol_table()->exists("a"));
-  auto a = cast_value<StringValue>(common_ctx->get_symbol_table()->get("a"));
-  assert(a->get_actual_value() == StringValue::get_default_value());
-
-  try {
-    execute("+'hello'"); // invalid operation (a "positive string" isn't possible)
-    assert(false);
-  } catch (RuntimeError e) {
-    assert(true); // we want the program to throw an error
+    CHECK_THROWS_AS(execute("store a as double = 'hello'"), TypeError);
   }
 
-  try {
-    execute("\"hello\"*-1"); // invalid operation
-    assert(false);
-  } catch (RuntimeError e) {
-    assert(true); // we want the program to throw an error
+  SCENARIO("string") {
+    CHECK((compare_actual_value<StringValue, string>("\"hello\"", "hello")));
+    CHECK((compare_actual_value<StringValue, string>("'world'", "world")));
+    CHECK((compare_actual_value<StringValue, string>("'c\\'est'", "c'est")));
+
+    CHECK((compare_actual_value<StringValue, string>("'a'+'b'", "ab")));
+    CHECK((compare_actual_value<StringValue, string>("\"hello\"+'world'", "helloworld")));
+    CHECK((compare_actual_value<StringValue, string>("\"hello\"+' '", "hello ")));
+    CHECK((compare_actual_value<StringValue, string>("'hello'+3", "hello3")));
+    CHECK((compare_actual_value<StringValue, string>("3+'hello'", "3hello")));
+    CHECK((compare_actual_value<StringValue, string>("'hello'+3.14", "hello3.14")));
+    CHECK((compare_actual_value<StringValue, string>("'c\\'est'+' \\'ouf\\''", "c'est 'ouf'")));
+
+    CHECK((compare_actual_value<StringValue, string>("'hello'*2", "hellohello")));
+    CHECK((compare_actual_value<StringValue, string>("2*'hello'", "hellohello")));
+    CHECK((compare_actual_value<StringValue, string>("\"hello\"*2", "hellohello")));
+    CHECK((get_actual_value_from<StringValue, string>("\"hello\"*0")).empty());
+    CHECK((compare_actual_value<StringValue, string>("'c\\'est'*2", "c'estc'est")));
+
+    CHECK((compare_actual_value<StringValue, string>("store a as string", StringValue::get_default_value())));
+    CHECK(common_ctx->get_symbol_table()->exists("a"));
+    auto a = cast_value<StringValue>(common_ctx->get_symbol_table()->get("a"));
+    CHECK(a->get_actual_value() == StringValue::get_default_value());
+
+    CHECK_THROWS_AS(execute("+'hello'"), RuntimeError); // invalid operation (a "positive string" isn't possible)
+    CHECK_THROWS_AS(execute("\"hello\"*-1"), RuntimeError); // invalid operation
+    CHECK_THROWS_AS(execute("\"hello\"*2.45"), RuntimeError); // invalid operation
+    CHECK_THROWS_AS(execute("\"hello\"*-3.14"), RuntimeError); // invalid operation
   }
 
-  try {
-    execute("\"hello\"*2.45"); // invalid operation
-    assert(false);
-  } catch (RuntimeError e) {
-    assert(true); // we want the program to throw an error
+  SCENARIO("unclosed string") {
+    CHECK_THROWS_AS(execute("'not closed simple quote"), UnclosedStringError);
+    CHECK_THROWS_AS(execute("\"not closed simple quote"), UnclosedStringError);
+    CHECK_THROWS_AS(execute("\"not closed simple quote'"), UnclosedStringError);
+    CHECK_THROWS_AS(execute("'not closed simple quote\\'"), UnclosedStringError);
   }
 
-  try {
-    execute("\"hello\"*-3.14"); // invalid operation
-    assert(false);
-  } catch (RuntimeError e) {
-    assert(true); // we want the program to throw an error
+  SCENARIO("multiline string") {
+    CHECK((compare_actual_value<StringValue, string>("\"hello\nworld\"", "hello\nworld")));
+    CHECK((compare_actual_value<StringValue, string>("'hello\nworld'", "hello\nworld")));
   }
 
-  print_success_msg("works with strings", 1);
-}
+  SCENARIO("boolean") {
+    CHECK((compare_actual_value<BooleanValue, bool>("true", true)));
+    CHECK((compare_actual_value<BooleanValue, bool>("false", false)));
+    
+    CHECK((compare_actual_value<IntegerValue, int>("true+true", (true+true))));
+    CHECK((compare_actual_value<IntegerValue, int>("true+false", (true+false))));
+    CHECK((compare_actual_value<IntegerValue, int>("false+true", (false+true))));
+    CHECK((compare_actual_value<IntegerValue, int>("false+false", (false+false))));
 
-void test_unclosed_string() {
-  try {
-    execute("'not closed simple quote");
-    assert(false);
-  } catch (UnclosedStringError e) {
-    assert(true);
+    CHECK((compare_actual_value<IntegerValue, int>("true-false", (true-false))));
+    CHECK((compare_actual_value<IntegerValue, int>("true*2", 2)));
+    CHECK((compare_actual_value<IntegerValue, int>("true/2", 0))); // 1 / 2 = 0.5, but as an integer it's 0
+    CHECK((compare_actual_value<IntegerValue, int>("true%2", 1)));
+    CHECK((compare_actual_value<IntegerValue, int>("true**2", 1)));
   }
 
-  try {
-    execute("\"not closed simple quote");
-    assert(false);
-  } catch (UnclosedStringError e) {
-    assert(true);
+  SCENARIO("division by zero") {
+    // DIVISION 
+
+    CHECK_THROWS_AS(execute("5/0"), ArithmeticError);
+    CHECK_THROWS_AS(execute("5/0.0"), ArithmeticError);
+    CHECK_THROWS_AS(execute("5.0/0"), ArithmeticError);
+    CHECK_THROWS_AS(execute("5.0/0.0"), ArithmeticError);
+
+    // MODULO
+
+    CHECK_THROWS_AS(execute("5%0"), ArithmeticError);
+    CHECK_THROWS_AS(execute("5%0.0"), ArithmeticError);
+    CHECK_THROWS_AS(execute("5.0%0"), ArithmeticError);
+    CHECK_THROWS_AS(execute("5.0%0.0"), ArithmeticError);
   }
 
-  try {
-    execute("\"not closed simple quote'");
-    assert(false);
-  } catch (UnclosedStringError e) {
-    assert(true);
-  }
+  SCENARIO("max integer in variable") {
+    common_ctx->get_symbol_table()->clear();
+    
+    CHECK_NOTHROW(execute("store a as int = " + std::to_string(INT_MAX)));
+    CHECK(common_ctx->get_symbol_table()->exists("a"));
+    CHECK(cast_value<IntegerValue>(common_ctx->get_symbol_table()->get("a"))->get_actual_value() == INT_MAX);
 
-  try {
-    execute("'not closed simple quote\\'");
-    assert(false);
-  } catch (UnclosedStringError e) {
-    assert(true);
-  }
-  
-  print_success_msg("Unclosed string are detected", 1);
-}
-
-void test_multiline_string() {
-  assert((compare_actual_value<StringValue, string>("\"hello\nworld\"", "hello\nworld")));
-  assert((compare_actual_value<StringValue, string>("'hello\nworld'", "hello\nworld")));
-
-  print_success_msg("multiline strings work", 1);
-}
-
-void test_boolean() {
-  assert((compare_actual_value<BooleanValue, bool>("true", true)));
-  assert((compare_actual_value<BooleanValue, bool>("false", false)));
-  
-  assert((compare_actual_value<IntegerValue, int>("true+true", (true+true))));
-  assert((compare_actual_value<IntegerValue, int>("true+false", (true+false))));
-  assert((compare_actual_value<IntegerValue, int>("false+true", (false+true))));
-  assert((compare_actual_value<IntegerValue, int>("false+false", (false+false))));
-
-  assert((compare_actual_value<IntegerValue, int>("true-false", (true-false))));
-  assert((compare_actual_value<IntegerValue, int>("true*2", 2)));
-  assert((compare_actual_value<IntegerValue, int>("true/2", 0))); // 1 / 2 = 0.5, but as an integer it's 0
-  assert((compare_actual_value<IntegerValue, int>("true%2", 1)));
-  assert((compare_actual_value<IntegerValue, int>("true**2", 1)));
-
-  print_success_msg("works with booleans true and false and operations involving booleans", 1);
-}
-
-void test_division_by_zero() {
-  // DIVISION 
-
-  try {
-    execute("5/0");
-    assert(false);
-  } catch (ArithmeticError e) {}
-
-  try {
-    execute("5/0.0");
-    assert(false);
-  } catch (ArithmeticError e) {}
-
-  try {
-    execute("5.0/0");
-    assert(false);
-  } catch (ArithmeticError e) {}
-
-  try {
-    execute("5.0/0.0");
-    assert(false);
-  } catch (ArithmeticError e) {}
-
-  // MODULO
-
-  try {
-    execute("5%0");
-    assert(false);
-  } catch (ArithmeticError e) {}
-
-  try {
-    execute("5%0.0");
-    assert(false);
-  } catch (ArithmeticError e) {}
-
-  try {
-    execute("5.0%0");
-    assert(false);
-  } catch (ArithmeticError e) {}
-
-  try {
-    execute("5.0%0.0");
-    assert(false);
-  } catch (ArithmeticError e) {}
-
-  print_success_msg("division by zero isn't possible", 1);
-}
-
-void test_max_integer_in_variable() {
-  common_ctx->get_symbol_table()->clear();
-  
-  try {
-    execute("store a as int = " + std::to_string(INT_MAX));
-    assert(common_ctx->get_symbol_table()->exists("a"));
-    assert(cast_value<IntegerValue>(common_ctx->get_symbol_table()->get("a"))->get_actual_value() == INT_MAX);
-  } catch (CustomError e) {
-    assert(false);
-  }
-
-  try {
-    execute("store b as double = " + std::to_string(numeric_limits<double>::max()));
-    assert(common_ctx->get_symbol_table()->exists("b"));
-    assert(cast_value<DoubleValue>(common_ctx->get_symbol_table()->get("b"))->get_actual_value() == numeric_limits<double>::max());
-  } catch (CustomError e) {
-    assert(false);
-  }
-  
-  try {
+    CHECK_NOTHROW(execute("store b as double = " + std::to_string(numeric_limits<double>::max())));
+    CHECK(common_ctx->get_symbol_table()->exists("b"));
+    CHECK(cast_value<DoubleValue>(common_ctx->get_symbol_table()->get("b"))->get_actual_value() == numeric_limits<double>::max());
+    
     const string code = "store c as int = " + std::to_string(LONG_MAX);
-    execute(code);
-    assert(false);
-  } catch (TypeOverflowError e) {
-    assert(!common_ctx->get_symbol_table()->exists("c"));
+    CHECK_THROWS_AS(execute(code), TypeOverflowError);
+    CHECK(!common_ctx->get_symbol_table()->exists("c"));
+
+    const string code2 = "store d as double = 179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368555555555.000000";
+    CHECK_THROWS_AS(execute(code2), TypeOverflowError);
+    CHECK(!common_ctx->get_symbol_table()->exists("d"));
   }
 
-  try {
-    const string code = "store d as double = 179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368555555555.000000";
-    execute(code);
-    assert(false);
-  } catch (TypeOverflowError e) {
-    assert(!common_ctx->get_symbol_table()->exists("d"));
+  SCENARIO("constants") {
+    CHECK(compare_actual_value<IntegerValue>("define a as int = 5", 5));
+    CHECK(common_ctx->get_symbol_table()->exists("a"));
+    CHECK(common_ctx->get_symbol_table()->is_constant("a"));
+    CHECK(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("a").get()));
+
+    CHECK(compare_actual_value<IntegerValue>("define b as int = 5.5", 5));
+    CHECK(common_ctx->get_symbol_table()->exists("b"));
+    CHECK(common_ctx->get_symbol_table()->is_constant("b"));
+    CHECK(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("b").get()));
+
+    CHECK_THROWS_AS(execute("b = 8"), TypeError);
   }
 
-  print_success_msg("stores MAX_INT and max double in variables and throws error if exceeding", 1);
-}
+  SCENARIO("simple boolean operators AND OR NOT") {
+    CHECK(compare_actual_value<BooleanValue>("true and true", true));
+    CHECK(compare_actual_value<BooleanValue>("true and false", false));
+    CHECK(compare_actual_value<BooleanValue>("false and true", false));
+    CHECK(compare_actual_value<BooleanValue>("false and false", false));
+    CHECK(compare_actual_value<BooleanValue>("false and (false)", false));
+    CHECK(compare_actual_value<BooleanValue>("(false) and (false)", false));
+    CHECK(compare_actual_value<BooleanValue>("((false) and (false))", false));
 
-void test_constants() {
-  assert(compare_actual_value<IntegerValue>("define a as int = 5", 5));
-  assert(common_ctx->get_symbol_table()->exists("a"));
-  assert(common_ctx->get_symbol_table()->is_constant("a"));
-  assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("a").get()));
+    CHECK(compare_actual_value<BooleanValue>("true or true", true));
+    CHECK(compare_actual_value<BooleanValue>("true or false", true));
+    CHECK(compare_actual_value<BooleanValue>("false or true", true));
+    CHECK(compare_actual_value<BooleanValue>("false or false", false));
 
-  assert(compare_actual_value<IntegerValue>("define b as int = 5.5", 5));
-  assert(common_ctx->get_symbol_table()->exists("b"));
-  assert(common_ctx->get_symbol_table()->is_constant("b"));
-  assert(instanceof<IntegerValue>(common_ctx->get_symbol_table()->get("b").get()));
+    // OR returns the truthy expression
+    // instead of a simple boolean value
+    CHECK(compare_actual_value<IntegerValue>("0 or 5", 5));
 
-  try {
-    execute("b = 8");
-    assert(false);
-  } catch (TypeError e) { }
+    // In the case of an AND operation,
+    // the right operand is ignored
+    // if the left one is false
+    CHECK(compare_actual_value<BooleanValue>("0 and (store a as int = 5)", false));
+    CHECK(!common_ctx->get_symbol_table()->exists("a"));
 
-  print_success_msg("stores constants and it cannot get modified", 1);
-}
-
-void test_simple_boolean_operators_AND_OR_NOT() {
-  assert(compare_actual_value<BooleanValue>("true and true", true));
-  assert(compare_actual_value<BooleanValue>("true and false", false));
-  assert(compare_actual_value<BooleanValue>("false and true", false));
-  assert(compare_actual_value<BooleanValue>("false and false", false));
-  assert(compare_actual_value<BooleanValue>("false and (false)", false));
-  assert(compare_actual_value<BooleanValue>("(false) and (false)", false));
-  assert(compare_actual_value<BooleanValue>("((false) and (false))", false));
-
-  assert(compare_actual_value<BooleanValue>("true or true", true));
-  assert(compare_actual_value<BooleanValue>("true or false", true));
-  assert(compare_actual_value<BooleanValue>("false or true", true));
-  assert(compare_actual_value<BooleanValue>("false or false", false));
-
-  // OR returns the truthy expression
-  // instead of a simple boolean value
-  assert(compare_actual_value<IntegerValue>("0 or 5", 5));
-
-  // In the case of an AND operation,
-  // the right operand is ignored
-  // if the left one is false
-  assert(compare_actual_value<BooleanValue>("0 and (store a as int = 5)", false));
-  assert(!common_ctx->get_symbol_table()->exists("a"));
-
-  assert(compare_actual_value<BooleanValue>("not true", false));
-  assert(compare_actual_value<BooleanValue>("not false", true));
-  assert(compare_actual_value<BooleanValue>("! true", false));
-  assert(compare_actual_value<BooleanValue>("! false", true));
-  assert(compare_actual_value<BooleanValue>("!true", false));
-  assert(compare_actual_value<BooleanValue>("!false", true));
-  assert(compare_actual_value<BooleanValue>("!(true)", false));
-  assert(compare_actual_value<BooleanValue>("!(false)", true));
-  assert(compare_actual_value<BooleanValue>("!!(false)", false));
-
-  print_success_msg("works with simple boolean operators (and, or, not)", 1);
-}
-
-void test_or_node_with_variable_assignments() {
-  // In this code,
-  // we assign a copy of the variable "b"
-  // to the variable "a", created after "b",
-  // but "c" should not get created, because "b" is truthy.
-  // The return value should be 2.
-  const string code = "store a as int = (store b as int = 2) or (store c as int = 3)";
-  assert(compare_actual_value<IntegerValue>(code, 2));
-
-  print_success_msg("works with variable assignments in OR node", 1);
-}
-
-int main() {
-  print_title("Interpreter tests...");
-
-  try {
-    test_empty_input();
-    test_integer();
-    test_double();
-    test_addition_of_two_max_integers();
-    test_mathematical_operation_without_parenthesis();
-    test_mathematical_operation_with_parenthesis();
-    test_mathematical_operation_with_negative_and_double_numbers();
-    test_variable_assignment_of_an_integer();
-    test_variable_assignment_of_a_double();
-    test_variable_assignment_with_unknown_type();
-    test_redefinition_of_existing_variable();
-    test_access_to_variable();
-    test_access_to_variable_in_maths_expression();
-    test_multiline_input();
-    test_multiline_input_and_variables();
-    test_variable_modification();
-    test_variables_not_sharing_same_memory_address();
-    test_variables_type_error();
-    test_string();
-    test_unclosed_string();
-    test_multiline_string();
-    test_boolean();
-    test_division_by_zero();
-    test_max_integer_in_variable();
-    test_constants();
-    test_simple_boolean_operators_AND_OR_NOT();
-    test_or_node_with_variable_assignments();
-
-    print_success_msg("All \"Interpreter\" tests successfully passed");
-  } catch (TypeError e) {
-    cerr << "ABORT. A type error was caught during interpretation:" << endl;
-    cerr << e.to_string() << endl;
-  } catch (RuntimeError e) {
-    cerr << "ABORT. A runtime error was caught during one of the tests: " << endl;
-    cerr << e.to_string() << endl;
-  } catch (InvalidSyntaxError e) {
-    cerr << "ABORT. A lexer/parser error was caught during one of the tests: " << endl;
-    cerr << e.to_string() << endl;
-  } catch (string cast_error) {
-    cerr << "ABORT. The tests crashed due to this error :" << endl;
-    cerr << cast_error << endl;
+    CHECK(compare_actual_value<BooleanValue>("not true", false));
+    CHECK(compare_actual_value<BooleanValue>("not false", true));
+    CHECK(compare_actual_value<BooleanValue>("! true", false));
+    CHECK(compare_actual_value<BooleanValue>("! false", true));
+    CHECK(compare_actual_value<BooleanValue>("!true", false));
+    CHECK(compare_actual_value<BooleanValue>("!false", true));
+    CHECK(compare_actual_value<BooleanValue>("!(true)", false));
+    CHECK(compare_actual_value<BooleanValue>("!(false)", true));
+    CHECK(compare_actual_value<BooleanValue>("!!(false)", false));
   }
 
-  return 0;
+  SCENARIO("or node with variable assignments") {
+    // In this code,
+    // we assign a copy of the variable "b"
+    // to the variable "a", created after "b",
+    // but "c" should not get created, because "b" is truthy.
+    // The return value should be 2.
+    const string code = "store a as int = (store b as int = 2) or (store c as int = 3)";
+    CHECK(compare_actual_value<IntegerValue>(code, 2));
+  }
 }

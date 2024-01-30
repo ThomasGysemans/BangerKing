@@ -1,3 +1,10 @@
+// Because the tests include their own main function (/tests/test_main.cpp),
+// and that in order to run them I compile the whole project along with it,
+// including this main function would create issues (we'd have two main functions).
+// Therefore, when testing, the compilation command defines a preprocessor macro (TESTING_BK).
+// Basically, this file will be ignored when testing.
+#ifndef TESTING_BK
+
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -65,3 +72,5 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
+
+#endif

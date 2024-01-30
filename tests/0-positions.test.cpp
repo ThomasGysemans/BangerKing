@@ -1,81 +1,60 @@
 #include <iostream>
-#include "helper.hpp"
+#include "doctest.h"
 #include "../include/lexer.hpp"
 #include "../include/token.hpp"
 #include "../include/position.hpp"
 using namespace std;
 
-void test_position() {
-  Position pos = Position::getDefaultPos();
-  assert(pos.get_idx() == 0);
-  assert(pos.get_col() == 0);
-  assert(pos.get_ln() == 0);
-  assert(pos.get_filename() == "<hidden>");
+DOCTEST_TEST_SUITE("Positions") {
+  SCENARIO("position") {
+    Position pos = Position::getDefaultPos();
+    CHECK(pos.get_idx() == 0);
+    CHECK(pos.get_col() == 0);
+    CHECK(pos.get_ln() == 0);
+    CHECK(pos.get_filename() == "<hidden>");
+  }
 
-  print_success_msg("default position", 1);
-}
+  SCENARIO("advanced position") {
+    Position pos = Position::getDefaultPos();
+    pos.advance('5');
+    CHECK(pos.get_idx() == 1);
+    CHECK(pos.get_col() == 1);
+    CHECK(pos.get_ln() == 0);
+  }
 
-void test_advanced_position() {
-  Position pos = Position::getDefaultPos();
-  pos.advance('5');
-  assert(pos.get_idx() == 1);
-  assert(pos.get_col() == 1);
-  assert(pos.get_ln() == 0);
+  SCENARIO("multiline position") {
+    Position pos = Position::getDefaultPos();
+    pos.advance('5');
+    pos.advance('\n');
+    CHECK(pos.get_idx() == 2);
+    CHECK(pos.get_col() == 0);
+    CHECK(pos.get_ln() == 1);
+  }
 
-  print_success_msg("advanced position on a single line", 1);
-}
+  SCENARIO("to string") {
+    Position pos = Position::getDefaultPos();
+    pos.advance('6');
+    pos.advance('0');
+    pos.advance('\n');
 
-void test_multiline_position() {
-  Position pos = Position::getDefaultPos();
-  pos.advance('5');
-  pos.advance('\n');
-  assert(pos.get_idx() == 2);
-  assert(pos.get_col() == 0);
-  assert(pos.get_ln() == 1);
-  
-  print_success_msg("advanced position on multiple lines", 1);
-}
+    string str = pos.to_string();
+    CHECK(str == "1:0, idx=3");
+  }
 
-void test_to_string() {
-  Position pos = Position::getDefaultPos();
-  pos.advance('6');
-  pos.advance('0');
-  pos.advance('\n');
+  SCENARIO("equals") {
+    Position pos1 = Position::getDefaultPos();
+    Position pos2 = Position::getDefaultPos();
+    CHECK(pos1.equals(pos1));
+    CHECK(pos1.equals(pos2));
 
-  string str = pos.to_string();
-  assert(str == "1:0, idx=3");
+    pos2.advance('5');
+    CHECK(!pos1.equals(pos2));
 
-  print_success_msg("position as string", 1);
-}
+    pos1.advance('5');
+    CHECK(pos1.equals(pos2));
 
-void test_equals() {
-  Position pos1 = Position::getDefaultPos();
-  Position pos2 = Position::getDefaultPos();
-  assert(pos1.equals(pos1));
-  assert(pos1.equals(pos2));
-
-  pos2.advance('5');
-  assert(!pos1.equals(pos2));
-
-  pos1.advance('5');
-  assert(pos1.equals(pos2));
-
-  pos1.advance('\n');
-  pos2.advance('\n');
-  assert(pos1.equals(pos2));
-
-  print_success_msg("compare two Position", 1);
-}
-
-int main() {
-  print_title("Positions tests...");
-
-  test_position();
-  test_advanced_position();
-  test_multiline_position();
-  test_to_string();
-  test_equals();
-
-  print_success_msg("All \"Positions\" tests successfully passed");
-  return 0;
+    pos1.advance('\n');
+    pos2.advance('\n');
+    CHECK(pos1.equals(pos2));
+  }
 }
