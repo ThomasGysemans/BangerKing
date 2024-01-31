@@ -14,6 +14,15 @@ set(CMAKE_CXX_STANDARD 20)
 # set(CMAKE_CXX_COMPILER "g++")
 # set(CMAKE_OSX_ARCHITECTURES "arm64")  # For Apple Silicon architecture
 
+# I really do not like this solution,
+# but it's the only one I have to make sure
+# that the use of CMake is actually worth it.
+# It's supposed to make compiling more efficient,
+# and it's supposed to make port to other OS more easily.
+# Obviously this gigantic list of files was not written by hand,
+# just execute this command in a terminal:
+# find src -type f -name '*.cpp'
+# and copy the output after "bangerking", below.
 add_library(
   bangerking_src STATIC
   src/miscellaneous.cpp
@@ -77,15 +86,6 @@ add_library(
   src/debug/compare_tokens.cpp
 )
 
-# I really do not like this solution,
-# but it's the only one I have to make sure
-# that the use of CMake is actually worth it.
-# It's supposed to make compiling more efficient,
-# and it's supposed to make port to other OS more easily.
-# Obviously this gigantic list of files was not written by hand,
-# just execute this command in a terminal:
-# find src -type f -name '*.cpp'
-# and copy the output after "bangerking", below.
 add_executable(
   bangerking
   src/main.cpp # the main function specific to this executable
