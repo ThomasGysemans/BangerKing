@@ -11,13 +11,13 @@ using namespace std;
 // it must be redeclared here so that the compiler knows it exists.
 shared_ptr<Context> Interpreter::shared_ctx = nullptr;
 
-void Interpreter::set_shared_ctx(shared_ptr<Context> ctx) {
+void Interpreter::set_shared_ctx(const shared_ptr<Context>& ctx) {
   shared_ctx = ctx;
 }
 
-unique_ptr<RuntimeResult> Interpreter::visit(unique_ptr<CustomNode> node) {
+unique_ptr<RuntimeResult> Interpreter::visit(unique_ptr<CustomNode>&& node) {
   if (shared_ctx == nullptr) {
-    throw string("A context was not provided for interpretation.");
+    throw Exception("Fatal", "A context was not provided for interpretation.");
   }
   if (instanceof<ListNode>(node.get())) {
     return visit_ListNode(cast_node<ListNode>(move(node)));
@@ -59,17 +59,17 @@ unique_ptr<RuntimeResult> Interpreter::visit(unique_ptr<CustomNode> node) {
 *
 */
 
-void Interpreter::populate(Value& value, const Position& pos_start, const Position& pos_end, shared_ptr<const Context> ctx) {
+void Interpreter::populate(Value& value, const Position& pos_start, const Position& pos_end, const shared_ptr<Context>& ctx) {
   value.set_pos(pos_start, pos_end);
   value.set_ctx(ctx);
 }
 
-void Interpreter::populate(Value& value, unique_ptr<const CustomNode> node, shared_ptr<const Context> ctx) {
+void Interpreter::populate(Value& value, unique_ptr<const CustomNode>&& node, const shared_ptr<Context>& ctx) {
   value.set_pos(node->getStartingPosition(), node->getEndingPosition());
   value.set_ctx(ctx);
 }
 
-void Interpreter::illegal_operation(unique_ptr<const CustomNode> node, shared_ptr<const Context> ctx) {
+void Interpreter::illegal_operation(unique_ptr<const CustomNode>&& node, const shared_ptr<Context>& ctx) {
   throw RuntimeError(
     node->getStartingPosition(), node->getEndingPosition(),
     "Illegal operation",
@@ -77,7 +77,7 @@ void Interpreter::illegal_operation(unique_ptr<const CustomNode> node, shared_pt
   );
 }
 
-void Interpreter::type_error(shared_ptr<const Value> value, const Type expected_type, shared_ptr<const Context> ctx) {
+void Interpreter::type_error(const shared_ptr<Value>& value, const Type& expected_type, const shared_ptr<Context>& ctx) {
   throw TypeError(
     *(value->get_pos_start()), *(value->get_pos_end()),
     "Type '" + get_type_name(value->get_type()) + "' is not assignable to type '" + get_type_name(expected_type) + "'",
@@ -85,7 +85,7 @@ void Interpreter::type_error(shared_ptr<const Value> value, const Type expected_
   );
 }
 
-void Interpreter::make_success(unique_ptr<RuntimeResult>& res, unique_ptr<Value> value, unique_ptr<const CustomNode> node) {
+void Interpreter::make_success(const unique_ptr<RuntimeResult>& res, unique_ptr<Value>&& value, unique_ptr<const CustomNode>&& node) {
   populate(*value, move(node), shared_ctx);
   res->success(move(value));
 }
@@ -96,11 +96,11 @@ void Interpreter::make_success(unique_ptr<RuntimeResult>& res, unique_ptr<Value>
 *
 */
 
-unique_ptr<RuntimeResult> Interpreter::visit_ListNode(unique_ptr<ListNode> node) {
+unique_ptr<RuntimeResult> Interpreter::visit_ListNode(unique_ptr<ListNode>&& node) {
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
   list<shared_ptr<const Value>> elements;
   if (node->get_number_of_nodes() > 0) {
-    auto nodes = node->get_element_nodes();
+    const auto nodes = node->get_element_nodes();
     for (auto& element_node : *nodes) {
       shared_ptr<const Value> value = res->read(visit(move(element_node)));
       if (res->should_return()) return res;
@@ -112,12 +112,12 @@ unique_ptr<RuntimeResult> Interpreter::visit_ListNode(unique_ptr<ListNode> node)
   return res;
 }
 
-unique_ptr<RuntimeResult> Interpreter::visit_IntegerNode(unique_ptr<const IntegerNode> node) {
+unique_ptr<RuntimeResult> Interpreter::visit_IntegerNode(unique_ptr<const IntegerNode>&& node) {
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
   int actual_integer;
   try {
     actual_integer = stoi(node->get_token().getStringValue());
-  } catch (std::out_of_range e) {
+  } catch (std::out_of_range&) {
     throw TypeOverflowError(
       node->getStartingPosition(), node->getEndingPosition(),
       "Cannot store such a big integer",
@@ -129,12 +129,12 @@ unique_ptr<RuntimeResult> Interpreter::visit_IntegerNode(unique_ptr<const Intege
   return res;
 }
 
-unique_ptr<RuntimeResult> Interpreter::visit_DoubleNode(unique_ptr<const DoubleNode> node) {
+unique_ptr<RuntimeResult> Interpreter::visit_DoubleNode(unique_ptr<const DoubleNode>&& node) {
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
   double actual_double;
   try {
     actual_double = stod(node->get_token().getStringValue());
-  } catch (std::out_of_range e) {
+  } catch (std::out_of_range&) {
     throw TypeOverflowError(
       node->getStartingPosition(), node->getEndingPosition(),
       "Cannot store such a big double",
@@ -146,17 +146,19 @@ unique_ptr<RuntimeResult> Interpreter::visit_DoubleNode(unique_ptr<const DoubleN
   return res;
 }
 
-unique_ptr<RuntimeResult> Interpreter::visit_MinusNode(unique_ptr<MinusNode> node) {
+unique_ptr<RuntimeResult> Interpreter::visit_MinusNode(unique_ptr<MinusNode>&& node) {
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
   shared_ptr<const Value> value = res->read(visit(node->retrieve_node()));
   if (res->should_return()) return res;
 
   if (instanceof<IntegerValue>(value)) {
-    shared_ptr<const IntegerValue> integer = cast_const_value<IntegerValue>(value);
+    const shared_ptr<const IntegerValue> integer = cast_const_value<IntegerValue>(value);
     unique_ptr<IntegerValue> negative_integer = make_unique<IntegerValue>(-1 * integer->get_actual_value());
     make_success(res, move(negative_integer), move(node));
     return res;
-  } else if (instanceof<DoubleValue>(value.get())) {
+  }
+
+  if (instanceof<DoubleValue>(value.get())) {
     shared_ptr<const DoubleValue> d = cast_const_value<DoubleValue>(value);
     unique_ptr<DoubleValue> negative_double = make_unique<DoubleValue>(-1 * d->get_actual_value());
     make_success(res, move(negative_double), move(node));
@@ -167,7 +169,7 @@ unique_ptr<RuntimeResult> Interpreter::visit_MinusNode(unique_ptr<MinusNode> nod
   return nullptr;
 }
 
-unique_ptr<RuntimeResult> Interpreter::visit_PlusNode(unique_ptr<PlusNode> node) {
+unique_ptr<RuntimeResult> Interpreter::visit_PlusNode(unique_ptr<PlusNode>&& node) {
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
   shared_ptr<const Value> value = res->read(visit(node->retrieve_node()));
   if (res->should_return()) return res;
@@ -202,12 +204,12 @@ unique_ptr<Value> Interpreter::interpret_addition(shared_ptr<const Value> left, 
   // Since concatenation is possible with any type of value,
   // it must be treated differently than the other types of additions.
   if (instanceof<StringValue>(left)) {
-    shared_ptr<const StringValue> a = cast_const_value<StringValue>(left);
+    const shared_ptr<const StringValue> a = cast_const_value<StringValue>(left);
     unique_ptr<StringValue> concatenation = unique_ptr<StringValue>(*a + *right);
     populate(*concatenation, move(node), shared_ctx);
     return concatenation;
   } else if (instanceof<StringValue>(right)) {
-    shared_ptr<const StringValue> b = cast_const_value<StringValue>(right);
+    const shared_ptr<const StringValue> b = cast_const_value<StringValue>(right);
     unique_ptr<StringValue> concatenation = unique_ptr<StringValue>(StringValue::make_concatenation_rtl(left.get(), b.get()));
     populate(*concatenation, move(node), shared_ctx);
     return concatenation;
@@ -296,7 +298,7 @@ unique_ptr<Value> Interpreter::interpret_modulo(shared_ptr<const Value> left, sh
   return nullptr;
 }
 
-unique_ptr<RuntimeResult> Interpreter::visit_BinaryOperationNode(unique_ptr<BinaryOperationNode> node) {
+unique_ptr<RuntimeResult> Interpreter::visit_BinaryOperationNode(unique_ptr<BinaryOperationNode>&& node) {
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
   shared_ptr<const Value> left = res->read(visit(node->retrieve_a()));
   if (res->should_return()) return res;
@@ -320,7 +322,7 @@ unique_ptr<RuntimeResult> Interpreter::visit_BinaryOperationNode(unique_ptr<Bina
   return res;
 }
 
-unique_ptr<RuntimeResult> Interpreter::visit_VarAssignmentNode(unique_ptr<VarAssignmentNode> node) {
+unique_ptr<RuntimeResult> Interpreter::visit_VarAssignmentNode(unique_ptr<VarAssignmentNode>&& node) {
   const string& variable_name = node->get_var_name();
   if (shared_ctx->get_symbol_table()->exists(variable_name)) {
     throw RuntimeError(
@@ -331,7 +333,7 @@ unique_ptr<RuntimeResult> Interpreter::visit_VarAssignmentNode(unique_ptr<VarAss
   }
 
   // TODO: this will need to change when custom types will be possible
-  Type node_var_type = get_type_from_name(node->get_type_name());
+  const Type node_var_type = get_type_from_name(node->get_type_name());
   if (node_var_type == Type::ERROR_TYPE) {
     throw TypeError(
       node->getStartingPosition(), node->getEndingPosition(),
@@ -341,7 +343,7 @@ unique_ptr<RuntimeResult> Interpreter::visit_VarAssignmentNode(unique_ptr<VarAss
   }
 
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
-  bool has_initial_value = node->has_value(); // because "retrieve_value_node()" will change the result of this method
+  const bool has_initial_value = node->has_value(); // because "retrieve_value_node()" will change the result of this method
   shared_ptr<Value> initial_value = has_initial_value ? res->read(visit(node->retrieve_value_node())) : nullptr;
   if (res->should_return()) return res;
 
@@ -362,7 +364,7 @@ unique_ptr<RuntimeResult> Interpreter::visit_VarAssignmentNode(unique_ptr<VarAss
     }
   } else {
     if (node_var_type != initial_value->get_type()) {
-      shared_ptr<Value> cast_value = initial_value->cast(node_var_type);
+      const shared_ptr<Value> cast_value = initial_value->cast(node_var_type);
       if (cast_value == nullptr) {
         type_error(
           initial_value,
@@ -381,7 +383,7 @@ unique_ptr<RuntimeResult> Interpreter::visit_VarAssignmentNode(unique_ptr<VarAss
   return res;
 }
 
-unique_ptr<RuntimeResult> Interpreter::visit_DefineConstantNode(unique_ptr<DefineConstantNode> node) {
+unique_ptr<RuntimeResult> Interpreter::visit_DefineConstantNode(unique_ptr<DefineConstantNode>&& node) {
   // TODO: a constant cannot be created in a nested context
 
   const string& variable_name = node->get_var_name();
@@ -416,7 +418,7 @@ unique_ptr<RuntimeResult> Interpreter::visit_DefineConstantNode(unique_ptr<Defin
   return res;
 }
 
-unique_ptr<RuntimeResult> Interpreter::visit_VarAccessNode(unique_ptr<VarAccessNode> node) {
+unique_ptr<RuntimeResult> Interpreter::visit_VarAccessNode(unique_ptr<VarAccessNode>&& node) {
   const string& variable_name = node->get_var_name();
   if (!shared_ctx->get_symbol_table()->exists_globally(variable_name)) {
     throw RuntimeError(
@@ -432,7 +434,7 @@ unique_ptr<RuntimeResult> Interpreter::visit_VarAccessNode(unique_ptr<VarAccessN
   return res;
 }
 
-unique_ptr<RuntimeResult> Interpreter::visit_VarModifyNode(unique_ptr<VarModifyNode> node) {
+unique_ptr<RuntimeResult> Interpreter::visit_VarModifyNode(unique_ptr<VarModifyNode>&& node) {
   const string& variable_name = node->get_var_name();
   if (!shared_ctx->get_symbol_table()->exists_globally(variable_name)) {
     throw RuntimeError(
@@ -458,9 +460,9 @@ unique_ptr<RuntimeResult> Interpreter::visit_VarModifyNode(unique_ptr<VarModifyN
   // then try to cast the given value
   // so as to match the one of the variable.
   // If it doesn't work, throw a TypeError.
-  unique_ptr<Value> existing_value = shared_ctx->get_symbol_table()->get(variable_name);
+  const unique_ptr<Value> existing_value = shared_ctx->get_symbol_table()->get(variable_name);
   if (new_value->get_type() != existing_value->get_type()) {
-    shared_ptr<Value> cast_value = new_value->cast(existing_value->get_type());
+    const shared_ptr<Value> cast_value = new_value->cast(existing_value->get_type());
     if (cast_value == nullptr) {
       type_error(
         new_value,
@@ -479,14 +481,14 @@ unique_ptr<RuntimeResult> Interpreter::visit_VarModifyNode(unique_ptr<VarModifyN
   return res;
 }
 
-unique_ptr<RuntimeResult> Interpreter::visit_StringNode(unique_ptr<const StringNode> node) {
+unique_ptr<RuntimeResult> Interpreter::visit_StringNode(unique_ptr<const StringNode>&& node) {
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
   unique_ptr<StringValue> str = make_unique<StringValue>(node->getValue());
   make_success(res, move(str), move(node));
   return res;
 }
 
-unique_ptr<RuntimeResult> Interpreter::visit_BooleanNode(unique_ptr<const BooleanNode> node) {
+unique_ptr<RuntimeResult> Interpreter::visit_BooleanNode(unique_ptr<const BooleanNode>&& node) {
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
   unique_ptr<BooleanValue> str = make_unique<BooleanValue>(node->is_true());
   make_success(res, move(str), move(node));
@@ -500,16 +502,16 @@ unique_ptr<RuntimeResult> Interpreter::visit_BooleanNode(unique_ptr<const Boolea
 // store a as int = function_that_might_return_0() or 5
 // ```
 // In this code a = 5 only if the left operand returned a falsy value.
-unique_ptr<RuntimeResult> Interpreter::visit_OrNode(unique_ptr<OrNode> node) {
+unique_ptr<RuntimeResult> Interpreter::visit_OrNode(unique_ptr<OrNode>&& node) {
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
-  shared_ptr<const Value> left = res->read(visit(node->retrieve_a()));
+  const shared_ptr<const Value> left = res->read(visit(node->retrieve_a()));
   if (res->should_return()) return res;
 
   if (left->is_truthy()) {
     unique_ptr<Value> left_copy = unique_ptr<Value>(left->copy());
     make_success(res, move(left_copy), move(node));
   } else {
-    shared_ptr<const Value> right = res->read(visit(node->retrieve_b()));
+    const shared_ptr<const Value> right = res->read(visit(node->retrieve_b()));
     if (res->should_return()) return res;
     unique_ptr<Value> right_copy = unique_ptr<Value>(right->copy());
     make_success(res, move(right_copy), move(node));
@@ -518,27 +520,27 @@ unique_ptr<RuntimeResult> Interpreter::visit_OrNode(unique_ptr<OrNode> node) {
   return res;
 }
 
-unique_ptr<RuntimeResult> Interpreter::visit_AndNode(unique_ptr<AndNode> node) {
+unique_ptr<RuntimeResult> Interpreter::visit_AndNode(unique_ptr<AndNode>&& node) {
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
-  shared_ptr<const Value> left = res->read(visit(node->retrieve_a()));
+  const shared_ptr<const Value> left = res->read(visit(node->retrieve_a()));
   if (res->should_return()) return res;
 
   if (!left->is_truthy()) { // do not interpret the right operand if the left one is false
     unique_ptr<BooleanValue> bool_false = make_unique<BooleanValue>(false);
     make_success(res, move(bool_false), move(node));
   } else {
-    shared_ptr<const Value> left = res->read(visit(node->retrieve_b()));
+    const shared_ptr<const Value> right = res->read(visit(node->retrieve_b()));
     if (res->should_return()) return res;
-    unique_ptr<BooleanValue> answer = make_unique<BooleanValue>(left->is_truthy());
+    unique_ptr<BooleanValue> answer = make_unique<BooleanValue>(right->is_truthy());
     make_success(res, move(answer), move(node));
   }
 
   return res;
 }
 
-unique_ptr<RuntimeResult> Interpreter::visit_NotNode(unique_ptr<NotNode> node) {
+unique_ptr<RuntimeResult> Interpreter::visit_NotNode(unique_ptr<NotNode>&& node) {
   unique_ptr<RuntimeResult> res = make_unique<RuntimeResult>();
-  shared_ptr<const Value> value = res->read(visit(node->retrieve_node()));
+  const shared_ptr<const Value> value = res->read(visit(node->retrieve_node()));
   if (res->should_return()) return res;
   unique_ptr<BooleanValue> return_value = make_unique<BooleanValue>(!value->is_truthy());
   make_success(res, move(return_value), move(node));

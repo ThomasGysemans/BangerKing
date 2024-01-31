@@ -21,14 +21,14 @@ list_of_nodes_ptr ListNode::get_element_nodes() {
 }
 
 int ListNode::get_number_of_nodes() const {
-  return element_nodes->size();
+  return static_cast<int>(element_nodes->size());
 }
 
 string ListNode::to_string() const {
   if (element_nodes->empty()) {
     return "[]";
   }
-  list<unique_ptr<CustomNode>>::const_iterator iter = element_nodes->begin();
+  auto iter = element_nodes->begin();
   string result = "[" + (*iter)->to_string(); // (or (**iter).to_string() it's the same thing
   ++iter;
   while (iter != element_nodes->end()) {

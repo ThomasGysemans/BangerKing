@@ -1,6 +1,5 @@
 #include <iostream>
 #include <list>
-#include <limits.h>
 #include "doctest.h"
 #include "../include/lexer.hpp"
 #include "../include/token.hpp"
@@ -13,7 +12,6 @@
 #include "../include/exceptions/type_error.hpp"
 #include "../include/exceptions/unclosed_string_error.hpp"
 #include "../include/exceptions/type_overflow_error.hpp"
-#include "../include/types.hpp"
 using namespace std;
 
 shared_ptr<Context> common_ctx = make_shared<Context>("<tests>");
@@ -35,11 +33,11 @@ list<shared_ptr<const Value>> get_values(const string& code, bool clear_ctx = tr
   unique_ptr<RuntimeResult> result = Interpreter::visit(move(tree));
   shared_ptr<Value> v = result->get_value();
   if (v == nullptr) {
-    throw string("Segmentation fault happened during interpretation of this code : " + code + " because the result is a `nullptr`.");
+    throw Exception("Fatal", "Segmentation fault happened during interpretation of this code : " + code + " because the result is a `nullptr`.");
   }
   shared_ptr<ListValue> values = cast_value<ListValue>(v);
   if (values == nullptr) {
-    throw string("Invalid cast of interpreter result. It did not return a valid instance of ListValue.");
+    throw Exception("Fatal", "Invalid cast of interpreter result. It did not return a valid instance of ListValue.");
   }
   return values->get_elements();
 }
@@ -279,23 +277,23 @@ DOCTEST_TEST_SUITE("Interpreter") {
   }
 
   SCENARIO("string") {
-    CHECK((compare_actual_value<StringValue, string>("\"hello\"", "hello")));
+    CHECK((compare_actual_value<StringValue, string>(R"("hello")", "hello")));
     CHECK((compare_actual_value<StringValue, string>("'world'", "world")));
-    CHECK((compare_actual_value<StringValue, string>("'c\\'est'", "c'est")));
+    CHECK((compare_actual_value<StringValue, string>(R"('c\'est')", "c'est")));
 
     CHECK((compare_actual_value<StringValue, string>("'a'+'b'", "ab")));
-    CHECK((compare_actual_value<StringValue, string>("\"hello\"+'world'", "helloworld")));
-    CHECK((compare_actual_value<StringValue, string>("\"hello\"+' '", "hello ")));
+    CHECK((compare_actual_value<StringValue, string>(R"("hello"+'world')", "helloworld")));
+    CHECK((compare_actual_value<StringValue, string>(R"("hello"+' ')", "hello ")));
     CHECK((compare_actual_value<StringValue, string>("'hello'+3", "hello3")));
     CHECK((compare_actual_value<StringValue, string>("3+'hello'", "3hello")));
     CHECK((compare_actual_value<StringValue, string>("'hello'+3.14", "hello3.14")));
-    CHECK((compare_actual_value<StringValue, string>("'c\\'est'+' \\'ouf\\''", "c'est 'ouf'")));
+    CHECK((compare_actual_value<StringValue, string>(R"('c\'est'+' \'ouf\'')", "c'est 'ouf'")));
 
     CHECK((compare_actual_value<StringValue, string>("'hello'*2", "hellohello")));
     CHECK((compare_actual_value<StringValue, string>("2*'hello'", "hellohello")));
-    CHECK((compare_actual_value<StringValue, string>("\"hello\"*2", "hellohello")));
-    CHECK((get_actual_value_from<StringValue, string>("\"hello\"*0")).empty());
-    CHECK((compare_actual_value<StringValue, string>("'c\\'est'*2", "c'estc'est")));
+    CHECK((compare_actual_value<StringValue, string>(R"("hello"*2)", "hellohello")));
+    CHECK((get_actual_value_from<StringValue, string>(R"("hello"*0)")).empty());
+    CHECK((compare_actual_value<StringValue, string>(R"('c\'est'*2)", "c'estc'est")));
 
     CHECK((compare_actual_value<StringValue, string>("store a as string", StringValue::get_default_value())));
     CHECK(common_ctx->get_symbol_table()->exists("a"));
@@ -303,15 +301,15 @@ DOCTEST_TEST_SUITE("Interpreter") {
     CHECK(a->get_actual_value() == StringValue::get_default_value());
 
     CHECK_THROWS_AS(execute("+'hello'"), RuntimeError); // invalid operation (a "positive string" isn't possible)
-    CHECK_THROWS_AS(execute("\"hello\"*-1"), RuntimeError); // invalid operation
-    CHECK_THROWS_AS(execute("\"hello\"*2.45"), RuntimeError); // invalid operation
-    CHECK_THROWS_AS(execute("\"hello\"*-3.14"), RuntimeError); // invalid operation
+    CHECK_THROWS_AS(execute(R"("hello"*-1)"), RuntimeError); // invalid operation
+    CHECK_THROWS_AS(execute(R"("hello"*2.45)"), RuntimeError); // invalid operation
+    CHECK_THROWS_AS(execute(R"("hello"*-3.14)"), RuntimeError); // invalid operation
   }
 
   SCENARIO("unclosed string") {
     CHECK_THROWS_AS(execute("'not closed simple quote"), UnclosedStringError);
-    CHECK_THROWS_AS(execute("\"not closed simple quote"), UnclosedStringError);
-    CHECK_THROWS_AS(execute("\"not closed simple quote'"), UnclosedStringError);
+    CHECK_THROWS_AS(execute(R"("not closed simple quote)"), UnclosedStringError);
+    CHECK_THROWS_AS(execute(R"("not closed simple quote')"), UnclosedStringError);
     CHECK_THROWS_AS(execute("'not closed simple quote\\'"), UnclosedStringError);
   }
 

@@ -3,15 +3,15 @@
 #include "custom_node.hpp"
 #include "../token.hpp"
 
-class BooleanNode: public CustomNode {
+class BooleanNode final: public CustomNode {
   const Token token;
 
   public:
-    BooleanNode(const Token token);
+    explicit BooleanNode(const Token& token);
 
-    ~BooleanNode() = default;
+    ~BooleanNode() override = default;
 
-    bool is_true() const;
-    const Token* getToken() const;
-    std::string to_string() const override;
+    [[nodiscard]] bool is_true() const;
+    [[nodiscard]] const Token* getToken() const;
+    [[nodiscard]] std::string to_string() const override;
 };

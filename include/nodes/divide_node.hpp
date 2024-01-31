@@ -2,12 +2,12 @@
 
 #include "binary_operation.hpp"
 
-class DivideNode: public BinaryOperationNode {
+class DivideNode final: public BinaryOperationNode {
   public:
     DivideNode(
       std::unique_ptr<CustomNode>& a,
       std::unique_ptr<CustomNode>& b
     );
 
-    std::string to_string() const override;
+    [[nodiscard]] std::string to_string() const override;
 };

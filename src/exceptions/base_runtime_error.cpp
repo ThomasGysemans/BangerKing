@@ -8,7 +8,7 @@ BaseRuntimeError::BaseRuntimeError(
   const Position& end,
   const string& name,
   const string& d,
-  shared_ptr<const Context> ctx
+  const shared_ptr<Context>& ctx
 ): CustomError(start, end, name, d), context(ctx) {}
 
 string BaseRuntimeError::to_string() const {
@@ -22,7 +22,7 @@ string BaseRuntimeError::to_string() const {
 string BaseRuntimeError::generate_traceback() const {
   shared_ptr<const Position> pos = make_shared<const Position>(pos_start);
   shared_ptr<const Context> ctx = context;
-  string r = "";
+  string r;
 
   while (ctx != nullptr) {
     r = "    File " + pos->get_filename() + ", line " + std::to_string(pos->get_ln() + 1) + ", in " + ctx->get_display_name() + "\n" + r;

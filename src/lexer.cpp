@@ -24,7 +24,7 @@ bool is_keyword(const string& keyword) {
 
 Lexer::Lexer(
   const string* t,
-  const string filename
+  const string& filename
 ): text(t), filename(filename), pos(Position(0, 0, 0, filename)) {
   iter = t->begin();
 }
@@ -35,7 +35,7 @@ void Lexer::advance() {
 }
 
 bool Lexer::hasMoreTokens() const {
-  return iter != (*text).end();
+  return iter != text->end();
 }
 
 list<unique_ptr<const Token>> Lexer::generate_tokens() {
@@ -202,9 +202,9 @@ unique_ptr<Token> Lexer::make_mul_or_power() {
 
 unique_ptr<Token> Lexer::make_string() {
   const Position pos_start = pos.copy();
-  char opening_quote = (*iter);
+  const char opening_quote = (*iter);
   bool allow_concatenation = *iter == DOUBLE_QUOTE;
-  string value = "";
+  string value;
   advance();
 
   bool escaped = false; // `true` if the previous character was a backslash (\)

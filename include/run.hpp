@@ -8,4 +8,4 @@ class Context;
 
 class RuntimeResult;
 
-std::unique_ptr<const RuntimeResult> run(const std::string&, const std::string&, std::shared_ptr<Context>);
+std::unique_ptr<const RuntimeResult> run(const std::string&, const std::string&, const std::shared_ptr<Context>&);

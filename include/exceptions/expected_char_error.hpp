@@ -2,7 +2,7 @@
 
 #include "custom_error.hpp"
 
-class ExpectedCharError: public CustomError {
+class ExpectedCharError final: public CustomError {
   public:
     ExpectedCharError(
       const Position& start,

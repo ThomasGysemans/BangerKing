@@ -2,7 +2,7 @@
 
 #include "custom_error.hpp"
 
-class IllegalStringError: public CustomError {
+class IllegalStringError final: public CustomError {
   public:
     IllegalStringError(
       const Position& start,

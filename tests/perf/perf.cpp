@@ -27,13 +27,13 @@ struct nice_time_t {
   string seconds;
 };
 
-const double treshold = 5.0; // above this amount of milliseconds, I consider that there is a performance issue.
+constexpr double treshold = 5.0; // above this amount of milliseconds, I consider that there is a performance issue.
 const string ANSI_RED = "\e[0;31m";
 const string ANSI_GREEN = "\e[0;32m";
 const string ANSI_RESET = "\e[0m";
 
-double get_milliseconds(chrono::steady_clock::time_point t1, chrono::steady_clock::time_point t2) {
-  duration<double, std::milli> ms_double = t2 - t1;
+double get_milliseconds(const chrono::steady_clock::time_point& t1, const chrono::steady_clock::time_point& t2) {
+  const duration<double, std::milli> ms_double = t2 - t1;
   return ms_double.count();
 }
 
@@ -49,8 +49,8 @@ void show_results(const string& name, const double time, const size_t memory_usa
   // If it took more than `treshold` milliseconds,
   // then show red result
   // otherwise show it in green
-  string str_time = std::to_string(time);
-  string answer = time > treshold ? get_failure(str_time) : get_success(str_time);
+  const string str_time = std::to_string(time);
+  const string answer = time > treshold ? get_failure(str_time) : get_success(str_time);
   cout << name << " individual performance test took " << answer << " ms and " << std::to_string(memory_usage) << " bytes of memory" << endl;
 }
 
@@ -63,9 +63,9 @@ string pad(int number) {
 }
 
 nice_time_t get_localtime() {
-  auto now = std::chrono::system_clock::now();
-  std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
-  std::tm* localTime = std::localtime(&currentTime);
+  const auto now = std::chrono::system_clock::now();
+  const std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+  const std::tm* localTime = std::localtime(&currentTime);
 
   nice_time_t nice_time;
 
@@ -93,7 +93,7 @@ size_t get_current_memory_usage() {
 int main() {
   cout << "Testing individual parts first..." << endl;
   const auto r1 = high_resolution_clock::now();
-  const string source_code = read_entire_file("./tests/perf/source_code.txt");
+  const string source_code = read_entire_file("../tests/perf/source_code.txt");
   const auto r2 = high_resolution_clock::now();
   const double rt = get_milliseconds(r1, r2);
 
@@ -138,14 +138,18 @@ int main() {
   // I know the way I'm writing the file is kinda terrible,
   // but it really doesn't matter.
 
-  nice_time_t today = get_localtime();
-  ofstream log_file("./logs/perflog-" + today.year + "-" + today.month + "-" + today.day + "+" + today.hour + ":" + today.minute + ":" + today.seconds + ".md");
+  //nice_time_t today = get_localtime();
+  const auto& [ year, month, day, hour, minute, seconds ] = get_localtime();
+
+  cout << "Current directory: " << std::filesystem::current_path() << endl;
+
+  ofstream log_file("../logs/perflog-" + year + "-" + month + "-" + day + "+" + hour + ":" + minute + ":" + seconds + ".md");
   
   log_file << "# Performance test of the day" << endl << endl;
-  log_file << "The goal of this measurements is to make sure that the time it takes to interpret the same sample does not change as I add features. Let's hope it never goes up!!" << endl << endl;
-  log_file << "Note that the memory usage is measured for MacOS only, it will not work properly on another OS." << endl << endl;
-  log_file << "Exact time of creation: " << today.day << "/" << today.month << "/" << today.year << " (dd/mm/YYYY) at " << today.hour << ":" << today.minute << ":" << today.seconds << " Europe/Paris" << endl << endl;
-  log_file << "|Feature|Time|Memoru Usage|" << endl;
+  log_file << "The goal of these measurements is to make sure that the time it takes to interpret the same sample does not change as I add features. Let's hope it never goes up!!" << endl << endl;
+  log_file << "Note that the memory usage is measured for macOS only, it will not work properly on another OS." << endl << endl;
+  log_file << "Exact time of creation: " << day << "/" << month << "/" << year << " (dd/mm/YYYY) at " << hour << ":" << minute << ":" << seconds << " Europe/Paris" << endl << endl;
+  log_file << "|Feature|Time|Memory Usage|" << endl;
   log_file << "|-------|----|------------|" << endl;
   log_file << "|Lexer|" << std::to_string(lt) << " ms|" + std::to_string(lm) << " bytes, " << lm / 1024 <<  " kbi|" << endl;
   log_file << "|Parser|" << std::to_string(pt) << " ms|" + std::to_string(pm) << " bytes, " << pm / 1024 <<  " kbi|" << endl;

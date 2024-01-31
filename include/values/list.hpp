@@ -5,22 +5,22 @@
 
 using list_of_values_ptr = std::list<std::shared_ptr<const Value>>;
 
-class ListValue: public Value {
+class ListValue final: public Value {
   list_of_values_ptr elements;
 
   public:
-    ListValue(list_of_values_ptr elts);
+    explicit ListValue(list_of_values_ptr elts);
 
-    ~ListValue() = default;
+    ~ListValue() override = default;
 
-    std::string to_string() const override;
-    bool is_truthy() const override;
-    ListValue* copy() const override;
-    const list_of_values_ptr get_elements() const;
+    [[nodiscard]] std::string to_string() const override;
+    [[nodiscard]] bool is_truthy() const override;
+    [[nodiscard]] ListValue* copy() const override;
+    [[nodiscard]] list_of_values_ptr get_elements() const;
 
     /// @brief Transforms this value into another type.
     /// Transforming into the same type will produce an error.
     /// These transformations are possible, from the ListValue:
     /// - Type::INT => returns an integer with the length of the list.
-    std::unique_ptr<Value> cast(Type output_type) const override;
+    [[nodiscard]] std::unique_ptr<Value> cast(Type output_type) const override;
 };

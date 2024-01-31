@@ -1,7 +1,6 @@
 #include <iostream>
 #include <list>
 #include "doctest.h"
-#include "../include/lexer.hpp"
 #include "../include/parser.hpp"
 #include "../include/types.hpp"
 #include "../include/miscellaneous.hpp"
@@ -60,7 +59,7 @@ DOCTEST_TEST_SUITE("Values") {
 
     // Test the possible casts from StringValue to another type
     unique_ptr<IntegerValue> cast_int = cast_value<IntegerValue>(hello.cast(Type::INT));
-    CHECK(cast_int->get_actual_value() == (int)(hello.get_actual_value().length()));
+    CHECK(cast_int->get_actual_value() == static_cast<int>(hello.get_actual_value().length()));
 
     // Test external concatenation
     const StringValue world("world");

@@ -2,7 +2,7 @@
 
 #include "custom_error.hpp"
 
-class UnclosedStringError: public CustomError {
+class UnclosedStringError final: public CustomError {
   public:
     UnclosedStringError(
       const Position& start,

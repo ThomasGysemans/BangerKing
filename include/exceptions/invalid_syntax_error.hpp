@@ -2,7 +2,7 @@
 
 #include "custom_error.hpp"
 
-class InvalidSyntaxError: public CustomError {
+class InvalidSyntaxError final: public CustomError {
   public:
     InvalidSyntaxError(
       const Position& start,

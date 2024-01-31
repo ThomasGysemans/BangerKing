@@ -1,7 +1,11 @@
 #include "../include/symbol_table.hpp"
 using namespace std;
 
-SymbolTable::SymbolTable(shared_ptr<SymbolTable> p): parent(p) {}
+// without "move(p)" the argument would be copied twice:
+// - copied in the argument
+// - copied when assigned to the class attribute "parent"
+// Here it's copied just once.
+SymbolTable::SymbolTable(shared_ptr<SymbolTable> p): parent(move(p)) {}
 
 bool SymbolTable::exists(const string& var_name) const {
   return symbols.contains(var_name);

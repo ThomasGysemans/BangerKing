@@ -2,14 +2,14 @@
 
 #include <string>
 
-class Exception {
+class Exception: public std::exception {
   protected:
     std::string type;
     std::string message;
 
   public:
-    Exception(const std::string& t, const std::string& mess);
+    Exception(std::string t, std::string mess);
 
-    std::string get_type() const;
-    std::string to_string() const;
+    [[nodiscard]] std::string get_type() const;
+    [[nodiscard]] std::string to_string() const;
 };

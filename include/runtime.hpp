@@ -5,7 +5,7 @@
 #include "context.hpp"
 
 /// @brief Keeps track of a runtime error, or if we should return/break/continue in a node.
-class RuntimeResult {
+class RuntimeResult final {
   // Here, I'm using shared pointers
   // because I want to be able to share the pointers
   // in multiple scopes, while still having them here.
@@ -18,11 +18,11 @@ class RuntimeResult {
   public:
     /// @brief Returns a copy of the pointer to the BaseRuntimeError it might hold.
     /// @return The shared pointer to the error, or `nullptr` if there is none.
-    std::shared_ptr<BaseRuntimeError> get_error() const;
+    [[nodiscard]] std::shared_ptr<BaseRuntimeError> get_error() const;
 
     /// @brief Returns a copy of the pointer to the Value it might hold.
     /// @return The shared pointer to the value, or `nullptr` if there is none.
-    std::shared_ptr<Value> get_value() const;
+    [[nodiscard]] std::shared_ptr<Value> get_value() const;
 
     // The default logic of a destructor is enough
     // (I don't need to manually deallocate the members).
@@ -32,7 +32,7 @@ class RuntimeResult {
     /// The given RuntimeResult (`res`) will get deallocated because it is transferred to this function.
     /// @param res The previous action.
     /// @return The value passed to the original instance of RuntimeResult.
-    std::shared_ptr<Value> read(std::unique_ptr<RuntimeResult> res);
+    std::shared_ptr<Value> read(const std::unique_ptr<RuntimeResult>& res);
 
     /// @brief Registers a successful action during runtime.
     /// The ownership of `v` is transferred to the `value` member of this class.
@@ -48,7 +48,7 @@ class RuntimeResult {
 
     /// @brief Stops the program if there is an error, or if we should return, continue or break.
     /// @return A boolean.
-    bool should_return() const;
+    [[nodiscard]] bool should_return() const;
 
-    std::string to_string() const;
+    [[nodiscard]] std::string to_string() const;
 };

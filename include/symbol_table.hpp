@@ -1,11 +1,9 @@
 #pragma once
 
 #include <map>
-#include <memory>
-#include "miscellaneous.hpp"
 #include "values/value.hpp"
 
-class SymbolTableEntry {
+class SymbolTableEntry final {
   std::unique_ptr<Value> value;
   bool constant;
 
@@ -16,22 +14,22 @@ class SymbolTableEntry {
     );
 
     /// @brief Gets a copy of the value this entry is holding.
-    Value* get_copy() const;
+    [[nodiscard]] Value* get_copy() const;
 
     /// @brief Is the stored value a constant?
-    bool is_constant() const;
+    [[nodiscard]] bool is_constant() const;
 
     /// @brief Releases the current value so as to replace it with the new one.
     /// @param new_value The new value to hold.
     void overwrite_value(std::unique_ptr<Value> new_value);
 };
 
-class SymbolTable: public std::enable_shared_from_this<SymbolTable> {
+class SymbolTable final: public std::enable_shared_from_this<SymbolTable> {
   std::shared_ptr<SymbolTable> parent;
   std::map<std::string, std::unique_ptr<SymbolTableEntry>> symbols;
 
   public:
-    SymbolTable(std::shared_ptr<SymbolTable> p = nullptr);
+    explicit SymbolTable(std::shared_ptr<SymbolTable> p = nullptr);
 
     ~SymbolTable() = default;
     

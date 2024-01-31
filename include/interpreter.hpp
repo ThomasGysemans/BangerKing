@@ -3,15 +3,16 @@
 #include <cmath>
 #include "runtime.hpp"
 #include "context.hpp"
+#include "miscellaneous.hpp"
 #include "nodes/compositer.hpp"
 #include "values/compositer.hpp"
 #include "exceptions/arithmetic_error.hpp"
 
-class Interpreter {
+class Interpreter final {
   static std::shared_ptr<Context> shared_ctx;
   
   public:
-    static void set_shared_ctx(std::shared_ptr<Context> ctx);
+    static void set_shared_ctx(const std::shared_ptr<Context>& ctx);
 
     /// @brief Interprets a node recursively.
     /// The very first node to give to the interpreter should be a ListNode,
@@ -25,7 +26,7 @@ class Interpreter {
     /// is deallocated progressively while the Interpreter's doing its magic.
     /// @param node The node to interpret
     /// @return The result of the intepretation
-    static std::unique_ptr<RuntimeResult> visit(std::unique_ptr<CustomNode> node);
+    static std::unique_ptr<RuntimeResult> visit(std::unique_ptr<CustomNode>&& node);
     
   private:
     // Here the specific visit methods.
@@ -34,25 +35,25 @@ class Interpreter {
     // so as to deallocate the memory used by the Parser progressively.
     // They become the owners because the parameter is a std::unique_ptr.
 
-    static std::unique_ptr<RuntimeResult> visit_IntegerNode(std::unique_ptr<const IntegerNode>);
-    static std::unique_ptr<RuntimeResult> visit_DoubleNode(std::unique_ptr<const DoubleNode>);
-    static std::unique_ptr<RuntimeResult> visit_ListNode(std::unique_ptr<ListNode>);
-    static std::unique_ptr<RuntimeResult> visit_MinusNode(std::unique_ptr<MinusNode>);
-    static std::unique_ptr<RuntimeResult> visit_PlusNode(std::unique_ptr<PlusNode>);
-    static std::unique_ptr<RuntimeResult> visit_VarAssignmentNode(std::unique_ptr<VarAssignmentNode>);
-    static std::unique_ptr<RuntimeResult> visit_DefineConstantNode(std::unique_ptr<DefineConstantNode>);
-    static std::unique_ptr<RuntimeResult> visit_VarAccessNode(std::unique_ptr<VarAccessNode>);
-    static std::unique_ptr<RuntimeResult> visit_VarModifyNode(std::unique_ptr<VarModifyNode>);
-    static std::unique_ptr<RuntimeResult> visit_StringNode(std::unique_ptr<const StringNode>);
-    static std::unique_ptr<RuntimeResult> visit_BooleanNode(std::unique_ptr<const BooleanNode>);
-    static std::unique_ptr<RuntimeResult> visit_OrNode(std::unique_ptr<OrNode>);
-    static std::unique_ptr<RuntimeResult> visit_AndNode(std::unique_ptr<AndNode>);
-    static std::unique_ptr<RuntimeResult> visit_NotNode(std::unique_ptr<NotNode>);
+    static std::unique_ptr<RuntimeResult> visit_IntegerNode(std::unique_ptr<const IntegerNode>&&);
+    static std::unique_ptr<RuntimeResult> visit_DoubleNode(std::unique_ptr<const DoubleNode>&&);
+    static std::unique_ptr<RuntimeResult> visit_ListNode(std::unique_ptr<ListNode>&&);
+    static std::unique_ptr<RuntimeResult> visit_MinusNode(std::unique_ptr<MinusNode>&&);
+    static std::unique_ptr<RuntimeResult> visit_PlusNode(std::unique_ptr<PlusNode>&&);
+    static std::unique_ptr<RuntimeResult> visit_VarAssignmentNode(std::unique_ptr<VarAssignmentNode>&&);
+    static std::unique_ptr<RuntimeResult> visit_DefineConstantNode(std::unique_ptr<DefineConstantNode>&&);
+    static std::unique_ptr<RuntimeResult> visit_VarAccessNode(std::unique_ptr<VarAccessNode>&&);
+    static std::unique_ptr<RuntimeResult> visit_VarModifyNode(std::unique_ptr<VarModifyNode>&&);
+    static std::unique_ptr<RuntimeResult> visit_StringNode(std::unique_ptr<const StringNode>&&);
+    static std::unique_ptr<RuntimeResult> visit_BooleanNode(std::unique_ptr<const BooleanNode>&&);
+    static std::unique_ptr<RuntimeResult> visit_OrNode(std::unique_ptr<OrNode>&&);
+    static std::unique_ptr<RuntimeResult> visit_AndNode(std::unique_ptr<AndNode>&&);
+    static std::unique_ptr<RuntimeResult> visit_NotNode(std::unique_ptr<NotNode>&&);
 
     /// @brief Explores a binary operation node (addition, substraction, division, power, multiplication, modulo, etc.)
     /// @param node A binary operation node.
     /// @return The intepretation of this operation as a RuntimeResult.
-    static std::unique_ptr<RuntimeResult> visit_BinaryOperationNode(std::unique_ptr<BinaryOperationNode> node);
+    static std::unique_ptr<RuntimeResult> visit_BinaryOperationNode(std::unique_ptr<BinaryOperationNode>&& node);
 
     static std::unique_ptr<Value> interpret_addition(std::shared_ptr<const Value>, std::shared_ptr<const Value>, std::unique_ptr<const BinaryOperationNode>);
     static std::unique_ptr<Value> interpret_substraction(std::shared_ptr<const Value>, std::shared_ptr<const Value>, std::unique_ptr<const BinaryOperationNode>);
@@ -68,31 +69,33 @@ class Interpreter {
     /// @param pos_start The starting position to give to the given value.
     /// @param pos_end The ending position to give to the given value.
     /// @param ctx The reference of the context to give to the given value.
-    static void populate(Value& value, const Position& pos_start, const Position& pos_end, std::shared_ptr<const Context> ctx);
+    static void populate(Value& value, const Position& pos_start, const Position& pos_end, const std::shared_ptr<Context>& ctx);
 
     /// @brief Populates a value with its starting and ending position, deduced from the given node, and its context.
+    /// The "node" parameter is marked as "&&", it's because it must take the ownership of the given node,
+    /// meaning that when calling this function, std::move must be used on the second parameter.
     /// @param value The value to populate.
     /// @param node The node that created this value, and whose position must be passed to the given value.
     /// @param ctx The reference of the context to give to the given value.
-    static void populate(Value& value, std::unique_ptr<const CustomNode> node, std::shared_ptr<const Context> ctx);
+    static void populate(Value& value, std::unique_ptr<const CustomNode>&& node, const std::shared_ptr<Context>& ctx);
     
     /// @brief Throws a `RuntimeError` for an illegal operation (like "5 + a_function" for example).
     /// @param node The node that created this issue.
     /// @param ctx The context in which this issue happened.
-    static void illegal_operation(std::unique_ptr<const CustomNode> node, std::shared_ptr<const Context> ctx);
+    static void illegal_operation(std::unique_ptr<const CustomNode>&& node, const std::shared_ptr<Context>& ctx);
 
     /// @brief Throws a `TypeError` for trying to assign an incompatible type to a variable.
     /// @param value The value whose type differs from the `expected_type` (or is not castable into the `expected_type`).
     /// @param expected_type The type of the variable.
     /// @param ctx The context in which the error occured.
-    static void type_error(std::shared_ptr<const Value> value, const Type expected_type, std::shared_ptr<const Context> ctx);
+    static void type_error(const std::shared_ptr<Value>& value, const Type& expected_type, const std::shared_ptr<Context>& ctx);
 
     /// @brief Populates a value with the positions of the given node and the `shared_ctx`,
     /// and registers a successfull action in the provided RuntimeResult instance.
     /// @param res The RuntimeResult created by a visit method.
     /// @param value The value to populate with positions & context.
     /// @param node The node that the Interpreter is visiting and that produced the given value.
-    static void make_success(std::unique_ptr<RuntimeResult>& res, std::unique_ptr<Value> value, std::unique_ptr<const CustomNode> node);
+    static void make_success(const std::unique_ptr<RuntimeResult>& res, std::unique_ptr<Value>&& value, std::unique_ptr<const CustomNode>&& node);
 
     /// @brief Applies a binary mathematical operation between `left` and `right` during the interpretation of `node`.
     /// The operation to apply is given as a lambda function via the `operation` argument.
@@ -103,6 +106,7 @@ class Interpreter {
     /// @param left The left member of the operation.
     /// @param right The right member of the operation.
     /// @param node The binary operation node that the Interpreter is currently interpreting.
+    /// @param operation The lambda actually executing the operation and returning a new Value.
     /// @param is_division_or_modulo If the operation is a division or a modulo and an error occured during the operation, maybe it's a divison-by-zero error (ArithmeticError).
     /// @return An instance of `Value` from the operation.
     template <typename A, typename B, typename Op>
@@ -127,6 +131,7 @@ class Interpreter {
           }
         }
         illegal_operation(move(node), shared_ctx);
+        return nullptr; // will never get reached
       }
       populate(*r, move(node), shared_ctx);
       return std::unique_ptr<Value>(r);

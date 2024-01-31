@@ -3,12 +3,12 @@
 #include <cmath>
 using namespace std;
 
-IntegerValue::IntegerValue(int v): Value(Type::INT) {
+IntegerValue::IntegerValue(int v): Value(INT) {
   actual_value = any(v);
 }
 
-IntegerValue::IntegerValue(): Value(Type::INT) {
-  actual_value = IntegerValue::get_default_value();
+IntegerValue::IntegerValue(): Value(INT) {
+  actual_value = get_default_value();
 }
 
 int IntegerValue::get_default_value() { return 0; }
@@ -21,7 +21,7 @@ IntegerValue* IntegerValue::copy() const { return new IntegerValue(*this); }
 unique_ptr<Value> IntegerValue::cast(Type output_type) const {
   unique_ptr<Value> cast_value;
   switch (output_type) {
-    case Type::DOUBLE: cast_value = make_unique<DoubleValue>((double)get_actual_value()); break;
+    case DOUBLE: cast_value = make_unique<DoubleValue>(static_cast<double>(get_actual_value())); break;
     default:
       return nullptr;
   }

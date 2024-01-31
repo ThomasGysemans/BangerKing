@@ -3,12 +3,13 @@
 #include "../include/miscellaneous.hpp"
 #include "../include/values/compositer.hpp"
 #include "../include/nodes/integer_node.hpp"
+#include "../include/nodes/boolean_node.hpp"
 #include "../include/token.hpp"
 using namespace std;
 
 DOCTEST_TEST_SUITE("miscellaneous") {
   SCENARIO("instanceof") {
-    IntegerValue* integer = new IntegerValue();
+    auto* integer = new IntegerValue();
     CHECK(instanceof<Value>(integer));
     CHECK(instanceof<IntegerValue>(integer));
     CHECK(!instanceof<ListValue>(integer));
@@ -51,7 +52,6 @@ DOCTEST_TEST_SUITE("miscellaneous") {
   }
 
   SCENARIO("string contains") {
-    string pattern = "world";
     string text = "hello world, what a beautiful world it is";
     CHECK(string_contains(text, 'w'));
     CHECK(!string_contains(text, 'z'));
@@ -62,8 +62,27 @@ DOCTEST_TEST_SUITE("miscellaneous") {
     unique_ptr<CustomNode> integer = make_unique<IntegerNode>(token);
     CHECK(integer->to_string() == "IntegerNode(5)");
 
-    unique_ptr<IntegerNode> real_integer = cast_node<IntegerNode>(move(integer));
+    unique_ptr<IntegerNode> real_integer;
+    CHECK_NOTHROW(real_integer = cast_node<IntegerNode>(move(integer)));
     CHECK(real_integer->to_string() == "IntegerNode(5)");
+
+    GIVEN("invalid cast") {
+      Token true_token(TokenType::KEYWORD, "true", Position::getDefaultPos());
+      unique_ptr<CustomNode> boolean = make_unique<BooleanNode>(true_token);
+      CHECK(boolean->to_string() == "(true)");
+
+      CHECK_THROWS_AS(cast_node<IntegerNode>(move(boolean)), Exception);
+    }
+  }
+
+  SCENARIO("dynamic cast returning null") {
+    const Token token(TokenType::NUMBER, "5", Position::getDefaultPos());
+    const auto integer = new IntegerNode(token);
+    BooleanNode* cast;
+    CHECK_NOTHROW(cast = dynamic_cast<BooleanNode*>(integer));
+    CHECK(cast == nullptr);
+
+    delete integer;
   }
 
   SCENARIO("unique cast value") {

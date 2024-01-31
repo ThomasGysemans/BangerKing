@@ -1,8 +1,8 @@
-#include <iostream>
 #include <list>
 #include "doctest.h"
 #include "../include/values/compositer.hpp"
 #include "../include/symbol_table.hpp"
+#include "../include/miscellaneous.hpp"
 using namespace std;
 
 DOCTEST_TEST_SUITE("Symbol Table") {

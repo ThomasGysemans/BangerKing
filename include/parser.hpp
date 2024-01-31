@@ -2,10 +2,9 @@
 
 #include "nodes/compositer.hpp"
 #include "exceptions/invalid_syntax_error.hpp"
-#include "miscellaneous.hpp"
 #include "token.hpp"
 
-class Parser {
+class Parser final {
   /// @brief A pointer to the linked list containing the tokens of the source code.
   const std::list<std::unique_ptr<const Token>>* tokens;
 
@@ -18,21 +17,21 @@ class Parser {
 
   /// @brief Gets the current token that the parser is reading.
   /// @return The pointer to the current token.
-  const std::unique_ptr<const Token>& getTok() const;
+  [[nodiscard]] const std::unique_ptr<const Token>& getTok() const;
 
   /// @brief Checks if the parser still has some tokens to read.
   /// @return `true` if the parsing isn't completed, `false` otherwise.
-  bool has_more_tokens() const;
+  [[nodiscard]] bool has_more_tokens() const;
 
   /// @brief Is the current token of type `TokenType::NEWLINE`
   /// @return `true` if the token that the Parser is currently reading is of type `NEWLINE`.
-  bool is_newline() const;
+  [[nodiscard]] bool is_newline() const;
 
   /// @brief Skips all the newlines until reaching a different token.
   void ignore_newlines();
 
   public:
-    Parser(const std::list<std::unique_ptr<const Token>>& toks);
+    explicit Parser(const std::list<std::unique_ptr<const Token>>& toks);
 
     /// @brief Parses the given list of tokens
     /// @return An instance of `ListNode` that contains all the parsed nodes of the code.

@@ -4,7 +4,6 @@
 #include "../include/lexer.hpp"
 #include "../include/token.hpp"
 #include "../include/miscellaneous.hpp"
-#include "../include/debug/print_tokens.hpp"
 #include "../include/debug/compare_tokens.hpp"
 #include "../include/exceptions/illegal_char_error.hpp"
 using namespace std;
@@ -180,7 +179,7 @@ DOCTEST_TEST_SUITE("Lexer") {
   }
 
   SCENARIO("string") {
-    const auto tokens = list_to_vector(get_tokens_from("\"Hello\" 'yoyo' 'c\\'est' "));
+    const auto tokens = list_to_vector(get_tokens_from(R"("Hello" 'yoyo' 'c\'est' )"));
     CHECK(tokens.size() == 3);
     CHECK(tokens[0]->canConcatenate());
     CHECK(tokens[0]->ofType(TokenType::STR));

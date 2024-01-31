@@ -4,12 +4,12 @@
 #include <cmath>
 using namespace std;
 
-DoubleValue::DoubleValue(double v): Value(Type::DOUBLE) {
+DoubleValue::DoubleValue(double v): Value(DOUBLE) {
   actual_value = any(v);
 }
 
-DoubleValue::DoubleValue(): Value(Type::DOUBLE) {
-  actual_value = DoubleValue::get_default_value();
+DoubleValue::DoubleValue(): Value(DOUBLE) {
+  actual_value = get_default_value();
 }
 
 double DoubleValue::get_default_value() { return 0.0; }
@@ -21,7 +21,7 @@ DoubleValue* DoubleValue::copy() const { return new DoubleValue(*this); }
 unique_ptr<Value> DoubleValue::cast(Type output_type) const {
   unique_ptr<Value> cast_value;
   switch (output_type) {
-    case Type::INT: cast_value = make_unique<IntegerValue>((int)get_actual_value()); break;
+    case INT: cast_value = make_unique<IntegerValue>(static_cast<int>(get_actual_value())); break;
     default:
       return nullptr;
   }

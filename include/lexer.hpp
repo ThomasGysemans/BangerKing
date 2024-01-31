@@ -35,7 +35,7 @@ extern const char SIMPLE_QUOTE;
 /// @brief A simple backslash (\).
 extern const char BACKSLASH;
 
-class Lexer {
+class Lexer final {
   /// @brief The source code.
   const std::string* text;
   
@@ -56,15 +56,15 @@ class Lexer {
 
   /// @brief Did we not reach the end of the source code?
   /// @return `true` if there is still some code to read
-  bool hasMoreTokens() const;
+  [[nodiscard]] bool hasMoreTokens() const;
 
   public:
     /// @brief Creates an instance of lexer.
     /// @param t The source code
     /// @param filename The filename, defaults to <stdin> if the CLI is used.
-    Lexer(
+    explicit Lexer(
       const std::string* t,
-      const std::string filename = "<stdin>"
+      const std::string& filename = "<stdin>"
     );
 
     /// @brief Generates the tokens in a list.

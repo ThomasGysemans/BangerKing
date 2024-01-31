@@ -5,7 +5,7 @@ IntegerNode::IntegerNode(
   const Token& token
 ): CustomNode(token.getStartingPosition(), token.getEndingPosition()), token(token) {}
 
-const Token IntegerNode::get_token() const {
+Token IntegerNode::get_token() const {
   return token;
 }
 

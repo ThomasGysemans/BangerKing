@@ -5,13 +5,11 @@ Position::Position(
   const unsigned int i,
   const unsigned int l,
   const unsigned int c,
-  const string& filename
-): idx(i), ln(l), col(c), fn(filename) {}
-
-Position::~Position() { }
+  string filename
+): idx(i), ln(l), col(c), fn(move(filename)) {}
 
 Position Position::getDefaultPos() {
-  return Position(0, 0, 0, "<hidden>");
+  return {0, 0, 0, "<hidden>"}; // so as to avoid the return type repetition
 }
 
 string Position::get_filename() const { return fn; }
@@ -41,4 +39,5 @@ string Position::to_string() const {
   return std::to_string(ln) + ":" + std::to_string(col) + ", idx=" + std::to_string(idx);
 }
 
-Position Position::copy() const { return Position(*this); }
+// { *this } is the same as Position(*this)
+Position Position::copy() const { return { *this }; }

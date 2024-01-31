@@ -26,6 +26,6 @@ void remove_character(string& str, const char& character) {
   }
 }
 
-bool string_contains(const string& str, const char substr) {
+bool string_contains(const string& str, const char& substr) {
   return str.find(substr) != string::npos;
 }

@@ -5,5 +5,5 @@ TypeError::TypeError(
   const Position& start,
   const Position& end,
   const string& d,
-  shared_ptr<const Context> ctx
+  const shared_ptr<Context>& ctx
 ): BaseRuntimeError(start, end, "Type Error", d, ctx) {}

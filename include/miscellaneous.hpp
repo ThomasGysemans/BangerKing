@@ -1,5 +1,6 @@
 #pragma once
 
+#include "exceptions/exception.hpp"
 #include <string>
 
 // Forward declarations are enough for the few functions using these
@@ -43,12 +44,12 @@ bool instanceof(std::shared_ptr<T>& ptr) {
 /// @param b The instance of CustomNode.
 /// @return The instance of the derived class `T` from `b`
 template <typename T>
-std::unique_ptr<T> cast_node(std::unique_ptr<CustomNode> b) {
+std::unique_ptr<T> cast_node(std::unique_ptr<CustomNode>&& b) {
   if (auto cast = dynamic_cast<T*>(b.get())) {
-    b.release();
+    b.release(); // "b" has to be released, since a copy is made
     return std::unique_ptr<T>(cast);
   } else {
-    throw std::string("incorrect cast of CustomNode");
+    throw Exception("Fatal", "incorrect cast of CustomNode");
   }
 }
 
@@ -59,12 +60,12 @@ std::unique_ptr<T> cast_node(std::unique_ptr<CustomNode> b) {
 /// @param ptr The instance of Value as a unique pointer.
 /// @return  The instance of the derived class `T` from `ptr` in a unique pointer.
 template <typename T>
-std::unique_ptr<T> cast_value(std::unique_ptr<Value> ptr) {
+std::unique_ptr<T> cast_value(std::unique_ptr<Value>&& ptr) {
   if (auto cast = dynamic_cast<T*>(ptr.get())) {
     ptr.release();
     return std::unique_ptr<T>(cast);
   } else {
-    throw std::string("incorrect cast of Value");
+    throw Exception("Fatal", "incorrect cast of Value");
   }
 }
 
@@ -86,7 +87,7 @@ std::shared_ptr<const T> cast_const_value(std::shared_ptr<const Value>& base) {
   if (auto c = std::dynamic_pointer_cast<const T>(base)) {
     return c;
   } else {
-    throw std::string("Invalid cast of value");
+    throw Exception("Fatal", "Invalid cast of value");
   }
 }
 
@@ -110,4 +111,4 @@ void remove_character(std::string& str, const char& character);
 /// @param str The main string.
 /// @param substr The character to look for.
 /// @return `true` if character is contained within `str`
-bool string_contains(const std::string& str, const char substr);
+bool string_contains(const std::string& str, const char& substr);

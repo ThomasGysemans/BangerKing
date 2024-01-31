@@ -3,7 +3,7 @@
 #include "../position.hpp"
 #include "../files.hpp"
 
-class CustomError {
+class CustomError: public std::exception {
   protected:
     const Position pos_start;
     const Position pos_end;
@@ -12,13 +12,13 @@ class CustomError {
 
   public:
     CustomError(
-      const Position& start,
-      const Position& end,
-      const std::string& error,
-      const std::string& d
+      Position start,
+      Position end,
+      std::string error,
+      std::string d
     );
 
-    std::string get_error_name() const;
-    std::string get_details() const;
-    std::string to_string() const;
+    [[nodiscard]] std::string get_error_name() const;
+    [[nodiscard]] std::string get_details() const;
+    [[nodiscard]] virtual std::string to_string() const;
 };

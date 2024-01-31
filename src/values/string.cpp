@@ -2,24 +2,24 @@
 #include "../../include/values/integer.hpp"
 using namespace std;
 
-StringValue::StringValue(string v): Value(Type::STRING) {
+StringValue::StringValue(const string& v): Value(STRING) {
   actual_value = any(v);
 }
 
-StringValue::StringValue(): Value(Type::STRING) {
-  actual_value = StringValue::get_default_value();
+StringValue::StringValue(): Value(STRING) {
+  actual_value = get_default_value();
 }
 
 string StringValue::get_default_value() { return ""; }
 string StringValue::get_actual_value() const { return any_cast<string>(actual_value); }
-bool StringValue::is_truthy() const { return get_actual_value().length() != 0; }
+bool StringValue::is_truthy() const { return !get_actual_value().empty(); }
 string StringValue::to_string() const { return get_actual_value(); }
 StringValue* StringValue::copy() const { return new StringValue(*this); }
 
-unique_ptr<Value> StringValue::cast(Type output_type) const {
+unique_ptr<Value> StringValue::cast(const Type output_type) const {
   unique_ptr<Value> cast_value = nullptr;
   switch (output_type) {
-    case Type::INT: cast_value = make_unique<IntegerValue>(get_actual_value().length()); break;
+    case INT: cast_value = make_unique<IntegerValue>(get_actual_value().length()); break;
     default:
       return nullptr;
   }
@@ -61,7 +61,7 @@ StringValue* StringValue::operator*(const IntegerValue& other) const {
     );
   } else {
     string new_str;
-    new_str.reserve((unsigned int)get_actual_value().length() * other.get_actual_value());
+    new_str.reserve(static_cast<unsigned int>(get_actual_value().length() * other.get_actual_value()));
     for (int i = 0; i < other.get_actual_value(); i++) {
       new_str.append(get_actual_value());
     }

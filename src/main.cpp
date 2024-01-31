@@ -1,3 +1,4 @@
+// ONLY APPLIES WHEN USING MY OWN `Makefile`:
 // Because the tests include their own main function (/tests/test_main.cpp),
 // and that in order to run them I compile the whole project along with it,
 // including this main function would create issues (we'd have two main functions).
@@ -9,9 +10,9 @@
 #include <fstream>
 #include <cmath>
 #include "../include/context.hpp"
-#include "../include/runtime.hpp"
 #include "../include/cli.hpp"
 #include "../include/run.hpp"
+#include "../include/runtime.hpp"
 using namespace std;
 
 // "argc" is the number of arguments passed to the executable.
@@ -30,7 +31,6 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  string source_code = "";
   string filename = argv[1];
   ifstream file(filename);
 
@@ -41,18 +41,18 @@ int main(int argc, char *argv[]) {
   }
 
   file.seekg(0, std::ios::end);
-  streampos file_size = file.tellg(); // in bytes
+  const streampos file_size = file.tellg(); // in bytes
 
   if (file_size == -1) {
     cerr << "Failed to determine the size of the input file." << endl;
     file.close();
     return 1;
-  } else {
-    if (file_size > pow(2, 20)) {
-      cerr << "The input file is too big (1MB maximum)" << endl;
-      file.close();
-      return 1;
-    }
+  }
+
+  if (static_cast<double>(file_size) > pow(2, 20)) {
+    cerr << "The input file is too big (1MB maximum)" << endl;
+    file.close();
+    return 1;
   }
 
   file.seekg(0, std::ios::beg); // replace the cursor at the beginning to begin the process
@@ -64,9 +64,10 @@ int main(int argc, char *argv[]) {
   cout << "Executing this code:" << endl;
   cout << content << endl;
 
-  shared_ptr<Context> global_ctx = make_shared<Context>(filename);
-  
-  run(content, filename, global_ctx);
+  const shared_ptr<Context> global_ctx = make_shared<Context>(filename);
+
+  // will do something with this
+  const unique_ptr<const RuntimeResult> runtime_res = run(content, filename, global_ctx);
 
   file.close();
 

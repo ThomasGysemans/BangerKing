@@ -7,7 +7,7 @@
 using list_of_nodes_ptr = std::unique_ptr<std::list<std::unique_ptr<CustomNode>>>;
 
 /// @brief A list of nodes. It can also contain the whole program, as it is just a list of nodes too.
-class ListNode: public CustomNode {
+class ListNode final: public CustomNode {
   // Note that the CustomNode instances inside of this list
   // cannot be constant, because during interpretation
   // the nodes get progressively deallocated hence
@@ -21,11 +21,11 @@ class ListNode: public CustomNode {
       const Position& end
     );
     
-    ListNode(list_of_nodes_ptr nodes);
+    explicit ListNode(list_of_nodes_ptr nodes);
 
-    ~ListNode() = default;
+    ~ListNode() override = default;
 
     list_of_nodes_ptr get_element_nodes();
-    int get_number_of_nodes() const;
-    std::string to_string() const override;
+    [[nodiscard]] int get_number_of_nodes() const;
+    [[nodiscard]] std::string to_string() const override;
 };

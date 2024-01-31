@@ -2,7 +2,7 @@
 
 #include <string>
 
-class Position {
+class Position final {
   unsigned int idx;
   unsigned int ln;
   unsigned int col;
@@ -15,27 +15,22 @@ class Position {
     /// @return An instance of `Position`.
     static Position getDefaultPos();
 
-    // virtual destructor of Position.
-    // It's necessary for a base class to hold a virtual method
-    // so that `dynamic_cast` can do its magic (used in `instanceof` method).
-    virtual ~Position();
-
-    std::string get_filename() const;
-    unsigned int get_ln() const;
-    unsigned int get_col() const;
-    unsigned int get_idx() const;
+    [[nodiscard]] std::string get_filename() const;
+    [[nodiscard]] unsigned int get_ln() const;
+    [[nodiscard]] unsigned int get_col() const;
+    [[nodiscard]] unsigned int get_idx() const;
 
     Position(
-      const unsigned int i,
-      const unsigned int l,
-      const unsigned int c,
-      const std::string& filename
+      unsigned int i,
+      unsigned int l,
+      unsigned int c,
+      std::string filename
     );
 
     /// @brief Compares two instances of Position.
     /// @param other The instance to compare with.
     /// @return `true` if this instance and the other have the same reference, or they both have the same values.
-    bool equals(const Position& other) const;
+    [[nodiscard]] bool equals(const Position& other) const;
 
     /// @brief Increases the position (`idx`) and (`col`).
     /// Takes the current character as argument and if it's a newline
@@ -45,7 +40,7 @@ class Position {
 
     /// @brief Creates a deep copy of this instance.
     /// @return A deep copy.
-    Position copy() const;
+    [[nodiscard]] Position copy() const;
 
-    std::string to_string() const;
+    [[nodiscard]] std::string to_string() const;
 };

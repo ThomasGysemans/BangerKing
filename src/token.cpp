@@ -18,13 +18,13 @@ const vector<string> KEYWORDS = {
 
 Token::Token(
   const TokenType& t,
-  const string& v,
+  string v,
   const Position& start,
   const Position* end,
   const bool concatenation
 ):
   type(t),
-  value(v),
+  value(move(v)),
   allow_concatenation(concatenation),
   pos_start(start.copy()),
   pos_end(end == nullptr ? start.copy() : end->copy()) {}
@@ -49,4 +49,4 @@ string Token::getStringValue() const { return value; }
 bool Token::ofType(const TokenType& type) const { return this->type == type; }
 bool Token::notOfType(const TokenType& type) const { return !ofType(type); }
 bool Token::canConcatenate() const { return allow_concatenation; }
-Token Token::copy() const { return Token(*this); }
+Token Token::copy() const { return { *this }; }

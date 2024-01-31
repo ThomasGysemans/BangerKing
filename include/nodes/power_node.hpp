@@ -2,12 +2,12 @@
 
 #include "binary_operation.hpp"
 
-class PowerNode: public BinaryOperationNode {
+class PowerNode final: public BinaryOperationNode {
   public:
     PowerNode(
       std::unique_ptr<CustomNode>& a,
       std::unique_ptr<CustomNode>& b
     );
 
-    std::string to_string() const override;
+    [[nodiscard]] std::string to_string() const override;
 };

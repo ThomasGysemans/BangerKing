@@ -5,7 +5,7 @@ A custom hybrid language made in C++
 For now, it's an "interpreted" language (meaning nothing gets compiled, pretty much like JavaScript or PHP). However, I consider my language as "hybrid" because it will also be a compiled language for some architectures. Indeed, BangerKing code will be compiled into Assembly code. This feature is not yet implemented, and the first architecture that I will support is ARMv7 32 bits (due to its simplicity).
 
 See the [grammar file](./grammar.txt) to learn more about the syntax.
-Look at [the examples](./examples/) to see what the language is supposed to look like.
+Look at [the examples](./examples) to see what the language is supposed to look like.
 
 > **NOTE**: This project uses C++ 20. It might not be compatible with previous versions.
 
@@ -16,6 +16,8 @@ Look at [the examples](./examples/) to see what the language is supposed to look
 - Clone the repo
 - Make sure you have "g++"
 - Make sure you can run a Makefile via the command `make`
+
+This project uses [cmake](https://cmake.org/), so the [Makefile](./Makefile) that I provide should not be necessary, however it's still quite useful for anyone who doesn't want to use it. Note that instructions on how to use `cmake` are available in [CMakeLists.txt](./CMakeLists.txt).
 
 To compile the project and start the Command Line Interface (CLI), just type:
 
@@ -43,7 +45,7 @@ make execute
 make execute entrypoint=examples/main.bk
 ```
 
-`make execute` will run the current executable located in the build folder. Specify an entrypoint if you want to run a file, don't if you want the CLI. This command will fail if there is no executable. By default this action should not be necessary.
+`make execute` will run the current executable located in the build folder. Specify an entrypoint if you want to run a file, don't if you want the CLI. This command will fail if there is no executable. By default, this action should not be necessary.
 
 ### Tests
 
@@ -61,7 +63,7 @@ make single_test test=3-parser
 # will crash all the other tests.
 ```
 
-I use [doctest](https://github.com/doctest/doctest) for the [tests](./tests/).
+I use [doctest](https://github.com/doctest/doctest) for the [tests](./tests).
 
 ### Measure performance
 
@@ -69,7 +71,7 @@ I use [doctest](https://github.com/doctest/doctest) for the [tests](./tests/).
 make perf
 ```
 
-This command generates a Markdown log file in [/log](/log), as well as an output in the terminal. It measures the time that BangerKing takes to analyse, parse and interpret a large sample code.
+This command generates a Markdown log file in [/logs](/logs), as well as an output in the terminal. It measures the time that BangerKing takes to analyse, parse and interpret a large sample code.
 
 ## How does it work?
 
@@ -89,7 +91,7 @@ will produce this result:
 ]
 ```
 
-This step is done by the [Lexer](./include/lexer.h), we call this step the "lexical analysis" or "lexical tokenization". These tokens simplify the task of the [Parser](./include/parser.h). The parser takes as argument a list of tokens and creates a list of nodes. It's the parser's role to make sure that the order of a mathematical expression is preserved:
+This step is done by the [Lexer](./include/lexer.hpp), we call this step the "lexical analysis" or "lexical tokenization". These tokens simplify the task of the [Parser](./include/parser.hpp). The parser takes as argument a list of tokens and creates a list of nodes. It's the parser's role to make sure that the order of a mathematical expression is preserved:
 
 ```
 1+2-10/2
@@ -112,7 +114,7 @@ SubstractNode(
 
 This way, the addition is done first, the division is done afterwards, and finally the code returns the result of the substraction. We read this tree in a "pre-order traversal" (préfixe in French ^^).
 
-The last step is the `Interpreter` that's responsible of actually executing these expressions. It will first take as input the ListNode instance that was produced by the Parser and recursively "visit" each node. When it visits an instance of "AddNode" for example, it will visit member "a" and make sure there was no error during this visit, and then it will visit member "b", and once again make sure there was no error, and finally it'll apply a certain behavior depending on the types of the addition members: between two integers, it will add them together, between an integer and a string, it will produce a new string, etc. Each visit produces a new value. Old values are deallocated as soon as possible.
+The last step is the `Interpreter` that's responsible for actually executing these expressions. It will first take as input the ListNode instance that was produced by the Parser and recursively "visit" each node. When it visits an instance of "AddNode" for example, it will visit member "a" and make sure there was no error during this visit, and then it will visit member "b", and once again make sure there was no error, and finally it'll apply a certain behavior depending on the types of the addition members: between two integers, it will add them together, between an integer and a string, it will produce a new string, etc. Each visit produces a new value. Old values are deallocated as soon as possible.
 
 ## Variables
 
@@ -126,7 +128,7 @@ store c as int = a + b
 
 The variables `a`, `b` and `c` are stored in a symbol table (`std::map<std::string, Value*>`), itself stored within a context. A new context is created when inside a function or a loop (not yet implemented). Since each context has its own symbol table, two variables of the same name can be declared and accessed in contexts of different depth. To keep track of this depth, the contexts are stored as a "reversed linked-list" where each context holds its symbol table as well as a reference to its parent context. The global context has a `nullptr` as parent. The symbol tables are also reversed linked-list to make the research of a variable easier.
 
-When accessed, a variable returns a copy of its value stored in the symbol table (the values within the symbol table become immutable) and the garbage collector automatically deallocates the memory of this returned value so as to avoid memory leaks of inaccessible values returned by previous statements.
+When accessed, a variable returns a copy of its value stored in the symbol table (the values within the symbol table become immutable) and the garbage collector automatically deallocates the memory of this returned value to avoid memory leaks of inaccessible values returned by previous statements.
 
 This is also why, in this code...
 
@@ -184,9 +186,11 @@ int main() {
 }
 ```
 
-This way, no need to worry about "delete" (or "free"). This subject is quite complex, as there are "move" actions (so as to not copy the object), and "shared_ptr" if multiple pointers need to own the same value.
+This way, no need to worry about "delete" (or "free"). This subject is quite complex, as there are "move" actions (to not copy the object), and "shared_ptr" if multiple pointers need to own the same value.
 
-BangerKing uses smart pointers so as to easily handle memory, and to make sure that there is not too many unnecessary copies of values. Therefore, there should not be memory leak, at least I hope so.
+BangerKing uses smart pointers to easily handle memory, and to make sure that there is not too many unnecessary copies of values. Therefore, there should not be memory leak, at least I hope so.
+
+Here a video explaining them well: https://www.youtube.com/watch?v=tSIBKys2eBQ
 
 ## Disclaimer
 

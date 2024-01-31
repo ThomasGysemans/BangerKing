@@ -3,12 +3,12 @@
 #include "custom_node.hpp"
 #include "../token.hpp"
 
-class IntegerNode: public CustomNode {
+class IntegerNode final: public CustomNode {
   const Token token;
 
   public:
-    IntegerNode(const Token& token);
+    explicit IntegerNode(const Token& token);
 
-    const Token get_token() const;
-    std::string to_string() const override;
+    [[nodiscard]] Token get_token() const;
+    [[nodiscard]] std::string to_string() const override;
 };

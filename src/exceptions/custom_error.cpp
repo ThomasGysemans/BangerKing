@@ -2,12 +2,17 @@
 #include "../../include/utils/string_with_arrows.hpp"
 using namespace std;
 
+// In the past, const references were given as arguments,
+// and then copied when assigned to the attributes,
+// here we do the opposite:
+// the arguments are copied,
+// and then moved to the attributes.
 CustomError::CustomError(
-  const Position& start,
-  const Position& end,
-  const string& error,
-  const string& d
-): pos_start(start), pos_end(end), error_name(error), details(d) {}
+  Position start,
+  Position end,
+  string error,
+  string d
+): pos_start(move(start)), pos_end(move(end)), error_name(move(error)), details(move(d)) {}
 
 string CustomError::to_string() const {
   string result = error_name + ": " + details + "\n";

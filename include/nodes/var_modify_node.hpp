@@ -2,22 +2,21 @@
 
 #include "custom_node.hpp"
 #include "../token.hpp"
-#include "../types.hpp"
 
-class VarModifyNode: public CustomNode {
+class VarModifyNode final: public CustomNode {
   const std::string var_name;
-  std::unique_ptr<CustomNode> value_node; // can be "nullptr" if the variable doesn't have an initial value
+  std::unique_ptr<CustomNode> value_node;
 
   public:
     VarModifyNode(
-      const std::string& var_name,
+      std::string var_name,
       std::unique_ptr<CustomNode> value,
-      const Position pos_start
+      const Position& pos_start
     );
 
-    ~VarModifyNode() = default;
+    ~VarModifyNode() override = default;
 
     std::unique_ptr<CustomNode> retrieve_value_node();
-    const std::string get_var_name() const;
-    std::string to_string() const override;
+    [[nodiscard]] std::string get_var_name() const;
+    [[nodiscard]] std::string to_string() const override;
 };

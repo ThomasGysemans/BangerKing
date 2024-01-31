@@ -1,4 +1,5 @@
 #include "../include/parser.hpp"
+#include "../include/miscellaneous.hpp"
 using namespace std;
 
 /*
@@ -219,7 +220,7 @@ unique_ptr<CustomNode> Parser::cond_expr() {
 
   while (has_more_tokens() && (getTok()->is_keyword("and") || getTok()->is_keyword("or"))) {
     auto& tok = getTok();
-    auto tok_pos = tok->getStartingPosition();
+    const auto tok_pos = tok->getStartingPosition();
     advance();
     if (!has_more_tokens()) {
       throw InvalidSyntaxError(
@@ -265,7 +266,7 @@ unique_ptr<CustomNode> Parser::arith_expr() {
     getTok()->ofType(TokenType::MINUS)
   )) {
     auto& tok = getTok();
-    auto tok_pos = tok->getStartingPosition();
+    const auto tok_pos = tok->getStartingPosition();
     advance();
     if (!has_more_tokens()) {
       throw InvalidSyntaxError(
@@ -294,7 +295,7 @@ unique_ptr<CustomNode> Parser::term() {
     getTok()->ofType(TokenType::MODULO)
   )) {
     auto& tok = getTok();
-    auto tok_pos = tok->getStartingPosition();
+    const auto tok_pos = tok->getStartingPosition();
     advance();
     if (!has_more_tokens()) {
       throw InvalidSyntaxError(
@@ -321,12 +322,12 @@ unique_ptr<CustomNode> Parser::factor() {
   if (getTok()->ofType(TokenType::PLUS)) { // +5
     advance();
     return make_unique<PlusNode>(factor());
-  } else if (getTok()->ofType(TokenType::MINUS)) { // -5
+  }
+  if (getTok()->ofType(TokenType::MINUS)) { // -5
     advance();
     return make_unique<MinusNode>(factor());
-  } else {
-    return prop();
   }
+  return prop();
 }
 
 unique_ptr<CustomNode> Parser::prop() { return call(); }

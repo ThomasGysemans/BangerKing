@@ -5,7 +5,7 @@
 
 class BaseRuntimeError: public CustomError {
   protected:
-    std::shared_ptr<const Context> context;
+    std::shared_ptr<Context> context;
 
   public:
     BaseRuntimeError(
@@ -13,11 +13,11 @@ class BaseRuntimeError: public CustomError {
       const Position& end,
       const std::string& name,
       const std::string& d,
-      std::shared_ptr<const Context> ctx
+      const std::shared_ptr<Context>& ctx
     );
-    
-    std::string to_string() const;
+
+    [[nodiscard]] std::string to_string() const override;
 
   private:
-    std::string generate_traceback() const;
+    [[nodiscard]] std::string generate_traceback() const;
 };

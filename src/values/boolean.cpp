@@ -2,15 +2,14 @@
 #include "../../include/values/integer.hpp"
 #include "../../include/values/string.hpp"
 #include "../../include/values/double.hpp"
-#include <cmath>
 using namespace std;
 
-BooleanValue::BooleanValue(bool v): Value(Type::BOOLEAN) {
+BooleanValue::BooleanValue(bool v): Value(BOOLEAN) {
   actual_value = any(v);
 }
 
-BooleanValue::BooleanValue(): Value(Type::BOOLEAN) {
-  actual_value = BooleanValue::get_default_value();
+BooleanValue::BooleanValue(): Value(BOOLEAN) {
+  actual_value = get_default_value();
 }
 
 bool BooleanValue::get_default_value() { return false; }
@@ -23,9 +22,9 @@ BooleanValue* BooleanValue::copy() const { return new BooleanValue(*this); }
 unique_ptr<Value> BooleanValue::cast(Type output_type) const {
   unique_ptr<Value> cast_value;
   switch (output_type) {
-    case Type::INT: cast_value = make_unique<IntegerValue>((int)get_actual_value()); break;
-    case Type::DOUBLE: cast_value = make_unique<DoubleValue>((double)get_actual_value()); break;
-    case Type::STRING: cast_value = make_unique<StringValue>(std::to_string(get_actual_value())); break;
+    case INT: cast_value = make_unique<IntegerValue>(static_cast<int>(get_actual_value())); break;
+    case DOUBLE: cast_value = make_unique<DoubleValue>(static_cast<double>(get_actual_value())); break;
+    case STRING: cast_value = make_unique<StringValue>(std::to_string(get_actual_value())); break;
     default:
       return nullptr;
   }

@@ -8,15 +8,15 @@ class CustomNode {
   const Position pos_end;
 
   public:
-    const Position getStartingPosition() const;
-    const Position getEndingPosition() const;
+    [[nodiscard]] Position getStartingPosition() const;
+    [[nodiscard]] Position getEndingPosition() const;
 
     CustomNode(
-      const Position& start,
-      const Position& end
+      Position start,
+      Position end
     );
 
     virtual ~CustomNode() = default; // to allow the use of `dynamic_cast` (), it's "RTTI" (runtime type identification)
 
-    virtual std::string to_string() const = 0; // pure virtual method
+    [[nodiscard]] virtual std::string to_string() const = 0; // pure virtual method
 };

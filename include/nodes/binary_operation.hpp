@@ -15,9 +15,11 @@ class BinaryOperationNode: public CustomNode {
     );
 
   public:
-    virtual ~BinaryOperationNode() override = default;
+    // "virtual" here isn't necessary
+    // it's redundant due to the "override" keyword.
+    ~BinaryOperationNode() override = default;
 
     std::unique_ptr<CustomNode> retrieve_a();
     std::unique_ptr<CustomNode> retrieve_b();
-    virtual std::string to_string() const override = 0; // pure inherited virtual method
+    [[nodiscard]] std::string to_string() const override = 0; // pure inherited virtual method
 };

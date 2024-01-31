@@ -5,7 +5,7 @@ DoubleNode::DoubleNode(
   const Token& token
 ): CustomNode(token.getStartingPosition(), token.getEndingPosition()), token(token) {}
 
-const Token DoubleNode::get_token() const {
+Token DoubleNode::get_token() const {
   return token;
 }
 

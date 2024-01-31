@@ -1,9 +1,10 @@
 #include "../../include/nodes/custom_node.hpp"
+using namespace std;
 
 CustomNode::CustomNode(
-  const Position& start,
-  const Position& end
-): pos_start(start), pos_end(end) {}
+  Position start,
+  Position end
+): pos_start(move(start)), pos_end(move(end)) {}
 
-const Position CustomNode::getStartingPosition() const { return pos_start; }
-const Position CustomNode::getEndingPosition() const { return pos_end; }
+Position CustomNode::getStartingPosition() const { return pos_start; }
+Position CustomNode::getEndingPosition() const { return pos_end; }

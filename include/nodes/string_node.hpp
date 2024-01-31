@@ -3,18 +3,18 @@
 #include "custom_node.hpp"
 #include "../token.hpp"
 
-class StringNode: public CustomNode {
+class StringNode final: public CustomNode {
   const Token token;
 
   public:
-    StringNode(const Token n);
+    explicit StringNode(const Token&);
 
     /// @brief If the token is a string, can it include variables for concatenation?
     /// A string allowed for internal concatenation has double quotes.
     /// @return `true` if `allow_concatenation` of `token` is `true`, `false` otherwise.
-    bool canConcatenate() const;
+    [[nodiscard]] bool canConcatenate() const;
 
-    const Token* getToken() const;
-    const std::string getValue() const;
-    std::string to_string() const override;
+    [[nodiscard]] const Token* getToken() const;
+    [[nodiscard]] std::string getValue() const;
+    [[nodiscard]] std::string to_string() const override;
 };

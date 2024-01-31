@@ -15,7 +15,7 @@ void cli() {
 
   shared_ptr<Context> ctx = make_shared<Context>("<cli>");
 
-  string input = "";
+  string input;
   while (input != "\\q") {
     cout << ">> ";
     getline(cin, input);
@@ -24,7 +24,7 @@ void cli() {
       if (res == nullptr) {
         continue;
       }
-      shared_ptr<ListValue> main_value = dynamic_pointer_cast<ListValue>(res->get_value());
+      const shared_ptr<ListValue> main_value = dynamic_pointer_cast<ListValue>(res->get_value());
       const list<shared_ptr<const Value>> values = main_value->get_elements();
       if (values.size() == 1) {
         cout << values.front()->to_string() << endl;

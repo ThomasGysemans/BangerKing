@@ -2,12 +2,12 @@
 
 #include "base_runtime_error.hpp"
 
-class ArithmeticError: public BaseRuntimeError {
+class ArithmeticError final: public BaseRuntimeError {
   public:
     ArithmeticError(
       const Position& start,
       const Position& end,
       const std::string& d,
-      std::shared_ptr<const Context> ctx
+      const std::shared_ptr<Context>& ctx
     );
 };

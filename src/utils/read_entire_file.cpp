@@ -10,7 +10,6 @@ string read_entire_file(const string& path) {
     cerr << "The file " << path << " doesn't exist." << endl;
     cout << "Current directory: " << filesystem::current_path() << endl;
     exit(1);
-    return "";
   }
 
   string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());

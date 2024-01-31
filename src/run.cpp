@@ -3,7 +3,6 @@
 #include <map>
 #include "../include/run.hpp"
 #include "../include/files.hpp"
-#include "../include/miscellaneous.hpp"
 #include "../include/exceptions/custom_error.hpp"
 #include "../include/exceptions/exception.hpp"
 #include "../include/exceptions/runtime_error.hpp"
@@ -15,7 +14,7 @@
 #include "../include/interpreter.hpp"
 using namespace std;
 
-unique_ptr<const RuntimeResult> run(const string& input, const string& filename, shared_ptr<Context> ctx) {
+unique_ptr<const RuntimeResult> run(const string& input, const string& filename, const shared_ptr<Context>& ctx) {
   try { 
     READ_FILES[filename] = make_unique<string>(input);
 
@@ -34,11 +33,11 @@ unique_ptr<const RuntimeResult> run(const string& input, const string& filename,
     unique_ptr<const RuntimeResult> result = Interpreter::visit(move(tree));
 
     return result;
-  } catch (RuntimeError e) {
+  } catch (RuntimeError& e) {
     cerr << e.to_string() << endl;
-  } catch (CustomError e) {
+  } catch (CustomError& e) {
     cerr << e.to_string() << endl;
-  } catch (Exception e) {
+  } catch (Exception& e) {
     cerr << e.to_string() << endl;
   } catch (...) {
     cerr << "Unhandled exception was triggered" << endl;

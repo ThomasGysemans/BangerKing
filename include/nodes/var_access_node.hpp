@@ -3,16 +3,16 @@
 #include "custom_node.hpp"
 #include "../token.hpp"
 
-class VarAccessNode: public CustomNode {
+class VarAccessNode final: public CustomNode {
   const std::string var_name;
 
   public:
-    VarAccessNode(
-      const Token& var_tok
+    explicit VarAccessNode(
+      const Token& tok // the token leading to the variable name
     );
 
-    ~VarAccessNode() = default;
+    ~VarAccessNode() override = default;
 
-    std::string get_var_name() const;
-    std::string to_string() const override;
+    [[nodiscard]] std::string get_var_name() const;
+    [[nodiscard]] std::string to_string() const override;
 };

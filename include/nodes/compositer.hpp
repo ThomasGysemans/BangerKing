@@ -2,6 +2,8 @@
 // Include this header if the goal is to use all types of nodes in a single file.
 // It's the case for the parser and the interpreter.
 
+#pragma once
+
 #include "custom_node.hpp"
 #include "binary_operation.hpp"
 #include "add_node.hpp"

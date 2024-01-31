@@ -3,14 +3,14 @@
 using namespace std;
 
 VarAssignmentNode::VarAssignmentNode(
-  const string& var_name,
+  string var_name,
   unique_ptr<CustomNode> value,
-  const Token type_tok,
-  const Position pos_start,
-  const Position pos_end
+  const Token& type_tok,
+  const Position& pos_start,
+  const Position& pos_end
 )
 : CustomNode(pos_start, pos_end),
-  var_name(var_name),
+  var_name(move(var_name)),
   value_node(move(value)),
   type_name(type_tok.getStringValue()) {}
 

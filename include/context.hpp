@@ -15,32 +15,32 @@ class SymbolTable;
 /// The global context shall have a nullptr to its parent.
 ///
 /// An empty symbol table is created when a context is instantiated.
-class Context {
+class Context final {
   const std::string display_name;
-  std::shared_ptr<const Context> parent;
+  std::shared_ptr<Context> parent;
   std::shared_ptr<const Position> parent_entry_pos;
   std::shared_ptr<SymbolTable> symbol_table;
 
   public:
-    const std::string get_display_name() const;
-    std::shared_ptr<const Context> get_parent() const;
-    std::shared_ptr<const Position> get_parent_entry_pos() const;
-    std::shared_ptr<SymbolTable> get_symbol_table() const;
+    [[nodiscard]] std::string get_display_name() const;
+    [[nodiscard]] std::shared_ptr<Context> get_parent() const;
+    [[nodiscard]] std::shared_ptr<const Position> get_parent_entry_pos() const;
+    [[nodiscard]] std::shared_ptr<SymbolTable> get_symbol_table() const;
 
     ~Context() = default;
 
     /// @brief Checks if this context is contained in another context of the given name.
     /// @param name The name of a potential parent context.
     /// @return `true` if there is a parent context with the given name.
-    bool is_context_in(const std::string& name) const;
+    [[nodiscard]] bool is_context_in(const std::string& name) const;
 
     /// @brief Creates a new context of the given name. If no parent context is given, this context will be global.
     /// @param name The name of this context (generally the name of the file, or the name of a function).
     /// @param p_ctx A pointer to a parent context.
     /// @param entry_pos The entry position in the program of this context.
-    Context(
-      const std::string& name,
-      std::shared_ptr<const Context> p_ctx = nullptr,
-      std::shared_ptr<const Position> entry_pos = nullptr
+    explicit Context(
+      std::string name,
+      const std::shared_ptr<Context>& p_ctx = nullptr,
+      const std::shared_ptr<const Position>& entry_pos = nullptr
     );
 };
