@@ -12,7 +12,7 @@ string string_with_arrows(const string& text, const Position& pos_start, const P
 
   // Generate each line
   const unsigned int line_count = pos_end.get_ln() - pos_start.get_ln() + 1;
-  for (int i = 0; i < line_count; ++i) {
+  for (unsigned int i = 0; i < line_count; ++i) {
     // Calculate line columns
     string line = text.substr(index_start, index_end);
     const unsigned int col_start = i == 0 ? pos_start.get_col() : 0;

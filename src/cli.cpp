@@ -13,12 +13,14 @@ void cli() {
   cout << "Type \\q to quit at any time." << endl;
   cout << endl;
 
-  shared_ptr<Context> ctx = make_shared<Context>("<cli>");
+  const shared_ptr<Context> ctx = make_shared<Context>("<cli>");
 
   string input;
-  while (input != "\\q") {
+  do {
     cout << ">> ";
-    getline(cin, input);
+    if (!getline(cin, input)) {
+      break;
+    }
     if (!input.starts_with("\\")) {
       unique_ptr<const RuntimeResult> res = run(input, "<stdin>", ctx);
       if (res == nullptr) {
@@ -36,5 +38,5 @@ void cli() {
       // as the "res" variable is the actual owner.
       // It acts as an automatic garbage collector.
     }
-  }
+  } while (input != "\\q");
 }

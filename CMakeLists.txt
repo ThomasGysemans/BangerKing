@@ -11,7 +11,8 @@ cmake_minimum_required(VERSION 3.20)
 project(BangerKing)
 
 set(CMAKE_CXX_STANDARD 20)
-# set(CMAKE_CXX_COMPILER "g++")
+set(CMAKE_CXX_COMPILER g++)
+add_compile_options(-Wall -Wextra)
 # set(CMAKE_OSX_ARCHITECTURES "arm64")  # For Apple Silicon architecture
 
 # I really do not like this solution,
