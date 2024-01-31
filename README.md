@@ -17,7 +17,7 @@ Look at [the examples](./examples) to see what the language is supposed to look 
 - Make sure you have "g++"
 - Make sure you can run a Makefile via the command `make`
 
-This project uses [cmake](https://cmake.org/), so the [Makefile](./Makefile) that I provide should not be necessary, however it's still quite useful for anyone who doesn't want to use it. Note that instructions on how to use `cmake` are available in [CMakeLists.txt](./CMakeLists.txt).
+This project uses [cmake](https://cmake.org/), so the [Makefile](./Makefile) that I provide should not be necessary, however it's still quite useful for anyone who doesn't want to use `cmake`. Note that instructions on how to use `cmake` are available in [CMakeLists.txt](./CMakeLists.txt).
 
 To compile the project and start the Command Line Interface (CLI), just type:
 
