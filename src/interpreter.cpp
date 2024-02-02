@@ -19,38 +19,28 @@ unique_ptr<RuntimeResult> Interpreter::visit(unique_ptr<CustomNode>&& node) {
   if (shared_ctx == nullptr) {
     throw Exception("Fatal", "A context was not provided for interpretation.");
   }
-  if (instanceof<ListNode>(node.get())) {
-    return visit_ListNode(cast_node<ListNode>(move(node)));
-  } else if (instanceof<IntegerNode>(node.get())) {
-    return visit_IntegerNode(cast_node<IntegerNode>(move(node)));
-  } else if (instanceof<DoubleNode>(node.get())) {
-    return visit_DoubleNode(cast_node<DoubleNode>(move(node)));
-  } else if (instanceof<MinusNode>(node.get())) {
-    return visit_MinusNode(cast_node<MinusNode>(move(node)));
-  } else if (instanceof<PlusNode>(node.get())) {
-    return visit_PlusNode(cast_node<PlusNode>(move(node)));
-  } else if (instanceof<NotNode>(node.get())) {
-    return visit_NotNode(cast_node<NotNode>(move(node)));
-  } else if (instanceof<AndNode>(node.get())) { // this is a binary operation node, it must be checked before the "instanceof<BinaryOperationNode>"
-    return visit_AndNode(cast_node<AndNode>(move(node)));
-  } else if (instanceof<OrNode>(node.get())) { // this is a binary operation node, it must be checked before the "instanceof<BinaryOperationNode>"
-    return visit_OrNode(cast_node<OrNode>(move(node)));
-  } else if (instanceof<BinaryOperationNode>(node.get())) {
-    return visit_BinaryOperationNode(cast_node<BinaryOperationNode>(move(node)));
-  } else if (instanceof<StringNode>(node.get())) {
-    return visit_StringNode(cast_node<StringNode>(move(node)));
-  } else if (instanceof<VarAssignmentNode>(node.get())) {
-    return visit_VarAssignmentNode(cast_node<VarAssignmentNode>(move(node)));
-  } else if (instanceof<DefineConstantNode>(node.get())) {
-    return visit_DefineConstantNode(cast_node<DefineConstantNode>(move(node)));
-  } else if (instanceof<VarAccessNode>(node.get())) {
-    return visit_VarAccessNode(cast_node<VarAccessNode>(move(node)));
-  } else if (instanceof<VarModifyNode>(node.get())) {
-    return visit_VarModifyNode(cast_node<VarModifyNode>(move(node)));
-  } else if (instanceof<BooleanNode>(node.get())) {
-    return visit_BooleanNode(cast_node<BooleanNode>(move(node)));
+  switch (node->getNodeType()) {
+    case NodeType::LIST: return visit_ListNode(cast_node<ListNode>(move(node)));
+    case NodeType::INTEGER: return visit_IntegerNode(cast_node<IntegerNode>(move(node)));
+    case NodeType::DOUBLE: return visit_DoubleNode(cast_node<DoubleNode>(move(node)));
+    case NodeType::NEGATIVE: return visit_MinusNode(cast_node<MinusNode>(move(node)));
+    case NodeType::POSITIVE: return visit_PlusNode(cast_node<PlusNode>(move(node)));
+    case NodeType::NOT: return visit_NotNode(cast_node<NotNode>(move(node)));
+    case NodeType::AND: return visit_AndNode(cast_node<AndNode>(move(node)));
+    case NodeType::OR: return visit_OrNode(cast_node<OrNode>(move(node)));
+    case NodeType::STRING: return visit_StringNode(cast_node<StringNode>(move(node)));
+    case NodeType::VAR_ASSIGNMENT: return visit_VarAssignmentNode(cast_node<VarAssignmentNode>(move(node)));
+    case NodeType::DEFINE_CONSTANT: return visit_DefineConstantNode(cast_node<DefineConstantNode>(move(node)));
+    case NodeType::VAR_ACCESS: return visit_VarAccessNode(cast_node<VarAccessNode>(move(node)));
+    case NodeType::VAR_MODIFY: return visit_VarModifyNode(cast_node<VarModifyNode>(move(node)));
+    case NodeType::BOOLEAN: return visit_BooleanNode(cast_node<BooleanNode>(move(node)));
+    default:
+      // The binary operation doesn't have its own node type
+      if (instanceof<BinaryOperationNode>(node.get())) {
+        return visit_BinaryOperationNode(cast_node<BinaryOperationNode>(move(node)));
+      }
+      throw UndefinedBehaviorException("Unimplemented visit method for input node '" + node->to_string() + "'");
   }
-  throw UndefinedBehaviorException("Unimplemented visit method for input node '" + node->to_string() + "'");
 }
 
 /*

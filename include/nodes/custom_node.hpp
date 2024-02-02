@@ -1,11 +1,13 @@
 #pragma once
 
 #include "../position.hpp"
+#include "node_type.hpp"
 
 /// @brief Holds a generic custom node.
 class CustomNode {
   const Position pos_start;
   const Position pos_end;
+  const NodeType::Type type;
 
   public:
     [[nodiscard]] Position getStartingPosition() const;
@@ -13,8 +15,11 @@ class CustomNode {
 
     CustomNode(
       Position start,
-      Position end
+      Position end,
+      const NodeType::Type& type
     );
+
+    [[nodiscard]] NodeType::Type getNodeType() const;
 
     virtual ~CustomNode() = default; // to allow the use of `dynamic_cast` (), it's "RTTI" (runtime type identification)
 

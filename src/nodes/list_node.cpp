@@ -6,14 +6,15 @@ ListNode::ListNode(
   list_of_nodes_ptr nodes,
   const Position& start,
   const Position& end
-): CustomNode(start, end), element_nodes(move(nodes)) { }
+): CustomNode(start, end, NodeType::LIST), element_nodes(move(nodes)) { }
 
 ListNode::ListNode(
   list_of_nodes_ptr nodes
 ):
   CustomNode(
     nodes->front()->getStartingPosition(),
-    nodes->back()->getEndingPosition()
+    nodes->back()->getEndingPosition(),
+    NodeType::LIST
   ), element_nodes(move(nodes)) {}
 
 list_of_nodes_ptr ListNode::get_element_nodes() {

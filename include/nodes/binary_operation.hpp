@@ -11,7 +11,8 @@ class BinaryOperationNode: public CustomNode {
 
     BinaryOperationNode(
       std::unique_ptr<CustomNode> a,
-      std::unique_ptr<CustomNode> b
+      std::unique_ptr<CustomNode> b,
+      const NodeType::Type& type
     );
 
   public:

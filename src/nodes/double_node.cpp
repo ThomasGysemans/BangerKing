@@ -3,7 +3,7 @@ using namespace std;
 
 DoubleNode::DoubleNode(
   const Token& token
-): CustomNode(token.getStartingPosition(), token.getEndingPosition()), token(token) {}
+): CustomNode(token.getStartingPosition(), token.getEndingPosition(), NodeType::DOUBLE), token(token) {}
 
 Token DoubleNode::get_token() const {
   return token;

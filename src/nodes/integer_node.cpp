@@ -3,7 +3,7 @@ using namespace std;
 
 IntegerNode::IntegerNode(
   const Token& token
-): CustomNode(token.getStartingPosition(), token.getEndingPosition()), token(token) {}
+): CustomNode(token.getStartingPosition(), token.getEndingPosition(), NodeType::INTEGER), token(token) {}
 
 Token IntegerNode::get_token() const {
   return token;

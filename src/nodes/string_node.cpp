@@ -3,7 +3,7 @@ using namespace std;
 
 StringNode::StringNode(
   const Token& token
-): CustomNode(token.getStartingPosition(), token.getEndingPosition()), token(token) {}
+): CustomNode(token.getStartingPosition(), token.getEndingPosition(), NodeType::STRING), token(token) {}
 
 bool StringNode::canConcatenate() const {
   return token.canConcatenate();

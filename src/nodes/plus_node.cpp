@@ -3,7 +3,7 @@ using namespace std;
 
 PlusNode::PlusNode(
   unique_ptr<CustomNode> n
-): CustomNode(n->getStartingPosition(), n->getEndingPosition()), node(move(n)) {}
+): CustomNode(n->getStartingPosition(), n->getEndingPosition(), NodeType::POSITIVE), node(move(n)) {}
 
 unique_ptr<CustomNode> PlusNode::retrieve_node() { return move(node); }
 

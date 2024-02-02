@@ -3,7 +3,7 @@ using namespace std;
 
 BooleanNode::BooleanNode(
   const Token& token
-): CustomNode(token.getStartingPosition(), token.getEndingPosition()), token(token) {}
+): CustomNode(token.getStartingPosition(), token.getEndingPosition(), NodeType::BOOLEAN), token(token) {}
 
 const Token* BooleanNode::getToken() const {
   return &token;

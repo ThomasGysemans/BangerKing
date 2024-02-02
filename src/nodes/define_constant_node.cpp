@@ -9,7 +9,7 @@ DefineConstantNode::DefineConstantNode(
   const Position& pos_start,
   const Position& pos_end
 )
-: CustomNode(pos_start, pos_end),
+: CustomNode(pos_start, pos_end, NodeType::DEFINE_CONSTANT),
   var_name(move(var_name)),
   value_node(move(value)),
   type(type) {}

@@ -9,7 +9,7 @@ VarAssignmentNode::VarAssignmentNode(
   const Position& pos_start,
   const Position& pos_end
 )
-: CustomNode(pos_start, pos_end),
+: CustomNode(pos_start, pos_end, NodeType::VAR_ASSIGNMENT),
   var_name(move(var_name)),
   value_node(move(value)),
   type_name(type_tok.getStringValue()) {}
