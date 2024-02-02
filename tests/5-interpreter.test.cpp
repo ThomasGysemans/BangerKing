@@ -23,10 +23,8 @@ shared_ptr<Context> common_ctx = make_shared<Context>("<tests>");
 list<shared_ptr<const Value>> get_values(const string& code, bool clear_ctx = true) {
   if (clear_ctx) common_ctx->get_symbol_table()->clear();
 
-  Lexer lexer(&code);
-  READ_FILES.insert({ "<stdin>", make_unique<string>(code) });
-  list<unique_ptr<const Token>> tokens = lexer.generate_tokens();
-  Parser parser(tokens);
+  READ_FILES.insert({ "<stdin>", make_shared<string>(code) });
+  Parser parser = Parser::initCLI(code);
   unique_ptr<ListNode> tree = parser.parse();
 
   Interpreter::set_shared_ctx(common_ctx);
@@ -43,9 +41,7 @@ list<shared_ptr<const Value>> get_values(const string& code, bool clear_ctx = tr
 }
 
 void execute(const string& code) {
-  Lexer lexer(&code);
-  list<unique_ptr<const Token>> tokens = lexer.generate_tokens();
-  Parser parser(tokens);
+  Parser parser = Parser::initCLI(code);
   unique_ptr<ListNode> tree = parser.parse();
   
   Interpreter::set_shared_ctx(common_ctx);

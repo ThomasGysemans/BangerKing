@@ -91,7 +91,7 @@ will produce this result:
 ]
 ```
 
-This step is done by the [Lexer](./include/lexer.hpp), we call this step the "lexical analysis" or "lexical tokenization". These tokens simplify the task of the [Parser](./include/parser.hpp). The parser takes as argument a list of tokens and creates a list of nodes. It's the parser's role to make sure that the order of a mathematical expression is preserved:
+This step is done by the [Lexer](./include/lexer.hpp), we call this step the "lexical analysis" or "lexical tokenization". These tokens simplify the task of the [Parser](./include/parser.hpp). From those tokens, the Parser creates a list of nodes. It's the parser's role to make sure that the order of a mathematical expression is preserved:
 
 ```
 1+2-10/2
@@ -115,6 +115,8 @@ SubstractNode(
 This way, the addition is done first, the division is done afterwards, and finally the code returns the result of the substraction. We read this tree in a "pre-order traversal" (préfixe in French ^^).
 
 The last step is the `Interpreter` that's responsible for actually executing these expressions. It will first take as input the ListNode instance that was produced by the Parser and recursively "visit" each node. When it visits an instance of "AddNode" for example, it will visit member "a" and make sure there was no error during this visit, and then it will visit member "b", and once again make sure there was no error, and finally it'll apply a certain behavior depending on the types of the addition members: between two integers, it will add them together, between an integer and a string, it will produce a new string, etc. Each visit produces a new value. Old values are deallocated as soon as possible.
+
+The tasks of the Lexer and the Parser are merged to make the process faster. Indeed, it's much better to read the tokens progressively and create the nodes while reading the file, instead of analyzing the whole file and create a list to then read the tokens from. This way, if there is a syntax error at the beginning of the file, the Parser will see it very fast, without having to read the entire file for no reason.
 
 ## Variables
 
@@ -140,17 +142,6 @@ b = 5
 ```
 
 a != b, indeed `a = 10`, `b = 5`.
-
-### Performance issues
-
-I spotted one problem in the way I'm doing all this: everything is done one step at a time. Indeed, as of now, this is how the program behaves:
-
-1. Read the entire file and store it into a string
-2. Create a list of tokens
-3. Wait for this list, and then parse the tokens to create an AST.
-4. Once the AST is created, interpret it.
-
-As you can see, the first and second step can be merged quite easily, and I might also be able to do the parser at the same time that the list of tokens gets created.
 
 ### Memory leaks?
 
@@ -179,7 +170,7 @@ int main() {
   // nested scope
   {
     std::unique_ptr<Creeper> mob = make_unique<Creeper>();
-    std::cout << "hello" << std::endl;
+    std::cout << mob->destroyWorld() << std::endl;
   } // here all pointers defined in this scope get deallocated
 
   return 0;
@@ -188,7 +179,7 @@ int main() {
 
 This way, no need to worry about "delete" (or "free"). This subject is quite complex, as there are "move" actions (to not copy the object), and "shared_ptr" if multiple pointers need to own the same value.
 
-BangerKing uses smart pointers to easily handle memory, and to make sure that there is not too many unnecessary copies of values. Therefore, there should not be memory leak, at least I hope so.
+BangerKing uses smart pointers to easily handle memory, and to make sure that there is not too many unnecessary copies of values. Therefore, there should not be memory leaks, at least I hope so.
 
 Here a video explaining them well: https://www.youtube.com/watch?v=tSIBKys2eBQ
 

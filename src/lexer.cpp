@@ -3,6 +3,7 @@
 #include "../include/exceptions/illegal_string_error.hpp"
 #include "../include/exceptions/illegal_char_error.hpp"
 #include "../include/exceptions/unclosed_string_error.hpp"
+#include "../include/utils/get_file_size.hpp"
 using namespace std;
 
 const string NORMAL_DIGITS = "0123456789";
@@ -22,80 +23,137 @@ bool is_keyword(const string& keyword) {
   return std::find(KEYWORDS.begin(), KEYWORDS.end(), keyword) != KEYWORDS.end();
 }
 
-Lexer::Lexer(
-  const string* t,
-  const string& filename
-): text(t), filename(filename), pos(Position(0, 0, 0, filename)) {
-  iter = t->begin();
+unique_ptr<Lexer> Lexer::readCLI(const string& input) {
+  unique_ptr<Lexer> lexer = make_unique<Lexer>();
+  lexer->pos = make_unique<Position>(0, 0, 0, "<stdin>");
+  lexer->iter = input.begin();
+  lexer->input_end = input.end();
+  lexer->is_cli = true;
+  return lexer;
+}
+
+unique_ptr<Lexer> Lexer::readFile(const shared_ptr<string>& source_code, const string& path) {
+  unique_ptr<Lexer> lexer = make_unique<Lexer>();
+  lexer->pos = make_unique<Position>(0, 0, 0, path);
+  lexer->source_code = source_code; // the pointer is shared
+  unique_ptr<ifstream> file = make_unique<ifstream>(path);
+  if (file->bad()) {
+    throw Exception("Fatal", "Could not open file '" + path + "'.");
+  } else {
+    // the CLI starts at the first character automatically,
+    // here we have to set it explicitly:
+    lexer->file = move(file);
+    lexer->current_character = static_cast<char>(lexer->file->get());
+    lexer->file_pos = lexer->file->tellg();
+    lexer->file_key = path;
+    READ_FILES[path]->reserve(get_file_size(*(lexer->file)));
+    READ_FILES[path]->push_back(lexer->current_character);
+  }
+  return lexer;
 }
 
 void Lexer::advance() {
-  ++iter;
-  pos.advance(*iter);
+  if (is_cli) {
+    ++iter;
+    pos->advance(*iter);
+  } else {
+    file->seekg(file_pos); // going back to the previous position
+    current_character = static_cast<char>(file->get()); // get the next character
+    file_pos = file->tellg(); // keep track of the position of this character
+    if (!file->eof()) { // needs to be done because 0xFF might be added to the end of the string
+      READ_FILES[file_key]->push_back(current_character);
+    }
+    pos->advance(current_character);
+  }
+}
+
+char Lexer::getChar() const {
+  if (is_cli) {
+    return (*iter);
+  } else {
+    return current_character;
+  }
 }
 
 bool Lexer::hasMoreTokens() const {
-  return iter != text->end();
+  if (is_cli) {
+    return iter != input_end;
+  } else {
+    const bool oef = file->eof();
+    if (oef) {
+      file->close();
+    }
+    return !oef;
+  }
 }
 
-list<unique_ptr<const Token>> Lexer::generate_tokens() {
-  list<unique_ptr<const Token>> tokens;
-  while (hasMoreTokens()) {
-    if (*iter == '\n' || *iter == '\r') {
-      const Position pos_start = pos.copy();
-      if (*iter == '\r') {
+void Lexer::close() const {
+  if (!is_cli && file->is_open()) {
+    file->close();
+  }
+}
+
+bool Lexer::is_cli_only() const {
+  return is_cli;
+}
+
+shared_ptr<const Token> Lexer::get_next_token() {
+  while(hasMoreTokens()) {
+    if (getChar() == '\n' || getChar() == '\r') {
+      const Position pos_start = pos->copy();
+      if (getChar() == '\r') {
         advance();
       }
       advance();
-      tokens.push_back(make_unique<Token>(TokenType::NEWLINE, "\n", pos_start));
-    } else if (string_contains(LETTERS_UNDERSCORE, *iter)) { // must be before "make_number()"
-      tokens.push_back(make_identifier());
-    } else if (*iter == '.' || string_contains(DIGITS, *iter)) { // numbers are allowed to start with a dot (in case they're >= 0 and < 1)
-      tokens.push_back(make_number());
-    } else if (*iter == '+') {
-      tokens.push_back(make_plus_or_increment());
-    } else if (*iter == '-') {
-      tokens.push_back(make_minus_or_decrement());
-    } else if (*iter == '*') {
-      tokens.push_back(make_mul_or_power());
-    } else if (*iter == '/') {
-      const Position pos_start = pos.copy();
+      return make_shared<Token>(TokenType::NEWLINE, "\n", pos_start);
+    } else if (string_contains(LETTERS_UNDERSCORE, getChar())) { // must be before "make_number()"
+      return make_identifier();
+    } else if (getChar() == '.' || string_contains(DIGITS, getChar())) { // numbers are allowed to start with a dot (in case they're >= 0 and < 1)
+      return make_number();
+    } else if (getChar() == '+') {
+      return make_plus_or_increment();
+    } else if (getChar() == '-') {
+      return make_minus_or_decrement();
+    } else if (getChar() == '*') {
+      return make_mul_or_power();
+    } else if (getChar() == '/') {
+      const Position pos_start = pos->copy();
       advance();
-      tokens.push_back(make_unique<Token>(TokenType::SLASH, "/", pos_start, &pos));
-    } else if (*iter == '%') {
-      const Position pos_start = pos.copy();
+      return make_shared<Token>(TokenType::SLASH, "/", pos_start, pos.get());
+    } else if (getChar() == '%') {
+      const Position pos_start = pos->copy();
       advance();
-      tokens.push_back(make_unique<Token>(TokenType::MODULO, "%", pos_start, &pos));
-    } else if (*iter == '(') {
-      const Position pos_start = pos.copy();
+      return make_shared<Token>(TokenType::MODULO, "%", pos_start, pos.get());
+    } else if (getChar() == '(') {
+      const Position pos_start = pos->copy();
       advance();
-      tokens.push_back(make_unique<Token>(TokenType::LPAREN, "(", pos_start, &pos));
-    } else if (*iter == ')') {
-      const Position pos_start = pos.copy();
+      return make_shared<Token>(TokenType::LPAREN, "(", pos_start, pos.get());
+    } else if (getChar() == ')') {
+      const Position pos_start = pos->copy();
       advance();
-      tokens.push_back(make_unique<Token>(TokenType::RPAREN, ")", pos_start, &pos));
-    } else if (*iter == '=') {
-      const Position pos_start = pos.copy();
+      return make_shared<Token>(TokenType::RPAREN, ")", pos_start, pos.get());
+    } else if (getChar() == '=') {
+      const Position pos_start = pos->copy();
       advance();
-      tokens.push_back(make_unique<Token>(TokenType::EQUALS, "=", pos_start, &pos));
-    } else if (*iter == '!') {
-      const Position pos_start = pos.copy();
+      return make_shared<Token>(TokenType::EQUALS, "=", pos_start, pos.get());
+    } else if (getChar() == '!') {
+      const Position pos_start = pos->copy();
       advance();
-      tokens.push_back(make_unique<Token>(TokenType::NOT, "!", pos_start, &pos)); // TODO: is the string value that necessary?
-    } else if (*iter == DOUBLE_QUOTE || *iter == SIMPLE_QUOTE) {
-      tokens.push_back(make_string());
+      return (make_shared<Token>(TokenType::NOT, "!", pos_start, pos.get())); // TODO: is the string value that necessary
+    } else if (getChar() == DOUBLE_QUOTE || getChar() == SIMPLE_QUOTE) {
+      return make_string();
     } else {
-      if (*iter == ' ') {
+      if (getChar() == ' ') {
         advance();
       } else {
         throw IllegalCharError(
-          pos, pos,
-          string(1, *iter)
+          *pos, *pos,
+          string(1, getChar())
         );
       }
     }
   }
-  return tokens;
+  return nullptr;
 }
 
 /*
@@ -106,42 +164,42 @@ list<unique_ptr<const Token>> Lexer::generate_tokens() {
 *
 */
 
-unique_ptr<Token> Lexer::make_identifier() {
-  const Position pos_start = pos.copy();
-  string identifier = string(1, *iter);
+shared_ptr<Token> Lexer::make_identifier() {
+  const Position pos_start = pos->copy();
+  string identifier = string(1, getChar());
   advance();
 
-  while (hasMoreTokens() && LETTERS_DIGITS.find(*iter) != string::npos) {
-    identifier += *iter;
+  while (hasMoreTokens() && LETTERS_DIGITS.find(getChar()) != string::npos) {
+    identifier += getChar();
     advance();
   }
 
   const bool keyword = is_keyword(identifier);
   const TokenType token_type = keyword ? TokenType::KEYWORD : TokenType::IDENTIFIER;
-  return make_unique<Token>(token_type, identifier, pos_start, &pos);
+  return make_shared<Token>(token_type, identifier, pos_start, pos.get());
 }
 
-unique_ptr<Token> Lexer::make_number() {
-  const Position pos_start = pos.copy();
-  const bool is_beginning_with_dot = *iter == '.';
-  string number_str = string(1, *iter);
+shared_ptr<Token> Lexer::make_number() {
+  const Position pos_start = pos->copy();
+  const bool is_beginning_with_dot = getChar() == '.';
+  string number_str = string(1, getChar());
   int decimal_point_count = 0;
   advance();
 
-  if (is_beginning_with_dot && !string_contains(NORMAL_DIGITS, *iter)) {
-    return make_unique<Token>(TokenType::DOT, ".", pos_start);
+  if (is_beginning_with_dot && !string_contains(NORMAL_DIGITS, getChar())) {
+    return make_shared<Token>(TokenType::DOT, ".", pos_start);
   }
 
   const string digits_and_point = DIGITS + ".";
-  while (hasMoreTokens() && string_contains(digits_and_point, *iter)) {
-    if (*iter == '.') {
+  while (hasMoreTokens() && string_contains(digits_and_point, getChar())) {
+    if (getChar() == '.') {
       ++decimal_point_count;
       if (decimal_point_count > 1) {
         break;
       }
     }
 
-    number_str += *iter;
+    number_str += getChar();
     advance();
   }
 
@@ -152,73 +210,73 @@ unique_ptr<Token> Lexer::make_number() {
   }
 
   remove_character(number_str, '_');
-  return make_unique<Token>(TokenType::NUMBER, number_str, pos_start, &pos);
+  return make_shared<Token>(TokenType::NUMBER, number_str, pos_start, pos.get());
 }
 
-unique_ptr<Token> Lexer::make_plus_or_increment() {
-  const Position pos_start = pos.copy();
+shared_ptr<Token> Lexer::make_plus_or_increment() {
+  const Position pos_start = pos->copy();
   TokenType tok_type = TokenType::PLUS;
   string value = "+";
   advance();
 
-  if (*iter == '+') {
+  if (getChar() == '+') {
     advance();
     tok_type = TokenType::INC;
     value = "++";
   }
 
-  return make_unique<Token>(tok_type, value, pos_start, &pos);
+  return make_shared<Token>(tok_type, value, pos_start, pos.get());
 }
 
-unique_ptr<Token> Lexer::make_minus_or_decrement() {
-  const Position pos_start = pos.copy();
+shared_ptr<Token> Lexer::make_minus_or_decrement() {
+  const Position pos_start = pos->copy();
   TokenType tok_type = TokenType::MINUS;
   string value = "-";
   advance();
 
-  if (*iter == '-') {
+  if (getChar() == '-') {
     advance();
     tok_type = TokenType::DEC;
     value = "--";
   }
 
-  return make_unique<Token>(tok_type, value, pos_start, &pos);
+  return make_shared<Token>(tok_type, value, pos_start, pos.get());
 }
 
-unique_ptr<Token> Lexer::make_mul_or_power() {
-  const Position pos_start = pos.copy();
+shared_ptr<Token> Lexer::make_mul_or_power() {
+  const Position pos_start = pos->copy();
   TokenType tok_type = TokenType::MULTIPLY;
   string value = "*";
   advance();
 
-  if (*iter == '*') {
+  if (getChar() == '*') {
     advance();
     tok_type = TokenType::POWER;
     value = "**";
   }
 
-  return make_unique<Token>(tok_type, value, pos_start, &pos);
+  return make_shared<Token>(tok_type, value, pos_start, pos.get());
 }
 
-unique_ptr<Token> Lexer::make_string() {
-  const Position pos_start = pos.copy();
-  const char opening_quote = (*iter);
-  bool allow_concatenation = *iter == DOUBLE_QUOTE;
+shared_ptr<Token> Lexer::make_string() {
+  const Position pos_start = pos->copy();
+  const char opening_quote = (getChar());
+  bool allow_concatenation = getChar() == DOUBLE_QUOTE;
   string value;
   advance();
 
   bool escaped = false; // `true` if the previous character was a backslash (\)
   while (
     hasMoreTokens() &&
-    (escaped || *iter != opening_quote)
+    (escaped || getChar() != opening_quote)
   ) {
     if (value.length() == UINT_MAX) {
       throw IllegalStringError(
-        pos_start, pos,
+        pos_start, *pos,
         "The maximum length of a string has been reached: " + std::to_string(value.length())
       );
     }
-    if (*iter == BACKSLASH) {
+    if (getChar() == BACKSLASH) {
       if (escaped) {
         value.push_back(BACKSLASH);
         escaped = false;
@@ -226,7 +284,7 @@ unique_ptr<Token> Lexer::make_string() {
         escaped = true;
       }
     } else {
-      value.push_back(*iter);
+      value.push_back(getChar());
       escaped = false;
     }
     advance();
@@ -244,5 +302,5 @@ unique_ptr<Token> Lexer::make_string() {
 
   advance(); // to skip the ending quote (the lexer must not believe it's the start of a new string).
 
-  return make_unique<Token>(TokenType::STR, value, pos_start, &pos, allow_concatenation);
+  return make_shared<Token>(TokenType::STR, value, pos_start, pos.get(), allow_concatenation);
 }

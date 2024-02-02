@@ -9,6 +9,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include "../include/utils/get_file_size.hpp"
 #include "../include/context.hpp"
 #include "../include/cli.hpp"
 #include "../include/run.hpp"
@@ -40,10 +41,9 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  file.seekg(0, std::ios::end);
-  const streampos file_size = file.tellg(); // in bytes
+  const unsigned long file_size = get_file_size(file); // in bytes
 
-  if (file_size == -1) {
+  if (file_size == 0) {
     cerr << "Failed to determine the size of the input file." << endl;
     file.close();
     return 1;
@@ -55,19 +55,14 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  file.seekg(0, std::ios::beg); // replace the cursor at the beginning to begin the process
-
-  // The program reads the entire content of the file and stores it in memory.
-  // This is fine for small files, but extremely large files will create problems.
-  string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-
-  cout << "Executing this code:" << endl;
-  cout << content << endl;
+  // "main()" should not print anything on its own,
+  // but right now it's useful to see what's happening when testing.
+  cout << "Reading code..." << endl;
 
   const shared_ptr<Context> global_ctx = make_shared<Context>(filename);
 
   // will do something with this
-  const unique_ptr<const RuntimeResult> runtime_res = run(content, filename, global_ctx);
+  runFile(filename, global_ctx);
 
   file.close();
 

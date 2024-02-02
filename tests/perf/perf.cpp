@@ -8,10 +8,10 @@
 #include "../../include/utils/read_entire_file.hpp"
 #include "../../include/nodes/compositer.hpp"
 #include "../../include/interpreter.hpp"
+#include "../../include/utils/double_to_string.hpp"
 using namespace std;
 
 using std::chrono::high_resolution_clock;
-using std::chrono::duration_cast;
 using std::chrono::duration;
 using std::chrono::milliseconds;
 
@@ -25,6 +25,11 @@ struct nice_time_t {
   string hour;
   string minute;
   string seconds;
+};
+
+struct measurements_t {
+  double time;
+  double memory;
 };
 
 constexpr double treshold = 5.0; // above this amount of milliseconds, I consider that there is a performance issue.
@@ -45,16 +50,16 @@ string get_failure(const string& message) {
   return ANSI_RED + message + ANSI_RESET;
 }
 
-void show_results(const string& name, const double time, const size_t memory_usage) {
+void show_results(const string& name, const measurements_t& results) {
   // If it took more than `treshold` milliseconds,
   // then show red result
   // otherwise show it in green
-  const string str_time = std::to_string(time);
-  const string answer = time > treshold ? get_failure(str_time) : get_success(str_time);
-  cout << name << " individual performance test took " << answer << " ms and " << std::to_string(memory_usage) << " bytes of memory" << endl;
+  const string str_time = double_to_string(results.time);
+  const string answer = results.time > treshold ? get_failure(str_time) : get_success(str_time);
+  cout << name << " total performance test took " << answer << " ms and " << double_to_string(results.memory) << " bytes of memory" << endl;
 }
 
-string pad(int number) {
+string pad(const int number) {
   if (number < 10) {
     return "0" + std::to_string(number);
   } else {
@@ -90,6 +95,58 @@ size_t get_current_memory_usage() {
   return 0; // Failed to read memory usage
 }
 
+measurements_t measure_lexer(const string& source_code, int* number_of_tokens) {
+  const auto lexer_musage1 = get_current_memory_usage();
+  const auto l1 = high_resolution_clock::now();
+  const auto lexer = Lexer::readCLI(source_code);
+  list<shared_ptr<const Token>> tokens;
+  while (lexer->hasMoreTokens()) {
+    tokens.push_back(lexer->get_next_token());
+  }
+  const auto l2 = high_resolution_clock::now();
+  const auto lexer_musage2 = get_current_memory_usage();
+  measurements_t results{};
+  results.time = get_milliseconds(l1, l2);
+  results.memory = static_cast<double>(lexer_musage2 - lexer_musage1);
+  cout << "which produced " << tokens.size() << " tokens" << endl;
+  *number_of_tokens = static_cast<int>(tokens.size());
+  return results;
+}
+
+measurements_t measure_parser(const string& source_code) {
+  const auto parser_musage1 = get_current_memory_usage();
+  const auto p1 = high_resolution_clock::now();
+  Parser parser = Parser::initCLI(source_code);
+  auto ast = parser.parse();
+  const auto p2 = high_resolution_clock::now();
+  const auto parser_musage2 = get_current_memory_usage();
+  ast.reset();
+  measurements_t results{};
+  results.time = get_milliseconds(p1, p2);
+  results.memory = static_cast<double>(parser_musage2 - parser_musage1);
+  return results;
+}
+
+measurements_t measure_interpreter(const string& source_code) {
+  const auto interpreter_musage1 = get_current_memory_usage();
+  const auto i1 = high_resolution_clock::now();
+  const shared_ptr<Context> ctx = make_shared<Context>("<perf>");
+  Parser parser = Parser::initCLI(source_code);
+  Interpreter::set_shared_ctx(ctx);
+  Interpreter::visit(move(parser.parse()));
+  const auto i2 = high_resolution_clock::now();
+  const auto interpreter_musage2 = get_current_memory_usage();
+  measurements_t results{};
+  results.time = get_milliseconds(i1, i2);
+  results.memory = static_cast<double>(interpreter_musage2 - interpreter_musage1);
+  return results;
+}
+
+string markdown_table_line(const string& name, const measurements_t& results) {
+  const double kbi = results.memory / 1024;
+  return "|" + name + "(CLI, total)|" + double_to_string(results.time) + " ms|" + double_to_string(results.memory) + " bytes, " + double_to_string(kbi) + " kbi|";
+}
+
 int main() {
   cout << "Testing individual parts first..." << endl;
   const auto r1 = high_resolution_clock::now();
@@ -100,39 +157,14 @@ int main() {
   cout << "Reading the source code took " << rt << " ms" << endl;
   cout << "The source code contains " << source_code.length() << " characters (" << source_code.length() * sizeof(char) << " bytes)" << endl;
 
-  const auto lexer_musage1 = get_current_memory_usage();
-  const auto l1 = high_resolution_clock::now();
-  Lexer lexer(&source_code);
-  lexer_rt tokens = lexer.generate_tokens();
-  const auto l2 = high_resolution_clock::now();
-  const auto lexer_musage2 = get_current_memory_usage();
-  const double lt = get_milliseconds(l1, l2);
-  const auto lm = lexer_musage2 - lexer_musage1;
+  int number_of_tokens = 0;
+  const measurements_t lexer_measurements = measure_lexer(source_code, &number_of_tokens);
+  const measurements_t parser_measurements = measure_parser(source_code);
+  const measurements_t interpreter_measurements = measure_interpreter(source_code);
 
-  cout << "which produced " << tokens.size() << " tokens" << endl;
-
-  const auto parser_musage1 = get_current_memory_usage();
-  const auto p1 = high_resolution_clock::now();
-  Parser parser(tokens);
-  parser_rt ast = parser.parse();
-  const auto p2 = high_resolution_clock::now();
-  const auto parser_musage2 = get_current_memory_usage();
-  const double pt = get_milliseconds(p1, p2);
-  const auto pm = parser_musage2 - parser_musage1;
-
-  const auto interpreter_musage1 = get_current_memory_usage();
-  const auto i1 = high_resolution_clock::now();
-  shared_ptr<Context> ctx = make_shared<Context>("<perf>");
-  Interpreter::set_shared_ctx(ctx);
-  Interpreter::visit(move(ast));
-  const auto i2 = high_resolution_clock::now();
-  const auto interpreter_musage2 = get_current_memory_usage();
-  const double it = get_milliseconds(i1, i2);
-  const auto im = interpreter_musage2 - interpreter_musage1;
-
-  show_results("Lexer", lt, lm);
-  show_results("Parser", pt, pm); // sometimes the memory usage of the lexer and the parser are exactly the same, and I've no idea why
-  show_results("Interpreter", it, im);
+  show_results("Lexer", lexer_measurements);
+  show_results("Parser", parser_measurements); // sometimes the memory usage of the lexer and the parser are exactly the same, and I've no idea why
+  show_results("Interpreter", interpreter_measurements);
 
   // Writing a log file with Markdown syntax.
   // I know the way I'm writing the file is kinda terrible,
@@ -141,7 +173,7 @@ int main() {
   //nice_time_t today = get_localtime();
   const auto& [ year, month, day, hour, minute, seconds ] = get_localtime();
 
-  cout << "Current directory: " << std::filesystem::current_path() << endl;
+  cout << "From current directory " << std::filesystem::current_path() << " writing log file to ../logs/" << endl;
 
   ofstream log_file("../logs/perflog-" + year + "-" + month + "-" + day + "+" + hour + ":" + minute + ":" + seconds + ".md");
   
@@ -149,12 +181,13 @@ int main() {
   log_file << "The goal of these measurements is to make sure that the time it takes to interpret the same sample does not change as I add features. Let's hope it never goes up!!" << endl << endl;
   log_file << "Note that the memory usage is measured for macOS only, it will not work properly on another OS." << endl << endl;
   log_file << "Exact time of creation: " << day << "/" << month << "/" << year << " (dd/mm/YYYY) at " << hour << ":" << minute << ":" << seconds << " Europe/Paris" << endl << endl;
+  log_file << "Due to how the Parser works, it's quite difficult and problematic to try and measure the Lexer, Parser and Interpreter separately. Therefore, I measure the time the Parser took in total (from the beginning, therefore including lexical analysis). The interpreter measurements also include the time it took to analyse and parse the source code." << endl << endl;
   log_file << "|Feature|Time|Memory Usage|" << endl;
   log_file << "|-------|----|------------|" << endl;
-  log_file << "|Lexer|" << std::to_string(lt) << " ms|" + std::to_string(lm) << " bytes, " << lm / 1024 <<  " kbi|" << endl;
-  log_file << "|Parser|" << std::to_string(pt) << " ms|" + std::to_string(pm) << " bytes, " << pm / 1024 <<  " kbi|" << endl;
-  log_file << "|Interpreter|" << std::to_string(it) << " ms|" + std::to_string(im) << " bytes, " << im / 1024 <<  " kbi|" << endl << endl;
-  log_file << "The lexer found " << tokens.size() << " tokens for a source code of " << source_code.length() << " characters (" << source_code.length() * sizeof(char) << " bytes)" << endl << endl;
+  log_file << markdown_table_line("Lexer", lexer_measurements) << endl;
+  log_file << markdown_table_line("Parser", parser_measurements) << endl;
+  log_file << markdown_table_line("Interpreter", interpreter_measurements) << endl;
+  log_file << "The lexer found " << number_of_tokens << " tokens for a source code of " << source_code.length() << " characters (" << source_code.length() * sizeof(char) << " bytes)" << endl << endl;
   log_file << "# Sample" << endl << endl;
   log_file << "This test was done my reading and interpreting this piece of valid code:" << endl << endl;
   log_file << "```" << endl;

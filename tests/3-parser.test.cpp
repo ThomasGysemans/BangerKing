@@ -4,21 +4,16 @@
 #include "../include/token.hpp"
 #include "../include/lexer.hpp"
 #include "../include/parser.hpp"
+#include "../include/files.hpp"
 #include "../include/nodes/compositer.hpp"
 #include "../include/miscellaneous.hpp"
-#include "../include/debug/print_tokens.hpp"
+#include "../include/exceptions/invalid_syntax_error.hpp"
 using namespace std;
 
-unique_ptr<list<unique_ptr<CustomNode>>> get_element_nodes_from(const string& code, bool debug_print = false) {
-  Lexer lexer(&code);
-  READ_FILES.insert({ "<stdin>", make_unique<string>(code) });
-  list<unique_ptr<const Token>> tokens = lexer.generate_tokens();
-  if (debug_print) {
-    cout << "Resulft of lexer :" << endl;
-    cout << display_tokens_list(tokens) << endl;
-  }
-  Parser parser(tokens);
-  unique_ptr<ListNode> parsing_result = parser.parse();
+unique_ptr<list<unique_ptr<CustomNode>>> get_element_nodes_from(const string& code, const bool debug_print = false) {
+  READ_FILES.insert({ "<stdin>", make_shared<string>(code) });
+  Parser parser = Parser::initCLI(code);
+  const unique_ptr<ListNode> parsing_result = parser.parse();
   if (debug_print) {
     cout << "Result of parsing :" << endl;
     cout << parsing_result->to_string() << endl;
@@ -27,6 +22,22 @@ unique_ptr<list<unique_ptr<CustomNode>>> get_element_nodes_from(const string& co
 }
 
 DOCTEST_TEST_SUITE("Parser") {
+  SCENARIO("initialization of lexer") {
+    const auto code = "5";
+    auto parser = Parser::initCLI(code); // advance() already gets called in this so as to start the Parsing process with the first token
+    CHECK(parser.lexer->is_cli_only());
+    CHECK(!parser.lexer->hasMoreTokens()); // since there is one token, and that the parser advanced, the lexer is done
+  }
+
+  SCENARIO("initalization of parser") {
+    const auto code = "5";
+    auto parser = Parser::initCLI(code);
+    unique_ptr<ListNode> parsing_result;
+    CHECK_NOTHROW(parsing_result = parser.parse());
+    CHECK(parsing_result != nullptr);
+    CHECK(parsing_result->get_number_of_nodes() == 1);
+  }
+
   SCENARIO("simple number") {
     const auto element_nodes = get_element_nodes_from("5");
     const auto number_node = cast_node<IntegerNode>(move(element_nodes->front()));

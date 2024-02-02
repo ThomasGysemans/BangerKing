@@ -18,7 +18,7 @@ bool list_equals(const list<T>& l1, const list<T>& l2) {
   return true;
 }
 
-bool compare_tokens(const list<TokenType>& expected, const list<unique_ptr<const Token>>& actual) {
+bool compare_tokens(const list<TokenType>& expected, const list<shared_ptr<const Token>>& actual) {
   list<TokenType> actual_tokens_list;
   auto iter = actual.begin();
   while (iter != actual.end()) {

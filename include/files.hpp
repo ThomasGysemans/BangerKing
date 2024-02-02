@@ -3,4 +3,4 @@
 #include <map>
 #include <string>
 
-extern std::map<std::string, std::unique_ptr<const std::string>> READ_FILES;
+extern std::map<std::string, std::shared_ptr<std::string>> READ_FILES;

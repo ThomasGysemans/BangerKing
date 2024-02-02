@@ -39,6 +39,18 @@ string get_token_name(TokenType type) {
   }
 }
 
+string display_tokens_list(const vector<unique_ptr<const Token>>& l) {
+  auto iter = l.begin();
+  string result = "Tokens(" + std::to_string(l.size()) + ") : ";
+  result += "[" + get_token_name((*iter)->getType()) + ":" + (*iter)->getStringValue();
+  ++iter;
+  while (iter != l.end()) {
+    result += ", " + get_token_name((*iter)->getType()) + ":" + (*iter)->getStringValue();
+    ++iter;
+  }
+  return result + "]";
+}
+
 string display_tokens_list(const list<unique_ptr<const Token>>& l) {
   auto iter = l.begin();
   string result = "Tokens(" + std::to_string(l.size()) + ") : ";

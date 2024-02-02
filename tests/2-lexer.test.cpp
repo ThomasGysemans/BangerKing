@@ -1,5 +1,6 @@
 #include <iostream>
 #include <list>
+#include <cstdio>
 #include "doctest.h"
 #include "../include/lexer.hpp"
 #include "../include/token.hpp"
@@ -8,17 +9,104 @@
 #include "../include/exceptions/illegal_char_error.hpp"
 using namespace std;
 
-list<unique_ptr<const Token>> get_tokens_from(const string& code) {
-  Lexer lexer(&code);
-  READ_FILES.insert({ "<stdin>", make_unique<string>(code) });
-  return lexer.generate_tokens();
+list<shared_ptr<const Token>> get_tokens_from(const string& code) {
+  READ_FILES.insert({ "<stdin>", make_shared<string>(code) });
+  const unique_ptr<Lexer> lexer = Lexer::readCLI(code);
+  list<shared_ptr<const Token>> tokens;
+  while (lexer->hasMoreTokens()) {
+    // I have to make sure it doesn't return a nullptr
+    // because the `get_next_token` will always return something
+    // even if there is no token.
+    // Therefore, a blank input ("   ")
+    // or a simple whitespace
+    // will return nullptr.
+    auto tok = lexer->get_next_token();
+    if (tok != nullptr) {
+      tokens.push_back(move(tok));
+    }
+  }
+  return tokens;
 }
 
-vector<unique_ptr<const Token>> list_to_vector(list<unique_ptr<const Token>> l) {
-  return vector<unique_ptr<const Token>> { std::make_move_iterator(l.begin()), std::make_move_iterator(l.end()) };
+vector<shared_ptr<const Token>> list_to_vector(list<shared_ptr<const Token>> l) {
+  return vector<shared_ptr<const Token>> { std::make_move_iterator(l.begin()), std::make_move_iterator(l.end()) };
 }
 
 DOCTEST_TEST_SUITE("Lexer") {
+  SCENARIO("reading one token properly") {
+    const auto code = "5";
+    const auto lexer = Lexer::readCLI(code);
+    CHECK(lexer->is_cli_only());
+    CHECK(lexer->hasMoreTokens());
+    const auto token = lexer->get_next_token();
+    CHECK(token->ofType(TokenType::NUMBER));
+    CHECK(token->getStringValue() == "5");
+    CHECK(!lexer->hasMoreTokens());
+    CHECK(lexer->is_cli_only());
+  }
+
+  SCENARIO("reading multiple tokens properly") {
+    const auto code = "5+6";
+    const auto lexer = Lexer::readCLI(code);
+    CHECK(lexer->is_cli_only());
+    CHECK(lexer->hasMoreTokens());
+
+    const auto token1 = lexer->get_next_token();
+    CHECK(token1->ofType(TokenType::NUMBER));
+    CHECK(token1->getStringValue() == "5");
+    CHECK(lexer->hasMoreTokens());
+
+    const auto token2 = lexer->get_next_token();
+    CHECK(token2->ofType(TokenType::PLUS));
+    CHECK(token2->getStringValue() == "+");
+    CHECK(lexer->hasMoreTokens());
+
+    const auto token3 = lexer->get_next_token();
+    CHECK(token3->ofType(TokenType::NUMBER));
+    CHECK(token3->getStringValue() == "6");
+    CHECK(!lexer->hasMoreTokens());
+  }
+
+  SCENARIO("reading a file") {
+    const char* path = "lexer_example_file.bk";
+    const string code = "store a as int = 5"
+                        "a+5"
+                        " ";
+    // Writing a sample file with the code
+    auto file = ofstream(path);
+    file << code;
+    file.close();
+
+    // the Lexer is going to build up this string as to store it in READ_FILES
+    // and then use that source code when displaying an error.
+    // As of now, the Lexer has no idea what the code actuall is.
+    // The Lexer will read it from the file progressively.
+    const shared_ptr<string> source_code = make_shared<string>();
+    READ_FILES[path] = source_code;
+    unique_ptr<Lexer> lexer = Lexer::readFile(source_code, path);
+    CHECK(!lexer->is_cli_only());
+    CHECK(lexer->hasMoreTokens());
+    const auto first_token = lexer->get_next_token();
+    CHECK(!source_code->empty());
+    CHECK(source_code->at(0) == code.at(0));
+    CHECK(*source_code == "store ");
+    CHECK(first_token != nullptr);
+    CHECK(first_token->is_keyword("store"));
+    const auto second_token = lexer->get_next_token();
+    CHECK(second_token != nullptr);
+    CHECK(second_token->ofType(TokenType::IDENTIFIER));
+    CHECK(second_token->getStringValue() == "a");
+    CHECK(*source_code == "store a ");
+
+    while (lexer->hasMoreTokens()) {
+      CHECK_NOTHROW(lexer->get_next_token());
+    }
+
+    CHECK(*source_code == code);
+
+    remove(path);
+  }
+
   SCENARIO("simple digit") {
     const auto tokens = get_tokens_from("5");
     CHECK(tokens.size() == 1);

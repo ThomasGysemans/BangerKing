@@ -20,5 +20,9 @@ bool VarAssignmentNode::has_value() const { return value_node != nullptr; }
 string VarAssignmentNode::get_type_name() const { return type_name; }
 
 string VarAssignmentNode::to_string() const {
-  return "store " + var_name + " as " + type_name + " = " + value_node->to_string();
+  if (has_value()) {
+    return "store " + var_name + " as " + type_name + " = " + value_node->to_string();
+  } else {
+    return "store " + var_name + " as " + type_name;
+  }
 }

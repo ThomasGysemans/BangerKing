@@ -85,6 +85,7 @@ add_library(
   src/position.cpp
   src/debug/print_tokens.cpp
   src/debug/compare_tokens.cpp
+  src/utils/get_file_size.cpp
 )
 
 add_executable(

@@ -22,7 +22,7 @@ void cli() {
       break;
     }
     if (!input.starts_with("\\")) {
-      unique_ptr<const RuntimeResult> res = run(input, "<stdin>", ctx);
+      unique_ptr<const RuntimeResult> res = runLine(input, ctx);
       if (res == nullptr) {
         continue;
       }
