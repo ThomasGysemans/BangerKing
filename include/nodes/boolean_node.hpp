@@ -14,4 +14,5 @@ class BooleanNode final: public CustomNode {
     [[nodiscard]] bool is_true() const;
     [[nodiscard]] const Token* getToken() const;
     [[nodiscard]] std::string to_string() const override;
+    [[nodiscard]] std::string literal() const override;
 };

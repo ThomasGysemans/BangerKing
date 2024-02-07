@@ -42,7 +42,7 @@ DOCTEST_TEST_SUITE("run method") {
     CHECK(res->get_value() != nullptr);
     CHECK(res->get_error() == nullptr);
     shared_ptr<Value> res_value = res->get_value();
-    shared_ptr<ListValue> list_value = list_value = cast_value<ListValue>(res_value);
+    shared_ptr<ListValue> list_value = cast_value<ListValue>(res_value);
 
     list<shared_ptr<const Value>> elements = list_value->get_elements();
     shared_ptr<const Value> front = elements.front();

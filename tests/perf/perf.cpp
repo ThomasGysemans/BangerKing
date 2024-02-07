@@ -133,7 +133,7 @@ measurements_t measure_interpreter(const string& source_code) {
   const shared_ptr<Context> ctx = make_shared<Context>("<perf>");
   Parser parser = Parser::initCLI(source_code);
   Interpreter::set_shared_ctx(ctx);
-  Interpreter::visit(move(parser.parse()));
+  Interpreter::visit(parser.parse());
   const auto i2 = high_resolution_clock::now();
   const auto interpreter_musage2 = get_current_memory_usage();
   measurements_t results{};

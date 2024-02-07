@@ -12,8 +12,8 @@ ListNode::ListNode(
   list_of_nodes_ptr nodes
 ):
   CustomNode(
-    nodes->front()->getStartingPosition(),
-    nodes->back()->getEndingPosition(),
+    nodes->empty() ? Position::getDefaultPos() : nodes->front()->getStartingPosition(),
+    nodes->empty() ? Position::getDefaultPos() : nodes->back()->getEndingPosition(),
     NodeType::LIST
   ), element_nodes(move(nodes)) {}
 

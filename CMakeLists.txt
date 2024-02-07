@@ -86,6 +86,8 @@ add_library(
   src/debug/print_tokens.cpp
   src/debug/compare_tokens.cpp
   src/utils/get_file_size.cpp
+  src/compiler.cpp
+  src/exceptions/compiler/compiler_error.cpp
 )
 
 add_executable(
@@ -105,6 +107,7 @@ add_executable(
   tests/2-lexer.test.cpp
   tests/3-parser.test.cpp
   tests/4-values.test.cpp
+  tests/4-compiler.test.cpp
   tests/5-interpreter.test.cpp
   tests/6-run.test.cpp
 )

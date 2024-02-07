@@ -12,3 +12,7 @@ Token IntegerNode::get_token() const {
 string IntegerNode::to_string() const {
   return "IntegerNode(" + token.getStringValue() + ")";
 }
+
+string IntegerNode::literal() const {
+  return token.getStringValue();
+}

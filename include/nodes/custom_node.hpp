@@ -24,4 +24,11 @@ class CustomNode {
     virtual ~CustomNode() = default; // to allow the use of `dynamic_cast` (), it's "RTTI" (runtime type identification)
 
     [[nodiscard]] virtual std::string to_string() const = 0; // pure virtual method
+
+    /// @brief The representation of a literal,
+    /// which is not necessarily the same as `to_string()`.
+    /// Not all nodes are literals.
+    [[nodiscard]] virtual std::string literal() const {
+      return to_string();
+    }
 };

@@ -44,8 +44,7 @@ unique_ptr<const RuntimeResult> runFile(const string& path, const shared_ptr<Con
   const shared_ptr<string> source_code = make_shared<string>();
 
   try {
-    READ_FILES[path] = source_code;
-    Parser parser = Parser::initFile(source_code, path);
+    Parser parser = Parser::initFile(source_code, path); // will take care of "READ_FILES"
     unique_ptr<ListNode> tree = parser.parse();
 
     // The interpreter will progressively deallocate the nodes of the tree

@@ -12,3 +12,7 @@ Token DoubleNode::get_token() const {
 string DoubleNode::to_string() const {
   return "DoubleNode(" + token.getStringValue() + ")";
 }
+
+string DoubleNode::literal() const {
+  return token.getStringValue();
+}

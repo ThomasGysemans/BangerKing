@@ -69,6 +69,7 @@ Parser Parser::initCLI(const std::string& input) {
 }
 
 Parser Parser::initFile(const std::shared_ptr<std::string>& source_code, const std::string& path) {
+  READ_FILES[path] = source_code;
   Parser parser;
   parser.lexer = Lexer::readFile(source_code, path);
   // so that the Parser starts with the first token,

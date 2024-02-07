@@ -2,6 +2,7 @@
 
 #include "custom_node.hpp"
 #include "../token.hpp"
+#include "../types.hpp"
 
 /// @brief Handles the creation of a variable.
 /// It contains the initial value (if there is one, defaults to `nullptr`).
@@ -30,6 +31,9 @@ class VarAssignmentNode final: public CustomNode {
     /// @brief Gets the name of the variable.
     /// @return The name of the variable.
     [[nodiscard]] std::string get_var_name() const;
+
+    /// @brief Gets the exact type of this variable.
+    [[nodiscard]] Type get_type() const;
 
     /// @brief Whether or not this variable assignment has an initial value.
     /// @return `true` if this new variable has an initial value.

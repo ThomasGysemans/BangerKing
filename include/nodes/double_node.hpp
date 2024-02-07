@@ -11,4 +11,5 @@ class DoubleNode final: public CustomNode {
 
     [[nodiscard]] Token get_token() const;
     [[nodiscard]] std::string to_string() const override;
+    [[nodiscard]] std::string literal() const override;
 };

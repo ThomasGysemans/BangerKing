@@ -16,3 +16,7 @@ bool BooleanNode::is_true() const {
 string BooleanNode::to_string() const {
   return "(" + token.getStringValue() + ")";
 }
+
+string BooleanNode::literal() const {
+  return token.getStringValue();
+}

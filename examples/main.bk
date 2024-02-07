@@ -1,2 +1,2 @@
-store a as string = "hello
-world"
+store a as int = 5
+store b as int = a + 6

@@ -18,6 +18,7 @@ unique_ptr<CustomNode> VarAssignmentNode::retrieve_value_node() { return move(va
 string VarAssignmentNode::get_var_name() const { return var_name; }
 bool VarAssignmentNode::has_value() const { return value_node != nullptr; }
 string VarAssignmentNode::get_type_name() const { return type_name; }
+Type VarAssignmentNode::get_type() const { return get_type_from_name(type_name); }
 
 string VarAssignmentNode::to_string() const {
   if (has_value()) {
